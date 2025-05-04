@@ -1,5 +1,4 @@
-
-import { Cloud, CloudDrizzle, CloudRain, CloudSun, Sun, Wind, Droplet, Thermometer, CalendarDays, MapPin } from "lucide-react";
+import { Cloud, CloudDrizzle, CloudRain, CloudSun, Sun, Wind, Droplet, Thermometer, CalendarDays, MapPin, RefreshCw } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -7,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { useGeolocation } from "@/hooks/use-geolocation";
 import { toast } from "sonner";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface WeatherDay {
   date: string;
@@ -30,6 +30,7 @@ interface ActivityRecommendation {
 const Weather = () => {
   const location = useGeolocation();
   const [selectedLocation, setSelectedLocation] = useState<string>("Carregando localização...");
+  const [locationFetchError, setLocationFetchError] = useState<string | null>(null);
   const [view, setView] = useState<string>("forecast");
   
   // Mock data for demo
@@ -132,17 +133,26 @@ const Weather = () => {
   // Efeito para obter o nome da localização quando as coordenadas são carregadas
   useEffect(() => {
     if (location.latitude && location.longitude) {
+      setLocationFetchError(null);
       // Aqui estamos usando a API de Geocoding Reversa para obter o nome da localização
       fetch(`https://nominatim.openstreetmap.org/reverse?lat=${location.latitude}&lon=${location.longitude}&format=json`)
-        .then(response => response.json())
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`Erro na resposta: ${response.status}`);
+          }
+          return response.json();
+        })
         .then(data => {
-          const city = data.address?.city || data.address?.town || data.address?.village || "Local não identificado";
+          const city = data.address?.city || data.address?.town || data.address?.village || data.address?.municipality || "Local não identificado";
           const state = data.address?.state || "";
           setSelectedLocation(`${city}, ${state}`);
+          toast.success("Localização obtida com sucesso");
         })
-        .catch(() => {
-          setSelectedLocation("Localização não disponível");
-          toast.error("Não foi possível obter sua localização");
+        .catch((error) => {
+          console.error("Erro ao buscar nome da localização:", error);
+          setLocationFetchError("Não foi possível obter o nome da sua localização");
+          setSelectedLocation(`Lat: ${location.latitude.toFixed(4)}, Lon: ${location.longitude.toFixed(4)}`);
+          toast.error("Erro ao buscar nome da localização");
         });
     }
   }, [location.latitude, location.longitude]);
@@ -181,6 +191,12 @@ const Weather = () => {
     }
   };
 
+  const handleRetryLocation = () => {
+    toast.info("Tentando obter localização novamente...");
+    setSelectedLocation("Carregando localização...");
+    location.retryGeolocation();
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex justify-between items-start flex-wrap gap-4">
@@ -191,9 +207,22 @@ const Weather = () => {
           <p className="text-gray-600">
             Condições climáticas e recomendações para suas atividades agrícolas
           </p>
-          <div className="flex items-center mt-2 text-agro-blue-600">
-            <MapPin className="h-4 w-4 mr-1" />
-            <span className="text-sm">{selectedLocation}</span>
+          <div className="flex items-center mt-2">
+            <MapPin className="h-4 w-4 mr-1 text-agro-blue-600" />
+            <span className="text-sm text-agro-blue-600">
+              {selectedLocation}
+              {(location.error || locationFetchError) && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={handleRetryLocation}
+                  className="ml-2 h-6 px-2 text-xs text-agro-blue-600"
+                >
+                  <RefreshCw className="h-3 w-3 mr-1" />
+                  Tentar novamente
+                </Button>
+              )}
+            </span>
           </div>
         </div>
         
@@ -216,6 +245,42 @@ const Weather = () => {
           </Button>
         </div>
       </div>
+      
+      {location.error && (
+        <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-800">
+          <AlertDescription>
+            {location.error}
+            {location.permissionDenied && (
+              <div className="mt-2">
+                <p>Para obter previsões mais precisas, precisamos da sua localização.</p>
+                <p className="mt-1 text-sm">Para habilitar:</p>
+                <ul className="list-disc pl-5 text-sm mt-1">
+                  <li>Clique no ícone de cadeado na barra de endereço</li>
+                  <li>Selecione "Permissões do site"</li>
+                  <li>Ative a permissão de "Localização"</li>
+                </ul>
+                <Button 
+                  onClick={handleRetryLocation}
+                  size="sm"
+                  className="mt-2 bg-red-600 hover:bg-red-700"
+                >
+                  <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+                  Tentar novamente
+                </Button>
+              </div>
+            )}
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {locationFetchError && !location.error && (
+        <Alert variant="warning" className="bg-yellow-50 border-yellow-200 text-yellow-800">
+          <AlertDescription>
+            {locationFetchError}
+            <p className="mt-1">Estamos usando suas coordenadas para gerar a previsão.</p>
+          </AlertDescription>
+        </Alert>
+      )}
       
       <Card className="agro-card mb-6">
         <CardHeader className="pb-2">
