@@ -11,7 +11,7 @@ import { AnalyzingState } from "@/components/plant-diagnosis/AnalyzingState";
 import { DiagnosisResult } from "@/components/plant-diagnosis/DiagnosisResult";
 import { CameraCapture } from "@/components/plant-diagnosis/CameraCapture";
 import { ContextDataForm, ContextData } from "@/components/plant-diagnosis/ContextDataForm";
-import { analyzePlantImage, DiseaseDiagnosis } from "@/services/plantnet-api";
+import { DiseaseDiagnosis } from "@/services/plantnet-api";
 
 enum DiagnosisStep {
   Upload,
@@ -20,6 +20,134 @@ enum DiagnosisStep {
   Analyzing,
   Result
 }
+
+// Array de resultados simulados para diagnóstico
+const mockDiagnosisResults: DiseaseDiagnosis[] = [
+  {
+    disease: "Ferrugem asiática",
+    scientificName: "Phakopsora pachyrhizi",
+    confidence: 92,
+    severity: "Moderada",
+    spreadRisk: "Alto",
+    symptoms: [
+      "Manchas amareladas nas folhas",
+      "Pústulas marrom-avermelhadas na face inferior das folhas",
+      "Desfolha prematura em estágios avançados"
+    ],
+    recommendations: [
+      {
+        product: "Fungicida Sistêmico",
+        activeIngredient: "Azoxistrobina + Ciproconazol",
+        dosage: "300-400 mL/ha",
+        application: "Foliar",
+        interval: "14-21 dias",
+        preharvest: "30 dias",
+        timing: "Aplicar ao amanhecer ou entardecer",
+        weather: "Evitar aplicação em dias chuvosos ou com ventos fortes"
+      }
+    ],
+    preventiveMeasures: [
+      "Rotação de culturas com espécies não hospedeiras",
+      "Eliminar plantas voluntárias antes do plantio",
+      "Utilizar cultivares com genes de resistência",
+      "Monitorar regularmente a lavoura para detecção precoce",
+      "Respeitar o vazio sanitário"
+    ]
+  },
+  {
+    disease: "Mancha alvo",
+    scientificName: "Corynespora cassiicola",
+    confidence: 87,
+    severity: "Leve a moderada",
+    spreadRisk: "Médio",
+    symptoms: [
+      "Lesões circulares com centro escuro e bordas amareladas",
+      "Anéis concêntricos nas manchas",
+      "Necroses nas nervuras"
+    ],
+    recommendations: [
+      {
+        product: "Fungicida Protetor + Sistêmico",
+        activeIngredient: "Fluxapiroxade + Piraclostrobina",
+        dosage: "250-300 mL/ha",
+        application: "Foliar",
+        interval: "14 dias",
+        preharvest: "28 dias",
+        timing: "Aplicação preventiva ou aos primeiros sintomas",
+        weather: "Temperatura moderada, sem previsão de chuvas"
+      }
+    ],
+    preventiveMeasures: [
+      "Utilizar sementes certificadas e tratadas",
+      "Evitar o plantio em áreas com histórico da doença",
+      "Adotar manejo adequado de plantas daninhas",
+      "Manter nutrição equilibrada da lavoura",
+      "Monitoramento constante da cultura"
+    ]
+  },
+  {
+    disease: "Deficiência de nitrogênio",
+    scientificName: "Deficiência nutricional",
+    confidence: 78,
+    severity: "Moderada",
+    spreadRisk: "Baixo",
+    symptoms: [
+      "Amarelecimento das folhas mais antigas",
+      "Crescimento reduzido da planta",
+      "Folhas pequenas e pálidas"
+    ],
+    recommendations: [
+      {
+        product: "Fertilizante nitrogenado",
+        activeIngredient: "Ureia ou Nitrato de amônio",
+        dosage: "100-150 kg/ha",
+        application: "Solo ou foliar",
+        interval: "Conforme estágio fenológico",
+        preharvest: "Não aplicável",
+        timing: "Preferencialmente em períodos sem chuvas intensas",
+        weather: "Evitar aplicação com solo muito seco ou encharcado"
+      }
+    ],
+    preventiveMeasures: [
+      "Análise de solo periódica",
+      "Adubação balanceada conforme necessidade da cultura",
+      "Uso de cobertura verde em rotação",
+      "Manejo adequado de restos culturais",
+      "Monitoramento do estado nutricional das plantas"
+    ]
+  },
+  {
+    disease: "Planta saudável",
+    scientificName: "Status normal",
+    confidence: 95,
+    severity: "Nenhuma",
+    spreadRisk: "Nenhum",
+    symptoms: [
+      "Sem sintomas de doenças ou deficiências",
+      "Desenvolvimento normal",
+      "Folhagem com coloração adequada"
+    ],
+    recommendations: [
+      {
+        product: "Manutenção preventiva",
+        activeIngredient: "Manejo integrado",
+        dosage: "Conforme recomendação para a cultura",
+        application: "Variada",
+        interval: "Conforme calendário agrícola",
+        preharvest: "Não aplicável",
+        timing: "Seguir calendário agrícola regional",
+        weather: "Condições ideais para cada operação"
+      }
+    ],
+    preventiveMeasures: [
+      "Continuar monitoramento regular",
+      "Seguir práticas de manejo recomendadas",
+      "Manter equilíbrio nutricional",
+      "Adotar controle preventivo de pragas e doenças",
+      "Manter rotação de culturas"
+    ]
+  }
+];
 
 const PlantDiagnosis = () => {
   const [step, setStep] = useState<DiagnosisStep>(DiagnosisStep.Upload);
@@ -120,15 +248,22 @@ const PlantDiagnosis = () => {
     setStep(DiagnosisStep.Analyzing);
     
     try {
-      // Process using PlantNet API service
-      if (imagePreview) {
-        const result = await analyzePlantImage(imagePreview, data);
+      // Simulação de processamento com tempo de espera variável
+      const processingTime = 2000 + Math.random() * 1000;
+      
+      setTimeout(() => {
+        // Escolher um diagnóstico aleatório dos resultados simulados
+        const randomIndex = Math.floor(Math.random() * mockDiagnosisResults.length);
+        const result = mockDiagnosisResults[randomIndex];
+        
+        // Ajuste na confiança para dar mais variabilidade
+        result.confidence = Math.max(50, Math.min(99, result.confidence + (Math.random() * 10 - 5)));
+        
         setDiagnosisResult(result);
         setStep(DiagnosisStep.Result);
         toast.success("Diagnóstico concluído!");
-      } else {
-        throw new Error("Imagem não disponível");
-      }
+      }, processingTime);
+      
     } catch (error) {
       console.error("Erro na análise:", error);
       toast.error("Erro no diagnóstico", {
