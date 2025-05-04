@@ -43,7 +43,7 @@ export const Header = () => {
       
       {isNavOpen && (
         <div className="container pb-3 md:hidden">
-          <NavMenu isMobile />
+          <NavMenu isMobile={true} />
         </div>
       )}
     </header>
