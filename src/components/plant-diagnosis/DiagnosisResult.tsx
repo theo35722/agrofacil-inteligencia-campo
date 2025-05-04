@@ -19,31 +19,11 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { toast } from "sonner";
-
-interface RecommendationProps {
-  product: string;
-  activeIngredient: string;
-  dosage: string;
-  application: string;
-  timing: string;
-  interval: string;
-  weather: string;
-  preharvest: string;
-}
+import { DiseaseDiagnosis } from "@/services/plantnet-api";
 
 interface DiagnosisResultProps {
-  imagePreview: string | null;
-  diagnosisResult: {
-    disease: string;
-    scientificName: string;
-    severity: string;
-    affectedArea: string;
-    spreadRisk: string;
-    confidence: number; // Added confidence score
-    recommendations: RecommendationProps[];
-    preventiveMeasures: string[];
-    symptoms: string[];
-  };
+  imagePreview: string;
+  diagnosisResult: DiseaseDiagnosis;
   resetDiagnosis: () => void;
 }
 
@@ -80,6 +60,8 @@ export const DiagnosisResult: React.FC<DiagnosisResultProps> = ({
     return "text-orange-600";
   };
 
+  const isLowConfidence = diagnosisResult.confidence < 70;
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row gap-6">
@@ -92,10 +74,14 @@ export const DiagnosisResult: React.FC<DiagnosisResultProps> = ({
             />
           </div>
           
-          <Alert className="bg-green-50 border-green-100 mb-3">
-            <AlertTitle className="text-green-800 text-sm">Diagnóstico preciso</AlertTitle>
+          <Alert className={`${isLowConfidence ? 'bg-yellow-50 border-yellow-100' : 'bg-green-50 border-green-100'} mb-3`}>
+            <AlertTitle className={`${isLowConfidence ? 'text-yellow-800' : 'text-green-800'} text-sm`}>
+              {isLowConfidence ? 'Diagnóstico parcial' : 'Diagnóstico preciso'}
+            </AlertTitle>
             <AlertDescription className="text-sm text-gray-700">
-              Nosso sistema de IA analisou sua imagem e identificou o problema com alta precisão.
+              {isLowConfidence 
+                ? 'Recomendamos tirar outra foto com melhor iluminação para aumentar a precisão.'
+                : 'Nossa IA analisou sua imagem e identificou o problema com alta precisão.'}
             </AlertDescription>
           </Alert>
         </div>

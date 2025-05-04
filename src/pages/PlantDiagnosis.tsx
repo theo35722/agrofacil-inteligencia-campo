@@ -11,6 +11,7 @@ import { AnalyzingState } from "@/components/plant-diagnosis/AnalyzingState";
 import { DiagnosisResult } from "@/components/plant-diagnosis/DiagnosisResult";
 import { CameraCapture } from "@/components/plant-diagnosis/CameraCapture";
 import { ContextDataForm, ContextData } from "@/components/plant-diagnosis/ContextDataForm";
+import { analyzePlantImage, DiseaseDiagnosis } from "@/services/plantnet-api";
 
 enum DiagnosisStep {
   Upload,
@@ -24,49 +25,40 @@ const PlantDiagnosis = () => {
   const [step, setStep] = useState<DiagnosisStep>(DiagnosisStep.Upload);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [contextData, setContextData] = useState<ContextData | null>(null);
+  const [diagnosisResult, setDiagnosisResult] = useState<DiseaseDiagnosis | null>(null);
+  const [isOffline, setIsOffline] = useState<boolean>(!navigator.onLine);
   
-  // Mock diagnosis result
-  const diagnosisResult = {
-    disease: "Ferrugem asiática",
-    scientificName: "Phakopsora pachyrhizi",
-    severity: "Moderada",
-    affectedArea: "Folhas",
-    spreadRisk: "Alto",
-    confidence: 94, // Added confidence score
-    recommendations: [
-      {
-        product: "Fungicida XYZ",
-        activeIngredient: "Azoxistrobina + Ciproconazol",
-        dosage: "500ml/ha",
-        application: "Pulverização foliar",
-        timing: "Aplicar nas primeiras horas da manhã ou final da tarde",
-        interval: "Reaplicar após 14-21 dias",
-        weather: "Evitar aplicação com previsão de chuva nas próximas 4 horas",
-        preharvest: "30 dias de carência"
-      },
-      {
-        product: "Fungicida ABC",
-        activeIngredient: "Trifloxistrobina + Protioconazol",
-        dosage: "400ml/ha",
-        application: "Pulverização foliar",
-        timing: "Aplicar preferencialmente em dias com baixa umidade",
-        interval: "Reaplicar após 14-21 dias",
-        weather: "Evitar aplicação em condições de vento forte",
-        preharvest: "30 dias de carência"
+  // Monitor online/offline status
+  useState(() => {
+    const handleOnlineStatusChange = () => {
+      setIsOffline(!navigator.onLine);
+      if (navigator.onLine) {
+        toast.success("Conexão restabelecida", { 
+          description: "Sincronizando dados..." 
+        });
+      } else {
+        toast.warning("Modo offline", { 
+          description: "Os diagnósticos serão salvos localmente e sincronizados quando houver conexão." 
+        });
       }
-    ],
-    preventiveMeasures: [
-      "Rotação de culturas com espécies não hospedeiras",
-      "Eliminação de plantas voluntárias",
-      "Monitoramento constante da lavoura",
-      "Plantio de variedades resistentes quando disponíveis"
-    ],
-    symptoms: [
-      "Pequenos pontos amarelados nas folhas",
-      "Lesões que evoluem para pústulas de coloração marrom",
-      "Amarelecimento e queda prematura das folhas",
-      "Redução do tamanho e peso dos grãos"
-    ]
+    };
+    
+    window.addEventListener('online', handleOnlineStatusChange);
+    window.addEventListener('offline', handleOnlineStatusChange);
+    
+    return () => {
+      window.removeEventListener('online', handleOnlineStatusChange);
+      window.removeEventListener('offline', handleOnlineStatusChange);
+    };
+  });
+  
+  // Basic image validation
+  const validateImage = (imageDataUrl: string): boolean => {
+    // This is a placeholder for actual image validation
+    // In a real implementation, you would check brightness, blur, etc.
+    
+    // For now, we just ensure the image exists
+    return !!imageDataUrl;
   };
   
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -91,15 +83,6 @@ const PlantDiagnosis = () => {
       };
       reader.readAsDataURL(file);
     }
-  };
-  
-  // Basic image validation
-  const validateImage = (imageDataUrl: string): boolean => {
-    // This is a placeholder for actual image validation
-    // In a real implementation, you would check brightness, blur, etc.
-    
-    // For now, we just ensure the image exists
-    return !!imageDataUrl;
   };
   
   const openCamera = () => {
@@ -132,26 +115,34 @@ const PlantDiagnosis = () => {
     setStep(DiagnosisStep.ContextData);
   };
   
-  const handleContextDataSubmit = (data: ContextData) => {
+  const handleContextDataSubmit = async (data: ContextData) => {
     setContextData(data);
     setStep(DiagnosisStep.Analyzing);
     
-    // Log the collected context data
-    console.log("Plant type:", data.plantType);
-    console.log("Symptoms described:", data.symptoms);
-    console.log("Location data:", data.locationData);
-    
-    // Simulate analysis time (would be replaced by actual AI processing)
-    setTimeout(() => {
-      setStep(DiagnosisStep.Result);
-      toast.success("Diagnóstico concluído!");
-    }, 2000);
+    try {
+      // Process using PlantNet API service
+      if (imagePreview) {
+        const result = await analyzePlantImage(imagePreview, data);
+        setDiagnosisResult(result);
+        setStep(DiagnosisStep.Result);
+        toast.success("Diagnóstico concluído!");
+      } else {
+        throw new Error("Imagem não disponível");
+      }
+    } catch (error) {
+      console.error("Erro na análise:", error);
+      toast.error("Erro no diagnóstico", {
+        description: "Não foi possível completar a análise. Tente novamente."
+      });
+      setStep(DiagnosisStep.Upload);
+    }
   };
   
   const resetDiagnosis = () => {
     setStep(DiagnosisStep.Upload);
     setImagePreview(null);
     setContextData(null);
+    setDiagnosisResult(null);
   };
 
   return (
@@ -168,10 +159,23 @@ const PlantDiagnosis = () => {
       {step === DiagnosisStep.Upload && (
         <Alert className="bg-agro-green-50 border-agro-green-100 text-agro-green-800">
           <Info className="h-4 w-4" />
-          <AlertTitle>Como funciona o diagnóstico?</AlertTitle>
+          <AlertTitle>Como tirar a melhor foto para diagnóstico</AlertTitle>
           <AlertDescription>
-            Nossa tecnologia de IA analisa imagens de plantas para identificar doenças, pragas e deficiências
-            nutricionais com alta precisão, fornecendo recomendações personalizadas para tratamento.
+            <ul className="list-disc pl-5 mt-1 space-y-1">
+              <li>Use luz natural, evitando sombras fortes</li>
+              <li>Foque diretamente na área afetada da planta</li>
+              <li>Inclua folhas saudáveis próximas para comparação</li>
+              <li>Evite fundos confusos que possam atrapalhar a análise</li>
+            </ul>
+          </AlertDescription>
+        </Alert>
+      )}
+      
+      {isOffline && (
+        <Alert className="bg-orange-50 border-orange-100">
+          <AlertTitle className="text-orange-800">Modo offline ativado</AlertTitle>
+          <AlertDescription className="text-orange-700">
+            O diagnóstico será salvo localmente e sincronizado automaticamente quando houver conexão.
           </AlertDescription>
         </Alert>
       )}
@@ -212,7 +216,7 @@ const PlantDiagnosis = () => {
           
           {step === DiagnosisStep.Analyzing && <AnalyzingState />}
           
-          {step === DiagnosisStep.Result && (
+          {step === DiagnosisStep.Result && diagnosisResult && imagePreview && (
             <DiagnosisResult 
               imagePreview={imagePreview} 
               diagnosisResult={diagnosisResult}
