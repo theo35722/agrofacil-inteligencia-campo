@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import { Info } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -25,9 +26,9 @@ const mockDiagnosisResults: DiseaseDiagnosis[] = [
   {
     disease: "Ferrugem asiática",
     scientificName: "Phakopsora pachyrhizi",
-    confidence: 92,
+    confidence: 78,
     severity: "Moderada",
-    affectedArea: "Folhas", // Added missing property
+    affectedArea: "Folhas",
     spreadRisk: "Alto",
     symptoms: [
       "Manchas amareladas nas folhas",
@@ -57,9 +58,9 @@ const mockDiagnosisResults: DiseaseDiagnosis[] = [
   {
     disease: "Mancha alvo",
     scientificName: "Corynespora cassiicola",
-    confidence: 87,
+    confidence: 72,
     severity: "Leve a moderada",
-    affectedArea: "Folhas", // Added missing property
+    affectedArea: "Folhas",
     spreadRisk: "Médio",
     symptoms: [
       "Lesões circulares com centro escuro e bordas amareladas",
@@ -89,9 +90,9 @@ const mockDiagnosisResults: DiseaseDiagnosis[] = [
   {
     disease: "Deficiência de nitrogênio",
     scientificName: "Deficiência nutricional",
-    confidence: 78,
+    confidence: 65,
     severity: "Moderada",
-    affectedArea: "Planta inteira", // Added missing property
+    affectedArea: "Planta inteira",
     spreadRisk: "Baixo",
     symptoms: [
       "Amarelecimento das folhas mais antigas",
@@ -121,9 +122,9 @@ const mockDiagnosisResults: DiseaseDiagnosis[] = [
   {
     disease: "Planta saudável",
     scientificName: "Status normal",
-    confidence: 95,
+    confidence: 82,
     severity: "Nenhuma",
-    affectedArea: "Nenhuma", // Added missing property
+    affectedArea: "Nenhuma",
     spreadRisk: "Nenhum",
     symptoms: [
       "Sem sintomas de doenças ou deficiências",
@@ -149,6 +150,138 @@ const mockDiagnosisResults: DiseaseDiagnosis[] = [
       "Adotar controle preventivo de pragas e doenças",
       "Manter rotação de culturas"
     ]
+  },
+  {
+    disease: "Pulgões",
+    scientificName: "Aphis spp.",
+    confidence: 68,
+    severity: "Moderada",
+    affectedArea: "Folhas e brotos",
+    spreadRisk: "Alto",
+    symptoms: [
+      "Presença de pequenos insetos de corpo mole",
+      "Folhas encarquilhadas ou deformadas",
+      "Fumagina (fungo preto) sobre as folhas",
+      "Exsudato pegajoso nas folhas"
+    ],
+    recommendations: [
+      {
+        product: "Inseticida seletivo",
+        activeIngredient: "Imidacloprido",
+        dosage: "200-250 mL/ha",
+        application: "Foliar",
+        interval: "7-14 dias",
+        preharvest: "21 dias",
+        timing: "Aplicar ao detectar primeiras colônias",
+        weather: "Condições de pouco vento e sem chuva prevista"
+      }
+    ],
+    preventiveMeasures: [
+      "Monitoramento constante da lavoura",
+      "Preservação de inimigos naturais",
+      "Plantio de bordaduras com espécies repelentes",
+      "Evitar excesso de adubação nitrogenada",
+      "Eliminar plantas daninhas hospedeiras"
+    ]
+  },
+  {
+    disease: "Antracnose",
+    scientificName: "Colletotrichum spp.",
+    confidence: 75,
+    severity: "Alta",
+    affectedArea: "Folhas, caules e frutos",
+    spreadRisk: "Médio-Alto",
+    symptoms: [
+      "Lesões circulares escuras e deprimidas",
+      "Manchas necróticas com bordas avermelhadas",
+      "Lesões em formato de cratera nos frutos",
+      "Cancros nos ramos e caules"
+    ],
+    recommendations: [
+      {
+        product: "Fungicida cúprico",
+        activeIngredient: "Oxicloreto de cobre",
+        dosage: "250-300 g/100L",
+        application: "Foliar",
+        interval: "10-15 dias",
+        preharvest: "7 dias",
+        timing: "Aplicar preventivamente em períodos úmidos",
+        weather: "Evitar aplicação com previsão de chuva"
+      }
+    ],
+    preventiveMeasures: [
+      "Uso de sementes e mudas certificadas",
+      "Espaçamento adequado para melhor aeração",
+      "Poda de limpeza para remover partes infectadas",
+      "Rotação de culturas por 2-3 anos",
+      "Evitar irrigação por aspersão"
+    ]
+  },
+  {
+    disease: "Oídio",
+    scientificName: "Erysiphe spp.",
+    confidence: 70,
+    severity: "Média",
+    affectedArea: "Folhas e brotos",
+    spreadRisk: "Médio",
+    symptoms: [
+      "Pó branco sobre as folhas e brotos",
+      "Manchas cloróticas na face superior das folhas",
+      "Deformação de folhas jovens",
+      "Queda prematura de folhas"
+    ],
+    recommendations: [
+      {
+        product: "Fungicida sistêmico",
+        activeIngredient: "Tebuconazol",
+        dosage: "75-100 mL/100L",
+        application: "Foliar",
+        interval: "10-14 dias",
+        preharvest: "14 dias",
+        timing: "Aplicar aos primeiros sinais da doença",
+        weather: "Temperatura amena, sem previsão de chuvas"
+      }
+    ],
+    preventiveMeasures: [
+      "Espaçamento adequado entre plantas",
+      "Evitar excesso de adubação nitrogenada",
+      "Poda para melhorar aeração da copa",
+      "Eliminação de restos culturais infectados",
+      "Monitoramento constante da lavoura"
+    ]
+  },
+  {
+    disease: "Deficiência de potássio",
+    scientificName: "Deficiência nutricional",
+    confidence: 62,
+    severity: "Moderada",
+    affectedArea: "Folhas",
+    spreadRisk: "Baixo",
+    symptoms: [
+      "Necrose nas bordas das folhas",
+      "Folhas com aparência de queimadas nas bordas",
+      "Enfraquecimento do caule",
+      "Redução na produção de frutos"
+    ],
+    recommendations: [
+      {
+        product: "Cloreto de potássio",
+        activeIngredient: "Potássio (K)",
+        dosage: "150-200 kg/ha",
+        application: "Solo",
+        interval: "Conforme análise de solo",
+        preharvest: "Não aplicável",
+        timing: "Aplicar conforme estágio fenológico da cultura",
+        weather: "Umidade adequada no solo"
+      }
+    ],
+    preventiveMeasures: [
+      "Análise de solo regular",
+      "Adubação balanceada NPK",
+      "Correção da acidez do solo",
+      "Uso de cobertura morta",
+      "Rotação de culturas"
+    ]
   }
 ];
 
@@ -160,7 +293,7 @@ const PlantDiagnosis = () => {
   const [isOffline, setIsOffline] = useState<boolean>(!navigator.onLine);
   
   // Monitor online/offline status
-  useState(() => {
+  useEffect(() => {
     const handleOnlineStatusChange = () => {
       setIsOffline(!navigator.onLine);
       if (navigator.onLine) {
@@ -181,7 +314,7 @@ const PlantDiagnosis = () => {
       window.removeEventListener('online', handleOnlineStatusChange);
       window.removeEventListener('offline', handleOnlineStatusChange);
     };
-  });
+  }, []);
   
   // Basic image validation
   const validateImage = (imageDataUrl: string): boolean => {
@@ -255,12 +388,29 @@ const PlantDiagnosis = () => {
       const processingTime = 2000 + Math.random() * 1000;
       
       setTimeout(() => {
-        // Escolher um diagnóstico aleatório dos resultados simulados
-        const randomIndex = Math.floor(Math.random() * mockDiagnosisResults.length);
-        const result = mockDiagnosisResults[randomIndex];
+        // Distribuição de resultados mais realista - 30% chance de ser saudável
+        // e 70% chance de ser algum problema
+        const isHealthy = Math.random() < 0.3;
         
-        // Ajuste na confiança para dar mais variabilidade
-        result.confidence = Math.max(50, Math.min(99, result.confidence + (Math.random() * 10 - 5)));
+        let resultIndex: number;
+        if (isHealthy) {
+          // Se for saudável, pega o índice da planta saudável (3)
+          resultIndex = 3;
+        } else {
+          // Se não for saudável, escolhe entre os outros diagnósticos (excluindo o índice 3)
+          const nonHealthyIndices = mockDiagnosisResults
+            .map((_, index) => index)
+            .filter(index => index !== 3);
+          
+          const randomNonHealthyIndex = Math.floor(Math.random() * nonHealthyIndices.length);
+          resultIndex = nonHealthyIndices[randomNonHealthyIndex];
+        }
+        
+        // Clone o resultado para não modificar o original
+        const result = { ...mockDiagnosisResults[resultIndex] };
+        
+        // Ajuste na confiança para dar variabilidade realista (entre 40% e 90%)
+        result.confidence = Math.floor(Math.random() * 51) + 40; // 40-90%
         
         setDiagnosisResult(result);
         setStep(DiagnosisStep.Result);
