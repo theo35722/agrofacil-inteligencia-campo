@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,6 +62,43 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
+				},
+				// AgroFácil Custom Colors
+				"agro-green": {
+					50: "#f0f9f0",
+					100: "#dcf0dc",
+					200: "#bce0bc",
+					300: "#92ca92",
+					400: "#66b166",
+					500: "#4CAF50", // Primary green
+					600: "#388E3C", // Darker green
+					700: "#2e6d31",
+					800: "#29582c",
+					900: "#234a27",
+				},
+				"agro-earth": {
+					50: "#f8f5f3",
+					100: "#f0e9e5",
+					200: "#e0d1c8",
+					300: "#ccb3a5",
+					400: "#b59580",
+					500: "#8D6E63", // Primary earth tone
+					600: "#7d5f55",
+					700: "#67493f",
+					800: "#573e37",
+					900: "#4a3630",
+				},
+				"agro-blue": {
+					50: "#e3f2fd",
+					100: "#bbdefb",
+					200: "#90caf9",
+					300: "#64b5f6",
+					400: "#42a5f5",
+					500: "#2196F3", // Primary blue for weather
+					600: "#1e88e5",
+					700: "#1976d2",
+					800: "#1565c0",
+					900: "#0d47a1",
 				}
 			},
 			borderRadius: {
@@ -84,11 +122,22 @@ export default {
 					to: {
 						height: '0'
 					}
-				}
+				},
+				'fade-in': {
+					'0%': {
+						opacity: '0',
+						transform: 'translateY(10px)'
+					},
+					'100%': {
+						opacity: '1',
+						transform: 'translateY(0)'
+					}
+				},
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'fade-in': 'fade-in 0.3s ease-out',
 			}
 		}
 	},
