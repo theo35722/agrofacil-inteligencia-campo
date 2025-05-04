@@ -1,11 +1,13 @@
 
 import { useState } from "react";
-import { Camera, Image, ArrowRight, Upload } from "lucide-react";
+import { Camera, Image, ArrowRight, Upload, Info, Calendar, Thermometer, CloudRain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 enum DiagnosisStep {
   Upload,
@@ -16,17 +18,32 @@ enum DiagnosisStep {
 const PlantDiagnosis = () => {
   const [step, setStep] = useState<DiagnosisStep>(DiagnosisStep.Upload);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<string>("diagnosis");
   
   // Mock diagnosis result
   const diagnosisResult = {
     disease: "Ferrugem asiática",
+    scientificName: "Phakopsora pachyrhizi",
     severity: "Moderada",
+    affectedArea: "Folhas",
+    spreadRisk: "Alto",
     recommendations: [
       {
         product: "Fungicida XYZ",
+        activeIngredient: "Azoxistrobina + Ciproconazol",
         dosage: "500ml/ha",
-        application: "Pulverização foliar"
+        application: "Pulverização foliar",
+        timing: "Aplicar nas primeiras horas da manhã ou final da tarde",
+        interval: "Reaplicar após 14-21 dias",
+        weather: "Evitar aplicação com previsão de chuva nas próximas 4 horas",
+        preharvest: "30 dias de carência"
       }
+    ],
+    preventiveMeasures: [
+      "Rotação de culturas com espécies não hospedeiras",
+      "Eliminação de plantas voluntárias",
+      "Monitoramento constante da lavoura",
+      "Plantio de variedades resistentes quando disponíveis"
     ]
   };
   
@@ -59,7 +76,27 @@ const PlantDiagnosis = () => {
   const resetDiagnosis = () => {
     setStep(DiagnosisStep.Upload);
     setImagePreview(null);
+    setActiveTab("diagnosis");
   };
+
+  const photoTips = [
+    {
+      title: "Iluminação adequada",
+      description: "Tire fotos com boa iluminação natural, evitando sombras fortes ou reflexos."
+    },
+    {
+      title: "Foco nos sintomas",
+      description: "Capture claramente a área afetada da planta, mostrando os sintomas visíveis."
+    },
+    {
+      title: "Várias perspectivas",
+      description: "Tire fotos de diferentes ângulos e distâncias para melhor análise."
+    },
+    {
+      title: "Inclua referências",
+      description: "Se possível, inclua uma folha saudável para comparação com a área afetada."
+    }
+  ];
   
   return (
     <div className="space-y-6 animate-fade-in">
@@ -68,14 +105,34 @@ const PlantDiagnosis = () => {
           Diagnóstico de Planta
         </h1>
         <p className="text-gray-600">
-          Tire uma foto da sua planta para identificar problemas e obter recomendações
+          Tire uma foto da sua planta para identificar problemas e obter recomendações detalhadas de tratamento
         </p>
       </div>
+      
+      {step !== DiagnosisStep.Upload && (
+        <Alert className="bg-agro-green-50 border-agro-green-100 text-agro-green-800">
+          <Info className="h-4 w-4" />
+          <AlertTitle>Como funciona o diagnóstico?</AlertTitle>
+          <AlertDescription>
+            Nossa tecnologia de IA analisa imagens de plantas para identificar doenças, pragas e deficiências
+            nutricionais com alta precisão, fornecendo recomendações personalizadas para tratamento.
+          </AlertDescription>
+        </Alert>
+      )}
       
       <Card className="agro-card">
         <CardContent className="pt-6">
           {step === DiagnosisStep.Upload && (
             <div className="space-y-6">
+              <Alert className="bg-agro-green-50 border-agro-green-100 text-agro-green-800">
+                <Info className="h-4 w-4" />
+                <AlertTitle>Como funciona o diagnóstico?</AlertTitle>
+                <AlertDescription>
+                  Nossa tecnologia de IA analisa imagens de plantas para identificar doenças, pragas e deficiências
+                  nutricionais com alta precisão, fornecendo recomendações personalizadas para tratamento.
+                </AlertDescription>
+              </Alert>
+              
               {imagePreview ? (
                 <div className="space-y-4">
                   <div className="rounded-lg overflow-hidden border border-agro-green-200">
@@ -152,6 +209,24 @@ const PlantDiagnosis = () => {
                       />
                     </div>
                   </div>
+                  
+                  {/* Dicas para fotos melhores */}
+                  <div className="mt-6">
+                    <h3 className="text-sm font-medium text-agro-green-700 mb-3">
+                      Dicas para melhores resultados:
+                    </h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {photoTips.map((tip, index) => (
+                        <div 
+                          key={index}
+                          className="p-3 bg-gray-50 border border-gray-100 rounded-md"
+                        >
+                          <p className="text-sm font-medium text-agro-green-700">{tip.title}</p>
+                          <p className="text-xs text-gray-600 mt-1">{tip.description}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               )}
             </div>
@@ -186,39 +261,146 @@ const PlantDiagnosis = () => {
                     <p className="text-xl font-semibold text-agro-green-800">
                       {diagnosisResult.disease}
                     </p>
+                    <p className="text-sm text-gray-500 italic">
+                      {diagnosisResult.scientificName}
+                    </p>
                   </div>
                   
-                  <div>
-                    <Label className="text-gray-500">Severidade</Label>
-                    <p className="font-medium text-orange-600">
-                      {diagnosisResult.severity}
-                    </p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-gray-500">Severidade</Label>
+                      <p className="font-medium text-orange-600">
+                        {diagnosisResult.severity}
+                      </p>
+                    </div>
+                    <div>
+                      <Label className="text-gray-500">Risco de disseminação</Label>
+                      <p className="font-medium text-red-600">
+                        {diagnosisResult.spreadRisk}
+                      </p>
+                    </div>
                   </div>
                 </div>
               </div>
               
               <Separator />
               
-              <div>
-                <h3 className="font-semibold text-agro-green-700 mb-3">Recomendações</h3>
+              <Tabs 
+                defaultValue="treatment" 
+                value={activeTab} 
+                onValueChange={setActiveTab}
+                className="w-full"
+              >
+                <TabsList className="grid grid-cols-3 mb-4">
+                  <TabsTrigger value="treatment">Tratamento</TabsTrigger>
+                  <TabsTrigger value="application">Aplicação</TabsTrigger>
+                  <TabsTrigger value="prevention">Prevenção</TabsTrigger>
+                </TabsList>
                 
-                {diagnosisResult.recommendations.map((rec, index) => (
-                  <div 
-                    key={index}
-                    className="p-3 bg-agro-green-50 border border-agro-green-200 rounded-md mb-3"
-                  >
-                    <p className="font-medium text-agro-green-800">{rec.product}</p>
-                    <div className="flex flex-wrap gap-x-6 gap-y-2 mt-2 text-sm text-gray-700">
-                      <div>
-                        <span className="font-medium">Dosagem:</span> {rec.dosage}
+                <TabsContent value="treatment" className="space-y-4">
+                  <h3 className="font-semibold text-agro-green-700 mb-3">Produtos Recomendados</h3>
+                  
+                  {diagnosisResult.recommendations.map((rec, index) => (
+                    <div 
+                      key={index}
+                      className="p-4 bg-agro-green-50 border border-agro-green-200 rounded-md mb-3"
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <div>
+                          <p className="font-medium text-agro-green-800 text-lg">{rec.product}</p>
+                          <p className="text-sm text-gray-600">{rec.activeIngredient}</p>
+                        </div>
+                        <span className="bg-agro-green-100 text-agro-green-800 text-sm font-medium px-2.5 py-0.5 rounded-full">
+                          Recomendado
+                        </span>
                       </div>
-                      <div>
-                        <span className="font-medium">Aplicação:</span> {rec.application}
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3 mt-4">
+                        <div>
+                          <p className="text-sm font-medium text-gray-600">Dosagem:</p>
+                          <p className="text-sm">{rec.dosage}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-600">Aplicação:</p>
+                          <p className="text-sm">{rec.application}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-600">Intervalo:</p>
+                          <p className="text-sm">{rec.interval}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium text-gray-600">Carência:</p>
+                          <p className="text-sm">{rec.preharvest}</p>
+                        </div>
                       </div>
                     </div>
+                  ))}
+                </TabsContent>
+                
+                <TabsContent value="application" className="space-y-4">
+                  <h3 className="font-semibold text-agro-green-700 mb-3">Instruções de Aplicação</h3>
+                  
+                  <div className="space-y-4">
+                    {diagnosisResult.recommendations.map((rec, index) => (
+                      <div 
+                        key={index}
+                        className="p-4 bg-agro-green-50 border border-agro-green-200 rounded-md"
+                      >
+                        <h4 className="font-medium text-agro-green-800 mb-3">{rec.product}</h4>
+                        
+                        <div className="space-y-3">
+                          <div className="flex items-start">
+                            <Calendar className="h-5 w-5 text-agro-green-600 mr-3 mt-0.5" />
+                            <div>
+                              <p className="font-medium text-gray-700">Melhor horário</p>
+                              <p className="text-sm text-gray-600">{rec.timing}</p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-start">
+                            <CloudRain className="h-5 w-5 text-agro-green-600 mr-3 mt-0.5" />
+                            <div>
+                              <p className="font-medium text-gray-700">Condições climáticas</p>
+                              <p className="text-sm text-gray-600">{rec.weather}</p>
+                            </div>
+                          </div>
+                          
+                          <div className="flex items-start">
+                            <Thermometer className="h-5 w-5 text-agro-green-600 mr-3 mt-0.5" />
+                            <div>
+                              <p className="font-medium text-gray-700">Temperatura ideal</p>
+                              <p className="text-sm text-gray-600">Entre 18°C e 28°C, sem ventos fortes</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    
+                    <div className="p-4 bg-yellow-50 border border-yellow-100 rounded-md">
+                      <h4 className="font-medium text-yellow-800 mb-2">Equipamentos de proteção</h4>
+                      <p className="text-sm text-gray-700">
+                        Sempre utilize equipamentos de proteção individual (EPIs) durante a aplicação: 
+                        luvas, máscara, óculos de proteção, macacão e botas.
+                      </p>
+                    </div>
                   </div>
-                ))}
-              </div>
+                </TabsContent>
+                
+                <TabsContent value="prevention" className="space-y-4">
+                  <h3 className="font-semibold text-agro-green-700 mb-3">Medidas Preventivas</h3>
+                  
+                  <div className="space-y-3">
+                    {diagnosisResult.preventiveMeasures.map((measure, index) => (
+                      <div 
+                        key={index}
+                        className="p-3 bg-agro-green-50 border border-agro-green-200 rounded-md"
+                      >
+                        <p className="text-agro-green-800">• {measure}</p>
+                      </div>
+                    ))}
+                  </div>
+                </TabsContent>
+              </Tabs>
               
               <div className="pt-4">
                 <Button 
