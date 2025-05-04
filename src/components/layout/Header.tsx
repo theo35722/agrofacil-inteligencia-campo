@@ -1,37 +1,51 @@
 
-import { Menu } from "lucide-react";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { NavMenu } from "./NavMenu";
+import { UserMenu } from "./UserMenu";
+import { MenuIcon } from "lucide-react";
+import { useState } from "react";
 
 export const Header = () => {
+  const [isNavOpen, setIsNavOpen] = useState(false);
+
   return (
-    <header className="sticky top-0 z-40 w-full bg-agro-green-500 shadow-md">
-      <div className="container flex h-14 items-center text-white">
-        <div className="flex items-center justify-between w-full">
-          <div className="flex items-center gap-2">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="ghost" className="p-0 text-white hover:bg-agro-green-600 md:hidden">
-                  <Menu className="h-6 w-6" />
-                  <span className="sr-only">Menu de navegação</span>
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="bg-white">
-                <NavMenu className="flex flex-col space-y-4 mt-8" />
-              </SheetContent>
-            </Sheet>
-            
-            <a href="/" className="flex items-center space-x-2">
-              <span className="text-xl font-bold text-white">
-                AgroFácil
-              </span>
-            </a>
-          </div>
-          
-          <NavMenu className="hidden md:flex md:space-x-4" />
+    <header className="sticky top-0 z-30 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container flex h-14 items-center justify-between">
+        <div className="flex items-center gap-2 md:gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            onClick={() => setIsNavOpen(!isNavOpen)}
+          >
+            <MenuIcon className="h-5 w-5" />
+            <span className="sr-only">Abrir menu</span>
+          </Button>
+          <Link to="/" className="flex items-center space-x-2">
+            <span className="font-bold text-xl text-agro-green-700 hidden md:inline-block">
+              AgroFácil
+            </span>
+            <span className="font-bold text-xl text-agro-green-700 md:hidden">
+              AF
+            </span>
+          </Link>
+        </div>
+
+        <div className="hidden md:flex">
+          <NavMenu />
+        </div>
+
+        <div className="flex items-center gap-2">
+          <UserMenu />
         </div>
       </div>
+      
+      {isNavOpen && (
+        <div className="container pb-3 md:hidden">
+          <NavMenu isMobile />
+        </div>
+      )}
     </header>
   );
 };
