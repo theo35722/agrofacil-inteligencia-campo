@@ -28,7 +28,8 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            {/* Página inicial pública */}
+            {/* Página inicial pública - agora também acessível pelo caminho raiz */}
+            <Route path="/" element={<Home />} />
             <Route path="/home" element={<Home />} />
             
             {/* Rota de autenticação */}
@@ -43,7 +44,7 @@ const App = () => (
                 </ProtectedRoute>
               }
             >
-              <Route index element={<Dashboard />} />
+              <Route path="dashboard" element={<Dashboard />} />
               <Route path="diagnostico" element={<PlantDiagnosis />} />
               <Route path="clima" element={<Weather />} />
               <Route path="lavouras" element={<Fields />} />
@@ -54,8 +55,8 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Route>
             
-            {/* Default redirection */}
-            <Route path="*" element={<Navigate to="/home" replace />} />
+            {/* Default redirection - removemos pois agora a rota raiz exibe a Home */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </AuthProvider>
       </BrowserRouter>
