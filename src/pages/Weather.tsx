@@ -274,7 +274,7 @@ const Weather = () => {
       )}
 
       {locationFetchError && !location.error && (
-        <Alert variant="warning" className="bg-yellow-50 border-yellow-200 text-yellow-800">
+        <Alert variant="default" className="bg-yellow-50 border-yellow-200 text-yellow-800">
           <AlertDescription>
             {locationFetchError}
             <p className="mt-1">Estamos usando suas coordenadas para gerar a previsão.</p>
