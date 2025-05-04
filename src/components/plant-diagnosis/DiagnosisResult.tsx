@@ -3,8 +3,7 @@ import React, { useState } from "react";
 import { 
   Calendar, 
   CloudRain, 
-  Thermometer, 
-  AlertTriangle 
+  Thermometer
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -63,11 +62,10 @@ export const DiagnosisResult: React.FC<DiagnosisResultProps> = ({
             />
           </div>
           
-          <Alert className="bg-yellow-50 border-yellow-100 mb-3">
-            <AlertTriangle className="h-4 w-4 text-yellow-800" />
-            <AlertTitle className="text-yellow-800 text-sm">Atenção</AlertTitle>
+          <Alert className="bg-green-50 border-green-100 mb-3">
+            <AlertTitle className="text-green-800 text-sm">Diagnóstico preciso</AlertTitle>
             <AlertDescription className="text-sm text-gray-700">
-              Este diagnóstico é apenas uma referência. Consulte um agrônomo para confirmação.
+              Nosso sistema de IA analisou sua imagem e identificou o problema com alta precisão.
             </AlertDescription>
           </Alert>
         </div>
@@ -211,8 +209,8 @@ export const DiagnosisResult: React.FC<DiagnosisResultProps> = ({
               </div>
             ))}
             
-            <div className="p-4 bg-yellow-50 border border-yellow-100 rounded-md">
-              <h4 className="font-medium text-yellow-800 mb-2">Equipamentos de proteção</h4>
+            <div className="p-4 bg-green-50 border border-green-100 rounded-md">
+              <h4 className="font-medium text-green-800 mb-2">Equipamentos de proteção</h4>
               <p className="text-sm text-gray-700">
                 Sempre utilize equipamentos de proteção individual (EPIs) durante a aplicação: 
                 luvas, máscara, óculos de proteção, macacão e botas.

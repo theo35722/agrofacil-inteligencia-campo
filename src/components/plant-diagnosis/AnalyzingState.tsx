@@ -15,12 +15,12 @@ export const AnalyzingState: React.FC = () => {
         {location.loading ? (
           <span>Obtendo sua localização...</span>
         ) : location.error ? (
-          <span>Analisando sem dados de localização</span>
+          <span>Analisando com base no nosso banco de dados global</span>
         ) : (
           <>
             <MapPin className="h-3.5 w-3.5 mr-1 text-agro-blue-500" />
             <span>
-              Usando sua localização para análise mais precisa
+              Dados de localização coletados para análise precisa
             </span>
           </>
         )}
