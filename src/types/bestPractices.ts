@@ -6,4 +6,6 @@ export interface PracticeArticle {
   content: string;
   category: string;
   tags: string[];
+  created_at?: string;
+  updated_at?: string;
 }
