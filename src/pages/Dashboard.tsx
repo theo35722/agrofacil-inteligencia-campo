@@ -4,6 +4,7 @@ import { FeatureCard } from "@/components/dashboard/FeatureCard";
 import { WeatherPreview } from "@/components/dashboard/WeatherPreview";
 import { ActivityPreview } from "@/components/dashboard/ActivityPreview";
 import { ChatButton } from "@/components/chat/ChatButton";
+import { ChatDialog } from "@/components/chat/ChatDialog";
 import { useState } from "react";
 
 const Dashboard = () => {
@@ -59,8 +60,6 @@ const Dashboard = () => {
   // Handler para abrir/fechar o chat
   const handleToggleChat = () => {
     setShowChat(!showChat);
-    // Aqui você poderia adicionar a lógica para abrir o chat
-    console.log("Chat toggle:", !showChat);
   };
 
   return (
@@ -92,7 +91,10 @@ const Dashboard = () => {
       </section>
       
       {/* Botão de chat com o Seu Zé */}
-      <ChatButton onClick={handleToggleChat} />
+      <ChatButton onClick={handleToggleChat} isOpen={showChat} />
+      
+      {/* Dialog do chat */}
+      <ChatDialog open={showChat} onOpenChange={setShowChat} />
     </div>
   );
 };
