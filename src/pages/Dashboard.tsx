@@ -3,8 +3,13 @@ import { Sprout, CloudSun, MapPin, CalendarCheck, FileText, Bell } from "lucide-
 import { FeatureCard } from "@/components/dashboard/FeatureCard";
 import { WeatherPreview } from "@/components/dashboard/WeatherPreview";
 import { ActivityPreview } from "@/components/dashboard/ActivityPreview";
+import { ChatButton } from "@/components/chat/ChatButton";
+import { useState } from "react";
 
 const Dashboard = () => {
+  // State para controlar a exibição do chat
+  const [showChat, setShowChat] = useState(false);
+  
   // Features for the dashboard
   const features = [
     {
@@ -51,6 +56,13 @@ const Dashboard = () => {
     },
   ];
 
+  // Handler para abrir/fechar o chat
+  const handleToggleChat = () => {
+    setShowChat(!showChat);
+    // Aqui você poderia adicionar a lógica para abrir o chat
+    console.log("Chat toggle:", !showChat);
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       <section className="text-center mb-8">
@@ -78,6 +90,9 @@ const Dashboard = () => {
         <WeatherPreview />
         <ActivityPreview />
       </section>
+      
+      {/* Botão de chat com o Seu Zé */}
+      <ChatButton onClick={handleToggleChat} />
     </div>
   );
 };
