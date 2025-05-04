@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Info } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -28,6 +27,7 @@ const mockDiagnosisResults: DiseaseDiagnosis[] = [
     scientificName: "Phakopsora pachyrhizi",
     confidence: 92,
     severity: "Moderada",
+    affectedArea: "Folhas", // Added missing property
     spreadRisk: "Alto",
     symptoms: [
       "Manchas amareladas nas folhas",
@@ -59,6 +59,7 @@ const mockDiagnosisResults: DiseaseDiagnosis[] = [
     scientificName: "Corynespora cassiicola",
     confidence: 87,
     severity: "Leve a moderada",
+    affectedArea: "Folhas", // Added missing property
     spreadRisk: "Médio",
     symptoms: [
       "Lesões circulares com centro escuro e bordas amareladas",
@@ -90,6 +91,7 @@ const mockDiagnosisResults: DiseaseDiagnosis[] = [
     scientificName: "Deficiência nutricional",
     confidence: 78,
     severity: "Moderada",
+    affectedArea: "Planta inteira", // Added missing property
     spreadRisk: "Baixo",
     symptoms: [
       "Amarelecimento das folhas mais antigas",
@@ -121,6 +123,7 @@ const mockDiagnosisResults: DiseaseDiagnosis[] = [
     scientificName: "Status normal",
     confidence: 95,
     severity: "Nenhuma",
+    affectedArea: "Nenhuma", // Added missing property
     spreadRisk: "Nenhum",
     symptoms: [
       "Sem sintomas de doenças ou deficiências",
