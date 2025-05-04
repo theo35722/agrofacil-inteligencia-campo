@@ -1,10 +1,12 @@
 
-import { Cloud, CloudDrizzle, CloudRain, CloudSun, Sun, Wind, Droplet, Thermometer, CalendarDays } from "lucide-react";
+import { Cloud, CloudDrizzle, CloudRain, CloudSun, Sun, Wind, Droplet, Thermometer, CalendarDays, MapPin } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useGeolocation } from "@/hooks/use-geolocation";
+import { toast } from "sonner";
 
 interface WeatherDay {
   date: string;
@@ -26,7 +28,8 @@ interface ActivityRecommendation {
 }
 
 const Weather = () => {
-  const [selectedLocation, setSelectedLocation] = useState<string>("Fazenda São João");
+  const location = useGeolocation();
+  const [selectedLocation, setSelectedLocation] = useState<string>("Carregando localização...");
   const [view, setView] = useState<string>("forecast");
   
   // Mock data for demo
@@ -126,6 +129,34 @@ const Weather = () => {
     "cloud-drizzle": CloudDrizzle,
   };
 
+  // Efeito para obter o nome da localização quando as coordenadas são carregadas
+  useEffect(() => {
+    if (location.latitude && location.longitude) {
+      // Aqui estamos usando a API de Geocoding Reversa para obter o nome da localização
+      fetch(`https://nominatim.openstreetmap.org/reverse?lat=${location.latitude}&lon=${location.longitude}&format=json`)
+        .then(response => response.json())
+        .then(data => {
+          const city = data.address?.city || data.address?.town || data.address?.village || "Local não identificado";
+          const state = data.address?.state || "";
+          setSelectedLocation(`${city}, ${state}`);
+        })
+        .catch(() => {
+          setSelectedLocation("Localização não disponível");
+          toast.error("Não foi possível obter sua localização");
+        });
+    }
+  }, [location.latitude, location.longitude]);
+
+  // Efeito para mostrar erro de localização
+  useEffect(() => {
+    if (location.error) {
+      toast.error("Erro ao obter localização", {
+        description: location.error,
+      });
+      setSelectedLocation("Localização não disponível");
+    }
+  }, [location.error]);
+
   const getColorByRainChance = (chance: number) => {
     if (chance >= 70) return "text-agro-blue-600";
     if (chance >= 30) return "text-agro-blue-400";
@@ -160,6 +191,10 @@ const Weather = () => {
           <p className="text-gray-600">
             Condições climáticas e recomendações para suas atividades agrícolas
           </p>
+          <div className="flex items-center mt-2 text-agro-blue-600">
+            <MapPin className="h-4 w-4 mr-1" />
+            <span className="text-sm">{selectedLocation}</span>
+          </div>
         </div>
         
         <div className="space-x-2">
