@@ -15,7 +15,7 @@ export default function Home() {
         converse com o Seu Zé — seu parceiro digital na lavoura.
       </p>
       <Button asChild className="mb-10 px-6 py-3 text-lg bg-agro-green-600 hover:bg-agro-green-700">
-        <Link to="/diagnostico">Começar agora</Link>
+        <Link to="/dashboard">Começar agora</Link>
       </Button>
 
       <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-3 w-full max-w-4xl">
