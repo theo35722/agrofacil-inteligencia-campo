@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Camera, Image, ArrowRight, Upload, Info, Calendar, Thermometer, CloudRain } from "lucide-react";
+import { Camera, Image, ArrowRight, Upload, Info, Calendar, Thermometer, CloudRain, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -8,6 +8,12 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { 
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 enum DiagnosisStep {
   Upload,
@@ -18,7 +24,7 @@ enum DiagnosisStep {
 const PlantDiagnosis = () => {
   const [step, setStep] = useState<DiagnosisStep>(DiagnosisStep.Upload);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<string>("diagnosis");
+  const [activeTab, setActiveTab] = useState<string>("treatment");
   
   // Mock diagnosis result
   const diagnosisResult = {
@@ -37,6 +43,16 @@ const PlantDiagnosis = () => {
         interval: "Reaplicar após 14-21 dias",
         weather: "Evitar aplicação com previsão de chuva nas próximas 4 horas",
         preharvest: "30 dias de carência"
+      },
+      {
+        product: "Fungicida ABC",
+        activeIngredient: "Trifloxistrobina + Protioconazol",
+        dosage: "400ml/ha",
+        application: "Pulverização foliar",
+        timing: "Aplicar preferencialmente em dias com baixa umidade",
+        interval: "Reaplicar após 14-21 dias",
+        weather: "Evitar aplicação em condições de vento forte",
+        preharvest: "30 dias de carência"
       }
     ],
     preventiveMeasures: [
@@ -44,6 +60,12 @@ const PlantDiagnosis = () => {
       "Eliminação de plantas voluntárias",
       "Monitoramento constante da lavoura",
       "Plantio de variedades resistentes quando disponíveis"
+    ],
+    symptoms: [
+      "Pequenos pontos amarelados nas folhas",
+      "Lesões que evoluem para pústulas de coloração marrom",
+      "Amarelecimento e queda prematura das folhas",
+      "Redução do tamanho e peso dos grãos"
     ]
   };
   
@@ -60,23 +82,30 @@ const PlantDiagnosis = () => {
   
   const captureImage = () => {
     toast.info("Câmera iniciada");
-    // In a real app, this would access the device camera
-    // For now, let's simulate with a mock image
-    setImagePreview("https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07");
+    // Simulação para demonstração
+    setTimeout(() => {
+      setImagePreview("https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07");
+      toast.success("Foto capturada com sucesso");
+    }, 1000);
   };
   
   const startAnalysis = () => {
+    if (!imagePreview) {
+      toast.error("É necessário enviar uma imagem para diagnóstico");
+      return;
+    }
     setStep(DiagnosisStep.Analyzing);
-    // Simulate analysis time
+    // Simular tempo de análise
     setTimeout(() => {
       setStep(DiagnosisStep.Result);
+      toast.success("Diagnóstico concluído!");
     }, 2000);
   };
   
   const resetDiagnosis = () => {
     setStep(DiagnosisStep.Upload);
     setImagePreview(null);
-    setActiveTab("diagnosis");
+    setActiveTab("treatment");
   };
 
   const photoTips = [
@@ -99,7 +128,7 @@ const PlantDiagnosis = () => {
   ];
   
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in pb-8">
       <div>
         <h1 className="text-2xl font-bold text-agro-green-800 mb-2">
           Diagnóstico de Planta
@@ -109,7 +138,7 @@ const PlantDiagnosis = () => {
         </p>
       </div>
       
-      {step !== DiagnosisStep.Upload && (
+      {step === DiagnosisStep.Upload && (
         <Alert className="bg-agro-green-50 border-agro-green-100 text-agro-green-800">
           <Info className="h-4 w-4" />
           <AlertTitle>Como funciona o diagnóstico?</AlertTitle>
@@ -124,15 +153,6 @@ const PlantDiagnosis = () => {
         <CardContent className="pt-6">
           {step === DiagnosisStep.Upload && (
             <div className="space-y-6">
-              <Alert className="bg-agro-green-50 border-agro-green-100 text-agro-green-800">
-                <Info className="h-4 w-4" />
-                <AlertTitle>Como funciona o diagnóstico?</AlertTitle>
-                <AlertDescription>
-                  Nossa tecnologia de IA analisa imagens de plantas para identificar doenças, pragas e deficiências
-                  nutricionais com alta precisão, fornecendo recomendações personalizadas para tratamento.
-                </AlertDescription>
-              </Alert>
-              
               {imagePreview ? (
                 <div className="space-y-4">
                   <div className="rounded-lg overflow-hidden border border-agro-green-200">
@@ -210,30 +230,33 @@ const PlantDiagnosis = () => {
                     </div>
                   </div>
                   
-                  {/* Dicas para fotos melhores */}
-                  <div className="mt-6">
-                    <h3 className="text-sm font-medium text-agro-green-700 mb-3">
-                      Dicas para melhores resultados:
-                    </h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      {photoTips.map((tip, index) => (
-                        <div 
-                          key={index}
-                          className="p-3 bg-gray-50 border border-gray-100 rounded-md"
-                        >
-                          <p className="text-sm font-medium text-agro-green-700">{tip.title}</p>
-                          <p className="text-xs text-gray-600 mt-1">{tip.description}</p>
+                  <Accordion type="single" collapsible defaultValue="tips">
+                    <AccordionItem value="tips">
+                      <AccordionTrigger className="text-sm font-medium text-agro-green-700">
+                        Dicas para melhores resultados
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+                          {photoTips.map((tip, index) => (
+                            <div 
+                              key={index}
+                              className="p-3 bg-gray-50 border border-gray-100 rounded-md"
+                            >
+                              <p className="text-sm font-medium text-agro-green-700">{tip.title}</p>
+                              <p className="text-xs text-gray-600 mt-1">{tip.description}</p>
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
-                  </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
                 </div>
               )}
             </div>
           )}
           
           {step === DiagnosisStep.Analyzing && (
-            <div className="flex flex-col items-center py-8">
+            <div className="flex flex-col items-center py-10">
               <div className="w-16 h-16 border-4 border-agro-green-500 border-t-transparent rounded-full animate-spin mb-4"></div>
               <p className="text-agro-green-800 font-medium">Analisando imagem...</p>
               <p className="text-gray-500 text-sm mt-2">
@@ -253,6 +276,14 @@ const PlantDiagnosis = () => {
                       className="w-full object-cover"
                     />
                   </div>
+                  
+                  <Alert className="bg-yellow-50 border-yellow-100 mb-3">
+                    <AlertTriangle className="h-4 w-4 text-yellow-800" />
+                    <AlertTitle className="text-yellow-800 text-sm">Atenção</AlertTitle>
+                    <AlertDescription className="text-sm text-gray-700">
+                      Este diagnóstico é apenas uma referência. Consulte um agrônomo para confirmação.
+                    </AlertDescription>
+                  </Alert>
                 </div>
                 
                 <div className="sm:w-2/3 space-y-4">
@@ -280,6 +311,24 @@ const PlantDiagnosis = () => {
                       </p>
                     </div>
                   </div>
+                  
+                  <Accordion type="single" collapsible defaultValue="symptoms">
+                    <AccordionItem value="symptoms">
+                      <AccordionTrigger className="text-sm font-medium text-agro-green-700 py-2">
+                        Sintomas identificados
+                      </AccordionTrigger>
+                      <AccordionContent>
+                        <ul className="space-y-1 pl-2">
+                          {diagnosisResult.symptoms.map((symptom, index) => (
+                            <li key={index} className="text-sm flex items-start">
+                              <span className="text-agro-green-700 mr-2">•</span>
+                              <span>{symptom}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
                 </div>
               </div>
               
