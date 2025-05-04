@@ -16,6 +16,7 @@ import BestPractices from "./pages/BestPractices";
 import Notifications from "./pages/Notifications";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import Home from "./pages/Home";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,9 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
+            {/* Página inicial pública */}
+            <Route path="/home" element={<Home />} />
+            
             {/* Rota de autenticação */}
             <Route path="/auth" element={<Auth />} />
             
@@ -51,7 +55,7 @@ const App = () => (
             </Route>
             
             {/* Default redirection */}
-            <Route path="*" element={<Navigate to="/auth" replace />} />
+            <Route path="*" element={<Navigate to="/home" replace />} />
           </Routes>
         </AuthProvider>
       </BrowserRouter>
