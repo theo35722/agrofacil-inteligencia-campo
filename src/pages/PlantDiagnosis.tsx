@@ -10,10 +10,12 @@ import { ImageUploadArea } from "@/components/plant-diagnosis/ImageUploadArea";
 import { AnalyzingState } from "@/components/plant-diagnosis/AnalyzingState";
 import { DiagnosisResult } from "@/components/plant-diagnosis/DiagnosisResult";
 import { CameraCapture } from "@/components/plant-diagnosis/CameraCapture";
+import { ContextDataForm, ContextData } from "@/components/plant-diagnosis/ContextDataForm";
 
 enum DiagnosisStep {
   Upload,
   Camera,
+  ContextData,
   Analyzing,
   Result
 }
@@ -21,6 +23,7 @@ enum DiagnosisStep {
 const PlantDiagnosis = () => {
   const [step, setStep] = useState<DiagnosisStep>(DiagnosisStep.Upload);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [contextData, setContextData] = useState<ContextData | null>(null);
   
   // Mock diagnosis result
   const diagnosisResult = {
@@ -29,6 +32,7 @@ const PlantDiagnosis = () => {
     severity: "Moderada",
     affectedArea: "Folhas",
     spreadRisk: "Alto",
+    confidence: 94, // Added confidence score
     recommendations: [
       {
         product: "Fungicida XYZ",
@@ -89,6 +93,15 @@ const PlantDiagnosis = () => {
     }
   };
   
+  // Basic image validation
+  const validateImage = (imageDataUrl: string): boolean => {
+    // This is a placeholder for actual image validation
+    // In a real implementation, you would check brightness, blur, etc.
+    
+    // For now, we just ensure the image exists
+    return !!imageDataUrl;
+  };
+  
   const openCamera = () => {
     setStep(DiagnosisStep.Camera);
   };
@@ -103,13 +116,32 @@ const PlantDiagnosis = () => {
     setStep(DiagnosisStep.Upload);
   };
   
-  const startAnalysis = () => {
+  const continueToContextData = () => {
     if (!imagePreview) {
       toast.error("É necessário enviar uma imagem para diagnóstico");
       return;
     }
+    
+    if (!validateImage(imagePreview)) {
+      toast.error("A imagem não é clara o suficiente", { 
+        description: "Por favor, tire uma foto com melhor iluminação e foco na área afetada" 
+      });
+      return;
+    }
+    
+    setStep(DiagnosisStep.ContextData);
+  };
+  
+  const handleContextDataSubmit = (data: ContextData) => {
+    setContextData(data);
     setStep(DiagnosisStep.Analyzing);
-    // Simular tempo de análise
+    
+    // Log the collected context data
+    console.log("Plant type:", data.plantType);
+    console.log("Symptoms described:", data.symptoms);
+    console.log("Location data:", data.locationData);
+    
+    // Simulate analysis time (would be replaced by actual AI processing)
     setTimeout(() => {
       setStep(DiagnosisStep.Result);
       toast.success("Diagnóstico concluído!");
@@ -119,6 +151,7 @@ const PlantDiagnosis = () => {
   const resetDiagnosis = () => {
     setStep(DiagnosisStep.Upload);
     setImagePreview(null);
+    setContextData(null);
   };
 
   return (
@@ -158,7 +191,7 @@ const PlantDiagnosis = () => {
                 <ImagePreview 
                   imagePreview={imagePreview} 
                   resetDiagnosis={resetDiagnosis} 
-                  startAnalysis={startAnalysis}
+                  startAnalysis={continueToContextData}
                 />
               ) : (
                 <ImageUploadArea 
@@ -167,6 +200,14 @@ const PlantDiagnosis = () => {
                 />
               )}
             </div>
+          )}
+          
+          {step === DiagnosisStep.ContextData && imagePreview && (
+            <ContextDataForm
+              imagePreview={imagePreview}
+              onSubmit={handleContextDataSubmit}
+              onBack={() => setStep(DiagnosisStep.Upload)}
+            />
           )}
           
           {step === DiagnosisStep.Analyzing && <AnalyzingState />}

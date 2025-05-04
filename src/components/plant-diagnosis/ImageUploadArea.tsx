@@ -1,7 +1,8 @@
 
 import React from "react";
-import { Camera, Image, Upload } from "lucide-react";
+import { Camera, Image, Upload, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { PhotoTips } from "./PhotoTips";
 
 interface ImageUploadAreaProps {
@@ -15,6 +16,15 @@ export const ImageUploadArea: React.FC<ImageUploadAreaProps> = ({
 }) => {
   return (
     <div className="space-y-6">
+      <Alert className="bg-agro-green-50 border-agro-green-100">
+        <Info className="h-4 w-4 text-agro-green-600" />
+        <AlertTitle className="text-agro-green-700">Para melhores resultados</AlertTitle>
+        <AlertDescription className="text-gray-700 text-sm">
+          Tire a foto com luz natural, focando na área afetada da planta, sem fundo confuso. 
+          Mantenha a câmera estável e próxima ao problema.
+        </AlertDescription>
+      </Alert>
+      
       <div 
         className="border-2 border-dashed border-agro-green-300 rounded-lg p-8
           flex flex-col items-center justify-center text-center bg-agro-green-50"

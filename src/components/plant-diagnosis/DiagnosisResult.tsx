@@ -3,7 +3,9 @@ import React, { useState } from "react";
 import { 
   Calendar, 
   CloudRain, 
-  Thermometer
+  Thermometer,
+  Check,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -16,6 +18,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { toast } from "sonner";
 
 interface RecommendationProps {
   product: string;
@@ -36,6 +39,7 @@ interface DiagnosisResultProps {
     severity: string;
     affectedArea: string;
     spreadRisk: string;
+    confidence: number; // Added confidence score
     recommendations: RecommendationProps[];
     preventiveMeasures: string[];
     symptoms: string[];
@@ -49,6 +53,32 @@ export const DiagnosisResult: React.FC<DiagnosisResultProps> = ({
   resetDiagnosis 
 }) => {
   const [activeTab, setActiveTab] = useState<string>("treatment");
+  const [feedbackGiven, setFeedbackGiven] = useState<boolean>(false);
+
+  // Function to handle user feedback about diagnosis accuracy
+  const handleFeedback = (isCorrect: boolean) => {
+    if (feedbackGiven) return;
+    
+    setFeedbackGiven(true);
+    
+    if (isCorrect) {
+      toast.success("Obrigado pelo feedback!", { 
+        description: "Seu feedback nos ajuda a melhorar nosso sistema de diagnóstico." 
+      });
+    } else {
+      toast.success("Obrigado pelo feedback!", { 
+        description: "Usaremos essa informação para melhorar nosso sistema." 
+      });
+    }
+  };
+
+  // Function to get confidence level color
+  const getConfidenceColor = (confidence: number) => {
+    if (confidence >= 90) return "text-green-600";
+    if (confidence >= 70) return "text-green-500";
+    if (confidence >= 50) return "text-yellow-600";
+    return "text-orange-600";
+  };
 
   return (
     <div className="space-y-6">
@@ -73,9 +103,14 @@ export const DiagnosisResult: React.FC<DiagnosisResultProps> = ({
         <div className="sm:w-2/3 space-y-4">
           <div>
             <Label className="text-gray-500">Diagnóstico</Label>
-            <p className="text-xl font-semibold text-agro-green-800">
-              {diagnosisResult.disease}
-            </p>
+            <div className="flex items-center">
+              <p className="text-xl font-semibold text-agro-green-800">
+                {diagnosisResult.disease}
+              </p>
+              <span className={`ml-2 text-sm font-medium ${getConfidenceColor(diagnosisResult.confidence)}`}>
+                ({diagnosisResult.confidence}% de certeza)
+              </span>
+            </div>
             <p className="text-sm text-gray-500 italic">
               {diagnosisResult.scientificName}
             </p>
@@ -113,6 +148,30 @@ export const DiagnosisResult: React.FC<DiagnosisResultProps> = ({
               </AccordionContent>
             </AccordionItem>
           </Accordion>
+
+          {!feedbackGiven && (
+            <div className="bg-gray-50 p-4 rounded-md border border-gray-100">
+              <p className="text-sm font-medium text-gray-700 mb-2">Este diagnóstico está correto?</p>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="flex-1 border-green-300 hover:bg-green-50 hover:text-green-700"
+                  onClick={() => handleFeedback(true)}
+                >
+                  <Check className="mr-1 h-4 w-4" /> Sim
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="flex-1 border-red-300 hover:bg-red-50 hover:text-red-700"
+                  onClick={() => handleFeedback(false)}
+                >
+                  <X className="mr-1 h-4 w-4" /> Não
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
       
