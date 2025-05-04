@@ -9,6 +9,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
 import PlantDiagnosis from "./pages/PlantDiagnosis";
+import AnalisePlantas from "./pages/AnalisePlantas";
 import Weather from "./pages/Weather";
 import Fields from "./pages/Fields";
 import Activities from "./pages/Activities";
@@ -46,6 +47,7 @@ const App = () => (
             >
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="diagnostico" element={<PlantDiagnosis />} />
+              <Route path="analise-plantas" element={<AnalisePlantas />} />
               <Route path="clima" element={<Weather />} />
               <Route path="lavouras" element={<Fields />} />
               <Route path="atividades" element={<Activities />} />
