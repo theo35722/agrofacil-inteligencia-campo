@@ -1,5 +1,5 @@
 
-import { Plant, CloudSun, MapPin, CalendarCheck, FileText, Bell } from "lucide-react";
+import { Sprout, CloudSun, MapPin, CalendarCheck, FileText, Bell } from "lucide-react";
 import { FeatureCard } from "@/components/dashboard/FeatureCard";
 import { WeatherPreview } from "@/components/dashboard/WeatherPreview";
 import { ActivityPreview } from "@/components/dashboard/ActivityPreview";
@@ -8,7 +8,7 @@ const Dashboard = () => {
   // Features for the dashboard
   const features = [
     {
-      icon: Plant,
+      icon: Sprout,
       title: "Diagnóstico de Planta",
       description: "Identificação de doenças e pragas com IA",
       to: "/diagnostico",

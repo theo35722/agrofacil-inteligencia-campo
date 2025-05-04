@@ -1,8 +1,9 @@
-
-import { useState } from "react";
+import React, { useState } from "react";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { FileText, Search } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 
@@ -167,7 +168,7 @@ const BestPractices = () => {
           <li><strong>Químico:</strong> Uso racional de inseticidas, priorizando seletivos e rotação de princípios ativos</li>
         </ul>
         
-        <p class="mb-4">4. <strong>Preservação de inimigos naturais:</strong></p>
+        <p class="mb-4">4. <strong>Preserva��ão de inimigos naturais:</strong></p>
         <ul class="list-disc pl-5 mb-4">
           <li>Predadores: joaninhas, percevejos predadores, aranhas</li>
           <li>Parasitoides: vespas, moscas</li>
