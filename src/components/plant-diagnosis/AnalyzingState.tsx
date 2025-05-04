@@ -22,7 +22,11 @@ export const AnalyzingState: React.FC = () => {
           </li>
           <li className="flex items-start text-sm text-gray-600">
             <Database className="h-3.5 w-3.5 mr-1.5 mt-0.5 text-agro-blue-500" />
-            <span>Comparação com banco de dados de +5.000 doenças de plantas</span>
+            <span>Comparação com banco de dados de +5.000 doenças e pragas em plantas e pastagens</span>
+          </li>
+          <li className="flex items-start text-sm text-gray-600">
+            <Zap className="h-3.5 w-3.5 mr-1.5 mt-0.5 text-agro-blue-500" />
+            <span>Análise específica para capim, pastagem e forrageiras</span>
           </li>
           {!location.error && !location.loading && (
             <li className="flex items-start text-sm text-gray-600">

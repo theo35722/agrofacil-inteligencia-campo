@@ -1,4 +1,3 @@
-
 import { ContextData } from "@/components/plant-diagnosis/ContextDataForm";
 import { toast } from "sonner";
 
@@ -197,6 +196,144 @@ const diseaseRecommendations: Record<string, DiseaseDiagnosis> = {
       "Secamento das folhas em casos severos"
     ]
   },
+  "cigarrinha": {
+    disease: "Cigarrinha-das-pastagens",
+    scientificName: "Deois flavopicta / Mahanarva fimbriolata",
+    severity: "Alta",
+    affectedArea: "Folhas e caules",
+    spreadRisk: "Alto",
+    confidence: 89,
+    recommendations: [
+      {
+        product: "Inseticida Biológico",
+        activeIngredient: "Metarhizium anisopliae",
+        dosage: "200-400g/ha",
+        application: "Pulverização foliar",
+        timing: "Aplicar no início do período chuvoso",
+        interval: "Repetir após 15-20 dias se necessário",
+        weather: "Evitar aplicação com previsão de chuva nas próximas 4 horas",
+        preharvest: "Sem carência"
+      },
+      {
+        product: "Inseticida Químico",
+        activeIngredient: "Tiametoxam",
+        dosage: "100-200g/ha",
+        application: "Pulverização foliar",
+        timing: "Ao identificar as primeiras ninfas",
+        interval: "Conforme monitoramento da população",
+        weather: "Evitar aplicação com previsão de chuva nas próximas 2 horas",
+        preharvest: "14 dias de carência"
+      }
+    ],
+    preventiveMeasures: [
+      "Manter altura adequada do pasto",
+      "Rotação de pastagens",
+      "Diversificação de espécies forrageiras",
+      "Controle biológico preventivo"
+    ],
+    symptoms: [
+      "Manchas amarelas ou secas em formato de faixas nas folhas",
+      "Espuma branca na base das plantas (ninfas)",
+      "Redução do crescimento do capim",
+      "Morte de touceiras em casos severos"
+    ]
+  },
+  "formigas_cortadeiras": {
+    disease: "Formigas cortadeiras",
+    scientificName: "Atta spp. / Acromyrmex spp.",
+    severity: "Alta",
+    affectedArea: "Folhas",
+    spreadRisk: "Alto",
+    confidence: 91,
+    recommendations: [
+      {
+        product: "Isca granulada",
+        activeIngredient: "Fipronil / Sulfluramida",
+        dosage: "8-10g por m² de formigueiro",
+        application: "Distribuição próximo aos carreiros ativos",
+        timing: "Aplicar em período seco, preferencialmente no final da tarde",
+        interval: "Reaplicar após 15-20 dias se necessário",
+        weather: "Evitar aplicação com previsão de chuva nas próximas 24 horas",
+        preharvest: "Sem carência para pastagem"
+      }
+    ],
+    preventiveMeasures: [
+      "Monitoramento constante da área",
+      "Identificação e mapeamento de formigueiros",
+      "Controle de formigueiros jovens",
+      "Manutenção de áreas de refúgio para inimigos naturais"
+    ],
+    symptoms: [
+      "Folhas cortadas em semicírculo",
+      "Ausência de folhas em touceiras",
+      "Carreiros visíveis no solo",
+      "Montículos de terra solta"
+    ]
+  },
+  "braquiaria_murcha": {
+    disease: "Murcha da braquiária",
+    scientificName: "Rhizoctonia solani",
+    severity: "Moderada",
+    affectedArea: "Folhas e colmo",
+    spreadRisk: "Médio",
+    confidence: 85,
+    recommendations: [
+      {
+        product: "Fungicida sistêmico",
+        activeIngredient: "Azoxistrobina + Ciproconazol",
+        dosage: "0,3-0,5 L/ha",
+        application: "Pulverização foliar",
+        timing: "Aos primeiros sintomas",
+        interval: "Repetir após 14-21 dias se necessário",
+        weather: "Aplicar em condições de baixa umidade",
+        preharvest: "21 dias de carência"
+      }
+    ],
+    preventiveMeasures: [
+      "Rotação de pastagens",
+      "Manejo adequado da altura do pasto",
+      "Correção da acidez do solo",
+      "Adubação equilibrada com foco em potássio"
+    ],
+    symptoms: [
+      "Folhas com manchas irregulares marrom-avermelhadas",
+      "Murcha progressiva das folhas",
+      "Lesões no colmo",
+      "Morte de touceiras em manchas na pastagem"
+    ]
+  },
+  "fotossensibilizacao": {
+    disease: "Fotossensibilização",
+    scientificName: "Associada a Brachiaria decumbens / Pithomyces chartarum",
+    severity: "Alta",
+    affectedArea: "Pastagem",
+    spreadRisk: "Alto para o rebanho",
+    confidence: 87,
+    recommendations: [
+      {
+        product: "Manejo preventivo",
+        activeIngredient: "Não aplicável",
+        dosage: "Não aplicável",
+        application: "Remoção dos animais da área afetada",
+        timing: "Imediato",
+        interval: "Manter animais fora da área por 30-60 dias",
+        weather: "Não aplicável",
+        preharvest: "Não aplicável"
+      }
+    ],
+    preventiveMeasures: [
+      "Diversificação das espécies forrageiras",
+      "Evitar pastejo de Brachiaria decumbens por animais jovens",
+      "Suplementação com zinco e selênio para os animais",
+      "Manejo rotacionado de pastagens"
+    ],
+    symptoms: [
+      "Amarelecimento da pastagem",
+      "Presença de fungo escuro nas folhas secas",
+      "Lesões de pele nos animais (áreas despigmentadas)",
+      "Animais procurando sombra excessivamente"
+    ]
+  },
   "default": {
     disease: "Problema não identificado",
     scientificName: "Não disponível",
@@ -265,26 +402,55 @@ export const analyzePlantImage = async (
     const symptoms = contextData.symptoms.toLowerCase();
     let detectedDisease = diseaseRecommendations.default;
     
-    // Simple detection logic based on keywords in symptoms
-    if (symptoms.includes('amarela') || symptoms.includes('amarelo')) {
-      if (symptoms.includes('entre nervuras') || symptoms.includes('nervura')) {
-        detectedDisease = diseaseRecommendations.clorose;
+    // Simple detection logic based on keywords in symptoms and plant types
+    // Check for pasture/grass specific issues first
+    if (plantType.includes('capim') || plantType.includes('pasto') || 
+        plantType.includes('grama') || plantType.includes('forragem') ||
+        plantType.includes('braquiaria') || plantType.includes('pastagem')) {
+      
+      if (symptoms.includes('espuma') || symptoms.includes('faixa') || 
+          symptoms.includes('faixas amarela') || symptoms.includes('seca')) {
+        detectedDisease = diseaseRecommendations.cigarrinha;
+      }
+      
+      if (symptoms.includes('cortada') || symptoms.includes('formiga') || 
+          symptoms.includes('carreiro') || symptoms.includes('desfolha')) {
+        detectedDisease = diseaseRecommendations.formigas_cortadeiras;
+      }
+      
+      if (symptoms.includes('murcha') || symptoms.includes('mancha') || 
+          symptoms.includes('marrom-avermelhada') || symptoms.includes('lesão')) {
+        detectedDisease = diseaseRecommendations.braquiaria_murcha;
+      }
+      
+      if (symptoms.includes('amarelecimento') || symptoms.includes('fungo') || 
+          symptoms.includes('animais') || symptoms.includes('fotossensibilização')) {
+        detectedDisease = diseaseRecommendations.fotossensibilizacao;
       }
     }
     
-    if (symptoms.includes('mancha') || symptoms.includes('manchas')) {
-      detectedDisease = diseaseRecommendations.mancha_foliar;
+    // Only check for generic plant diseases if not a pasture-specific issue
+    if (detectedDisease === diseaseRecommendations.default) {
+      if (symptoms.includes('amarela') || symptoms.includes('amarelo')) {
+        if (symptoms.includes('entre nervuras') || symptoms.includes('nervura')) {
+          detectedDisease = diseaseRecommendations.clorose;
+        }
+      }
+      
+      if (symptoms.includes('mancha') || symptoms.includes('manchas')) {
+        detectedDisease = diseaseRecommendations.mancha_foliar;
+      }
+      
+      if (symptoms.includes('ferrugem') || symptoms.includes('pústula') || symptoms.includes('pustula')) {
+        detectedDisease = diseaseRecommendations.ferrugem;
+      }
+      
+      if (symptoms.includes('mosaico') || symptoms.includes('padrão') || symptoms.includes('deformação')) {
+        detectedDisease = diseaseRecommendations.mosaico;
+      }
     }
     
-    if (symptoms.includes('ferrugem') || symptoms.includes('pústula') || symptoms.includes('pustula')) {
-      detectedDisease = diseaseRecommendations.ferrugem;
-    }
-    
-    if (symptoms.includes('mosaico') || symptoms.includes('padrão') || symptoms.includes('deformação')) {
-      detectedDisease = diseaseRecommendations.mosaico;
-    }
-    
-    // Save the diagnosis locally (in a real app, this would be to IndexedDB or localStorage)
+    // Save the diagnosis locally
     saveDiagnosisToLocalStorage(imageBase64, detectedDisease);
     
     return detectedDisease;
