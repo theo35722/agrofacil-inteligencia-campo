@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { UploadCloud, ImageIcon, LoaderCircle, CheckCircle2, AlertTriangle } from "lucide-react";
+import { toast } from "@/components/ui/sonner";
 
 export default function AnalisePlantas() {
   const [image, setImage] = useState<File | null>(null);
@@ -16,44 +17,62 @@ export default function AnalisePlantas() {
       setImage(file);
       setPreview(URL.createObjectURL(file));
       setResultado(null);
+      
+      // Log para depuração - confirma que temos acesso ao nome do arquivo
+      console.log("Arquivo carregado:", file.name);
     }
   };
 
   const analisar = () => {
-    if (!image) return;
+    if (!image) {
+      toast.error("Nenhuma imagem foi enviada para análise.");
+      return;
+    }
 
     setLoading(true);
     setResultado(null);
 
+    // Armazena e loga o nome do arquivo para confirmar que está sendo lido corretamente
     const nomeArquivo = image.name.toLowerCase();
+    console.log("Nome do arquivo para análise:", nomeArquivo);
 
     setTimeout(() => {
       let resultado = "";
+      let icone = "⚠️";
+      let certeza = Math.floor(Math.random() * (90 - 40 + 1)) + 40; // Certeza entre 40% e 90%
 
       if (nomeArquivo.includes("ferrugem")) {
-        resultado = "⚠️ Ferrugem Asiática detectada (82% de certeza)";
+        resultado = `${icone} Ferrugem Asiática detectada (${certeza}% de certeza)`;
       } else if (nomeArquivo.includes("pulgao") || nomeArquivo.includes("inseto")) {
-        resultado = "⚠️ Infestação de pulgões identificada (75% de certeza)";
+        resultado = `${icone} Infestação de pulgões identificada (${certeza}% de certeza)`;
       } else if (nomeArquivo.includes("amarela") || nomeArquivo.includes("nitrogenio")) {
-        resultado = "💡 Deficiência de nitrogênio provável (68% de certeza)";
+        icone = "💡";
+        resultado = `${icone} Deficiência de nitrogênio provável (${certeza}% de certeza)`;
       } else if (nomeArquivo.includes("doente") || nomeArquivo.includes("mancha")) {
-        resultado = "⚠️ Mancha alvo detectada (72% de certeza)";
+        resultado = `${icone} Mancha alvo detectada (${certeza}% de certeza)`;
       } else {
         // Diagnóstico saudável com chance de 30%
         const chanceSaudavel = Math.random() < 0.3;
         if (chanceSaudavel) {
-          resultado = "✅ Sua planta parece saudável (85% de certeza)";
+          icone = "✅";
+          resultado = `${icone} Sua planta parece saudável (${certeza}% de certeza)`;
         } else {
           const outrosProblemas = [
-            "⚠️ Sinais de estresse hídrico (60% de certeza)",
-            "⚠️ Excesso de adubo (55% de certeza)",
+            `${icone} Sinais de estresse hídrico (${certeza}% de certeza)`,
+            `${icone} Excesso de adubo (${certeza}% de certeza)`,
+            `${icone} Possível deficiência de potássio (${certeza}% de certeza)`,
+            `${icone} Sinais de antracnose (${certeza}% de certeza)`
           ];
           resultado = outrosProblemas[Math.floor(Math.random() * outrosProblemas.length)];
         }
       }
 
+      console.log("Resultado da análise:", resultado);
       setResultado(resultado);
       setLoading(false);
+      
+      // Notifica o usuário que a análise foi concluída
+      toast.success("Análise concluída com sucesso!");
     }, 2000);
   };
 
@@ -72,7 +91,7 @@ export default function AnalisePlantas() {
         id="upload"
       />
       <label htmlFor="upload">
-        <Button className="mb-4">
+        <Button className="mb-4" variant="secondary">
           <UploadCloud className="mr-2 h-4 w-4" />
           Enviar Imagem
         </Button>
