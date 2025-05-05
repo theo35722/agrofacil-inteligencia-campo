@@ -20,7 +20,7 @@ interface ResultCardProps {
   onNewAnalysis: () => void;
 }
 
-const ResultCard: React.FC<ResultCardProps> = ({ result, onNewAnalysis }) => {
+const ResultCardEn: React.FC<ResultCardProps> = ({ result, onNewAnalysis }) => {
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case "low":
@@ -50,13 +50,13 @@ const ResultCard: React.FC<ResultCardProps> = ({ result, onNewAnalysis }) => {
   const getSeverityText = (severity: string) => {
     switch (severity) {
       case "low":
-        return "Leve";
+        return "Low";
       case "moderate":
-        return "Moderado";
+        return "Moderate";
       case "high":
-        return "Grave";
+        return "Severe";
       default:
-        return "Não determinado";
+        return "Undetermined";
     }
   };
 
@@ -64,15 +64,15 @@ const ResultCard: React.FC<ResultCardProps> = ({ result, onNewAnalysis }) => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: `Diagnóstico: ${result.disease}`,
-          text: `Diagnóstico da planta: ${result.disease}\nSeveridade: ${getSeverityText(result.severity)}\nTratamento: ${result.treatment}`,
+          title: `Diagnosis: ${result.disease}`,
+          text: `Plant diagnosis: ${result.disease}\nSeverity: ${getSeverityText(result.severity)}\nTreatment: ${result.treatment}`,
         });
       } catch (error) {
-        console.error("Erro ao compartilhar:", error);
+        console.error("Error sharing:", error);
       }
     } else {
-      // Fallback para navegadores que não suportam a Web Share API
-      alert("Recurso de compartilhamento não disponível no seu navegador");
+      // Fallback for browsers that don't support Web Share API
+      alert("Sharing feature not available in your browser");
     }
   };
 
@@ -98,7 +98,7 @@ const ResultCard: React.FC<ResultCardProps> = ({ result, onNewAnalysis }) => {
               </Badge>
               {result.confidence > 0 && (
                 <Badge variant="secondary" className="text-xs px-2 py-0">
-                  {result.confidence}% de confiança
+                  {result.confidence}% confidence
                 </Badge>
               )}
             </div>
@@ -110,7 +110,7 @@ const ResultCard: React.FC<ResultCardProps> = ({ result, onNewAnalysis }) => {
           <div>
             <div className="flex items-center mb-2">
               <FlaskConical className="h-4 w-4 text-green-700 mr-2" />
-              <h4 className="text-sm font-medium text-gray-700">Tratamento recomendado</h4>
+              <h4 className="text-sm font-medium text-gray-700">Recommended treatment</h4>
             </div>
             <p className="text-sm text-gray-600 ml-6">{result.treatment}</p>
           </div>
@@ -120,7 +120,7 @@ const ResultCard: React.FC<ResultCardProps> = ({ result, onNewAnalysis }) => {
             <div className="flex items-start">
               <LightbulbIcon className="h-4 w-4 text-green-700 mr-2 mt-0.5 flex-shrink-0" />
               <div>
-                <h4 className="text-sm font-medium text-green-800">Dica extra</h4>
+                <h4 className="text-sm font-medium text-green-800">Extra tip</h4>
                 <p className="text-sm text-green-700">{result.extraTip}</p>
               </div>
             </div>
@@ -134,7 +134,7 @@ const ResultCard: React.FC<ResultCardProps> = ({ result, onNewAnalysis }) => {
               onClick={handleShare}
             >
               <Share2 className="mr-2 h-4 w-4" />
-              Compartilhar
+              Share
             </Button>
             
             <Button 
@@ -143,7 +143,7 @@ const ResultCard: React.FC<ResultCardProps> = ({ result, onNewAnalysis }) => {
               onClick={onNewAnalysis}
             >
               <RefreshCw className="mr-2 h-4 w-4" />
-              Nova análise
+              New analysis
             </Button>
           </div>
         </div>
@@ -152,4 +152,4 @@ const ResultCard: React.FC<ResultCardProps> = ({ result, onNewAnalysis }) => {
   );
 };
 
-export default ResultCard;
+export default ResultCardEn;
