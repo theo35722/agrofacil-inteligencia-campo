@@ -57,7 +57,7 @@ export default function AnalisePlantas() {
 
   return (
     <div className="min-h-screen px-4 py-6 md:px-12 md:py-10 bg-gradient-to-br from-green-50 to-white">
-      <h1 className="text-2xl md:text-3xl font-bold text-green-800 mb-4 text-center">
+      <h1 className="text-3xl md:text-4xl font-bold text-green-800 mb-6 text-center">
         Diagnóstico de Planta
       </h1>
 
@@ -81,7 +81,11 @@ export default function AnalisePlantas() {
         />
       )}
 
-      {resultado && <ResultCard result={resultado} />}
+      {resultado && (
+        <div className="mt-6 animate-fade-in">
+          <ResultCard result={resultado} />
+        </div>
+      )}
     </div>
   );
 }
