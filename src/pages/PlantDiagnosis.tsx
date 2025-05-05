@@ -4,8 +4,8 @@ import { toast } from "@/components/ui/sonner";
 import { DiagnosisQuestions, DiagnosisResult, analyzePlantWithAI } from "@/services/openai-api";
 import ImageUploadArea from "@/components/plant-diagnosis/ImageUploadArea";
 import ImagePreview from "@/components/plant-diagnosis/ImagePreview";
-import ResultCardEn from "@/components/plant-diagnosis/ResultCardEn";
-import DiagnosisQuestionnaireEn from "@/components/plant-diagnosis/DiagnosisQuestionnaireEn";
+import ResultCard from "@/components/plant-diagnosis/ResultCard";
+import DiagnosisQuestionnaire from "@/components/plant-diagnosis/DiagnosisQuestionnaire";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 enum DiagnosisStep {
@@ -47,7 +47,7 @@ export default function PlantDiagnosis() {
 
   const handleQuestionsSubmit = async (questions: DiagnosisQuestions) => {
     if (!image) {
-      toast.error("Please upload an image before analyzing.");
+      toast.error("Envie uma imagem antes de analisar.");
       return;
     }
 
@@ -61,9 +61,9 @@ export default function PlantDiagnosis() {
       console.log("AI Analysis result:", result);
       setResultado(result);
       setCurrentStep(DiagnosisStep.RESULT);
-      toast.success("Analysis completed successfully!");
+      toast.success("Análise concluída com sucesso!");
     } catch (error) {
-      toast.error("Error analyzing the image.");
+      toast.error("Erro ao analisar a imagem.");
       console.error(error);
     } finally {
       setLoading(false);
@@ -85,7 +85,7 @@ export default function PlantDiagnosis() {
   return (
     <div className="min-h-screen px-4 py-6 md:px-12 md:py-10 bg-gradient-to-br from-green-50 to-white">
       <h1 className="text-3xl md:text-4xl font-bold text-green-800 mb-6 text-center">
-        Plant Diagnosis
+        Diagnóstico de Planta
       </h1>
 
       {currentStep === DiagnosisStep.UPLOAD && (
@@ -113,7 +113,7 @@ export default function PlantDiagnosis() {
       )}
 
       {currentStep === DiagnosisStep.QUESTIONS && preview && (
-        <DiagnosisQuestionnaireEn
+        <DiagnosisQuestionnaire
           imagePreview={preview}
           onSubmit={handleQuestionsSubmit}
           onCancel={cancelQuestions}
@@ -122,7 +122,7 @@ export default function PlantDiagnosis() {
 
       {currentStep === DiagnosisStep.RESULT && resultado && (
         <div className="mt-6 animate-fade-in">
-          <ResultCardEn 
+          <ResultCard 
             result={resultado} 
             onNewAnalysis={resetAnalysis}
           />
