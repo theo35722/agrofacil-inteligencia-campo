@@ -502,3 +502,27 @@ export const getOfflineDiagnoses = () => {
     return {};
   }
 };
+export const analyzePlantImage = async (imageBase64: string): Promise<any> => {
+  try {
+    const response = await fetch("https://api.plant.id/v3/health_assessment", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Api-Key": "otOllZci1gJz9KpwhUjsUHD15uZSAXZqNUFz1yf2y85FjNcjMD"
+      },
+      body: JSON.stringify({
+        images: [imageBase64],
+        modifiers: ["similar_images"],
+        plant_language: "pt",
+        disease_details: ["description", "treatment", "common_names"]
+      })
+    });
+
+    const data = await response.json();
+    console.log("Diagnóstico da IA recebido:", data);
+    return data;
+  } catch (error) {
+    console.error("Erro ao chamar a API do Plant.id:", error);
+    throw error;
+  }
+};

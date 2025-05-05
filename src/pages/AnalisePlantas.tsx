@@ -5,7 +5,19 @@ import { Card, CardContent } from "@/components/ui/card";
 import { UploadCloud, ImageIcon, LoaderCircle, CheckCircle2, AlertTriangle } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 
-export default function AnalisePlantas() {
+export default function AnalisePlantas() {const toBase64 = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = () => {
+      const result = reader.result as string;
+      const base64 = result.split(',')[1]; // remove "data:image/jpeg;base64,"
+      resolve(base64);
+    };
+    reader.onerror = (error) => reject(error);
+  });
+};
+
   const [image, setImage] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -23,11 +35,43 @@ export default function AnalisePlantas() {
     }
   };
 
-  const analisar = () => {
-    if (!image) {
-      toast.error("Nenhuma imagem foi enviada para análise.");
-      return;
+  const analisar = async () => {
+  if (!image) {
+    toast.error("Nenhuma imagem foi enviada para análise.");
+    return;
+  }
+
+  try {
+    setLoading(true);
+    setResultado(null);
+
+    // Converter imagem para base64
+    const base64Image = await toBase64(image);
+
+    // Chamar a IA real (Plant.id)
+    const result = await analyzePlantImage(base64Image);
+
+    // Pegar a primeira doença identificada
+    const health = result.health_assessment;
+    const disease = health?.diseases?.[0];
+
+    if (disease) {
+      const nome = disease.name?.pt || disease.name?.en || "Doença desconhecida";
+      const confianca = disease.probability ? Math.round(disease.probability * 100) : 0;
+      const descricao = disease.description?.pt || disease.description?.en || "";
+
+      setResultado(`${nome} (${confianca}% de certeza)\n${descricao}`);
+    } else {
+      setResultado("⚠️ Nenhuma doença detectada ou diagnóstico inconclusivo.");
     }
+  } catch (error) {
+    console.error("Erro ao analisar planta:", error);
+    toast.error("Erro ao analisar a planta.");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
     setLoading(true);
     setResultado(null);
