@@ -367,8 +367,8 @@ const diseaseRecommendations: Record<string, DiseaseDiagnosis> = {
   }
 };
 
-// The API key for PlantNet
-const API_KEY = "2b10xZmIzbSFUbETFOXBO9Kka"; // Replace with actual API key
+// The API key for Plant.id
+const API_KEY = "2b10xZmIzbSFUbETFOXBO9Kka";
 
 // Function to analyze a plant image
 export const analyzePlantImage = async (imageBase64: string): Promise<any> => {
@@ -430,29 +430,3 @@ export const getOfflineDiagnoses = () => {
     return {};
   }
 };
-
-// Keeping this implementation of analyzePlantImage which calls the Plant.id API
-// export const analyzePlantImage = async (imageBase64: string): Promise<any> => {
-//   try {
-//     const response = await fetch("https://api.plant.id/v3/health_assessment", {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json",
-//         "Api-Key": "otOllZci1gJz9KpwhUjsUHD15uZSAXZqNUFz1yf2y85FjNcjMD"
-//       },
-//       body: JSON.stringify({
-//         images: [imageBase64],
-//         modifiers: ["similar_images"],
-//         plant_language: "pt",
-//         disease_details: ["description", "treatment", "common_names"]
-//       })
-//     });
-
-//     const data = await response.json();
-//     console.log("Diagnóstico da IA recebido:", data);
-//     return data;
-//   } catch (error) {
-//     console.error("Erro ao chamar a API do Plant.id:", error);
-//     throw error;
-//   }
-// };

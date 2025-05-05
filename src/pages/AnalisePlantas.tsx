@@ -31,8 +31,6 @@ export default function AnalisePlantas() {
       setImage(file);
       setPreview(URL.createObjectURL(file));
       setResultado(null);
-      
-      // Log para depuração - confirma que temos acesso ao nome do arquivo
       console.log("Arquivo carregado:", file.name);
     }
   };
@@ -46,62 +44,16 @@ export default function AnalisePlantas() {
     try {
       setLoading(true);
       setResultado(null);
-
-      // Armazena e loga o nome do arquivo para confirmar que está sendo lido corretamente
-      const nomeArquivo = image.name.toLowerCase();
-      console.log("Nome do arquivo para análise:", nomeArquivo);
-
-      // Baseado no nome do arquivo, vamos fazer uma análise simulada
-      // Em um ambiente de produção você pode comentar este bloco e usar a API real
       
-      setTimeout(() => {
-        let resultado = "";
-        let icone = "⚠️";
-        let certeza = Math.floor(Math.random() * (90 - 40 + 1)) + 40; // Certeza entre 40% e 90%
-
-        if (nomeArquivo.includes("ferrugem")) {
-          resultado = `${icone} Ferrugem Asiática detectada (${certeza}% de certeza)`;
-        } else if (nomeArquivo.includes("pulgao") || nomeArquivo.includes("inseto")) {
-          resultado = `${icone} Infestação de pulgões identificada (${certeza}% de certeza)`;
-        } else if (nomeArquivo.includes("amarela") || nomeArquivo.includes("nitrogenio")) {
-          icone = "💡";
-          resultado = `${icone} Deficiência de nitrogênio provável (${certeza}% de certeza)`;
-        } else if (nomeArquivo.includes("doente") || nomeArquivo.includes("mancha")) {
-          resultado = `${icone} Mancha alvo detectada (${certeza}% de certeza)`;
-        } else {
-          // Diagnóstico saudável com chance de 30%
-          const chanceSaudavel = Math.random() < 0.3;
-          if (chanceSaudavel) {
-            icone = "✅";
-            resultado = `${icone} Sua planta parece saudável (${certeza}% de certeza)`;
-          } else {
-            const outrosProblemas = [
-              `${icone} Sinais de estresse hídrico (${certeza}% de certeza)`,
-              `${icone} Excesso de adubo (${certeza}% de certeza)`,
-              `${icone} Possível deficiência de potássio (${certeza}% de certeza)`,
-              `${icone} Sinais de antracnose (${certeza}% de certeza)`
-            ];
-            resultado = outrosProblemas[Math.floor(Math.random() * outrosProblemas.length)];
-          }
-        }
-
-        console.log("Resultado da análise:", resultado);
-        setResultado(resultado);
-        setLoading(false);
-        
-        // Notifica o usuário que a análise foi concluída
-        toast.success("Análise concluída com sucesso!");
-      }, 2000);
-
-      // Para usar a API real, descomente este bloco e comente o bloco acima
-      /*
       // Converter imagem para base64
       const base64Image = await toBase64(image);
 
-      // Chamar a IA real (Plant.id)
+      // Chamar a API Plant.id
       const result = await analyzePlantImage(base64Image);
-
-      // Pegar a primeira doença identificada
+      
+      console.log("Resposta da API:", result);
+      
+      // Processar o resultado
       const health = result.health_assessment;
       const disease = health?.diseases?.[0];
 
@@ -112,13 +64,11 @@ export default function AnalisePlantas() {
 
         setResultado(`${nome} (${confianca}% de certeza)\n${descricao}`);
       } else {
-        setResultado("⚠️ Nenhuma doença detectada ou diagnóstico inconclusivo.");
+        setResultado("✅ Nenhuma doença detectada. Sua planta parece saudável.");
       }
       
       setLoading(false);
       toast.success("Análise concluída com sucesso!");
-      */
-      
     } catch (error) {
       console.error("Erro ao analisar planta:", error);
       toast.error("Erro ao analisar a planta.");
