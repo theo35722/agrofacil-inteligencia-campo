@@ -51,7 +51,8 @@ export default function AnalisePlantas() {
       // Chamar a API Plant.id
       const result = await analyzePlantImage(base64Image);
       
-      console.log("Resposta da API:", result);
+      console.log("Resposta completa da Plant.id:", result);
+
       
       // Processar o resultado
       const health = result.health_assessment;
