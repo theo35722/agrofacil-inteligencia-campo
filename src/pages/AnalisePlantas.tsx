@@ -4,7 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { UploadCloud, ImageIcon, LoaderCircle, CheckCircle2, AlertTriangle } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
-import { analyzePlantImage } from "@/services/plantnet-api";
+import { analyzePlantImage, getDetailedDiagnosis, DiseaseDiagnosis } from "@/services/plantnet-api";
+import { DiagnosisResult } from "@/components/plant-diagnosis/DiagnosisResult";
+import { ImagePreview } from "@/components/plant-diagnosis/ImagePreview";
 
 export default function AnalisePlantas() {
   const toBase64 = (file: File): Promise<string> => {
@@ -24,6 +26,7 @@ export default function AnalisePlantas() {
   const [preview, setPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [resultado, setResultado] = useState<string | null>(null);
+  const [detailedDiagnosis, setDetailedDiagnosis] = useState<DiseaseDiagnosis | null>(null);
 
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -31,8 +34,16 @@ export default function AnalisePlantas() {
       setImage(file);
       setPreview(URL.createObjectURL(file));
       setResultado(null);
+      setDetailedDiagnosis(null);
       console.log("Arquivo carregado:", file.name);
     }
+  };
+
+  const resetDiagnosis = () => {
+    setImage(null);
+    setPreview(null);
+    setResultado(null);
+    setDetailedDiagnosis(null);
   };
 
   const analisar = async () => {
@@ -49,30 +60,27 @@ export default function AnalisePlantas() {
       const base64Image = await toBase64(image);
 
       // Chamar a API Plant.id
+      console.log("Enviando imagem para análise...");
       const result = await analyzePlantImage(base64Image);
       
       console.log("Resposta completa da Plant.id:", result);
-
       
-      // Processar o resultado
-      const health = result.health_assessment;
-      const disease = health?.diseases?.[0];
-
-      if (disease) {
-        const nome = disease.name?.pt || disease.name?.en || "Doença desconhecida";
-        const confianca = disease.probability ? Math.round(disease.probability * 100) : 0;
-        const descricao = disease.description?.pt || disease.description?.en || "";
-
-        setResultado(`${nome} (${confianca}% de certeza)\n${descricao}`);
+      // Processar o diagnóstico detalhado
+      const diagnosis = getDetailedDiagnosis(result);
+      setDetailedDiagnosis(diagnosis);
+      
+      // Criar resumo do diagnóstico para exibir
+      if (diagnosis.disease === "Planta Saudável") {
+        setResultado(`✅ Nenhuma doença detectada. Sua planta parece saudável.`);
       } else {
-        setResultado("✅ Nenhuma doença detectada. Sua planta parece saudável.");
+        setResultado(`${diagnosis.disease} (${diagnosis.confidence}% de certeza)\n${diagnosis.symptoms.join(". ")}`);
       }
       
       setLoading(false);
       toast.success("Análise concluída com sucesso!");
     } catch (error) {
       console.error("Erro ao analisar planta:", error);
-      toast.error("Erro ao analisar a planta.");
+      toast.error("Erro ao analisar a planta. Verifique sua conexão e tente novamente.");
       setLoading(false);
     }
   };
@@ -84,28 +92,32 @@ export default function AnalisePlantas() {
         Envie uma foto da sua planta para analisarmos a saúde dela com inteligência artificial.
       </p>
 
-      <input
-        type="file"
-        accept="image/*"
-        onChange={handleUpload}
-        className="hidden"
-        id="upload"
-      />
-      <label htmlFor="upload">
-        <Button className="mb-4" variant="secondary">
-          <UploadCloud className="mr-2 h-4 w-4" />
-          Enviar Imagem
-        </Button>
-      </label>
-
-      {preview && (
-        <Card className="w-full max-w-sm mb-6 shadow-lg">
-          <CardContent className="p-4 flex flex-col items-center">
-            <img src={preview} alt="Prévia" className="rounded-lg w-full mb-3" />
-            <Button onClick={analisar}>
-              <ImageIcon className="mr-2 h-4 w-4" />
-              Analisar Planta
+      {!preview && (
+        <>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleUpload}
+            className="hidden"
+            id="upload"
+          />
+          <label htmlFor="upload">
+            <Button className="mb-4" variant="secondary">
+              <UploadCloud className="mr-2 h-4 w-4" />
+              Enviar Imagem
             </Button>
+          </label>
+        </>
+      )}
+
+      {preview && !detailedDiagnosis && (
+        <Card className="w-full max-w-md mb-6 shadow-lg">
+          <CardContent className="p-4">
+            <ImagePreview 
+              imagePreview={preview}
+              resetDiagnosis={resetDiagnosis}
+              startAnalysis={analisar}
+            />
           </CardContent>
         </Card>
       )}
@@ -117,10 +129,15 @@ export default function AnalisePlantas() {
         </div>
       )}
 
-      {resultado && (
-        <div className="mt-6 text-lg text-center text-green-800 font-medium flex items-center gap-2">
-          {resultado.includes("saudável") ? <CheckCircle2 /> : <AlertTriangle />}
-          {resultado}
+      {resultado && !loading && (
+        <div className="mt-6 max-w-3xl w-full">
+          {detailedDiagnosis && (
+            <DiagnosisResult 
+              imagePreview={preview!}
+              diagnosisResult={detailedDiagnosis}
+              resetDiagnosis={resetDiagnosis}
+            />
+          )}
         </div>
       )}
     </div>
