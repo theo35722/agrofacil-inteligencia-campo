@@ -10,10 +10,18 @@ import {
   FlaskConical,
   LightbulbIcon,
   Share2,
-  RefreshCw
+  RefreshCw,
+  Shield,
+  TrendingUp
 } from "lucide-react";
 import { DiagnosisResult } from "@/services/openai-api";
 import { Badge } from "@/components/ui/badge";
+import { 
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface ResultCardProps {
   result: DiagnosisResult;
@@ -57,6 +65,24 @@ const ResultCardEn: React.FC<ResultCardProps> = ({ result, onNewAnalysis }) => {
         return "Severe";
       default:
         return "Undetermined";
+    }
+  };
+
+  const getSpreadRiskColor = (risk?: string) => {
+    if (!risk) return "bg-gray-100 text-gray-600";
+    
+    switch (risk.toLowerCase()) {
+      case "baixo":
+      case "low":
+        return "bg-green-50 text-green-700";
+      case "médio":
+      case "medium":
+        return "bg-yellow-50 text-yellow-700";
+      case "alto":
+      case "high":
+        return "bg-red-50 text-red-700";
+      default:
+        return "bg-gray-100 text-gray-600";
     }
   };
 
@@ -106,6 +132,29 @@ const ResultCardEn: React.FC<ResultCardProps> = ({ result, onNewAnalysis }) => {
           
           <Separator />
           
+          {/* Risk & Severity Info */}
+          <div className="grid grid-cols-2 gap-3">
+            {/* Severity Info */}
+            <div className={`${getSeverityColor(result.severity)} p-2 rounded-md`}>
+              <div className="flex items-center mb-1">
+                {getSeverityIcon(result.severity)}
+                <h4 className="text-sm font-medium ml-2">Severity</h4>
+              </div>
+              <p className="text-sm ml-7">{getSeverityText(result.severity)}</p>
+            </div>
+            
+            {/* Spread Risk */}
+            {result.spreadRisk && (
+              <div className={`${getSpreadRiskColor(result.spreadRisk)} p-2 rounded-md`}>
+                <div className="flex items-center mb-1">
+                  <TrendingUp className="h-4 w-4 mr-2" />
+                  <h4 className="text-sm font-medium">Spread risk</h4>
+                </div>
+                <p className="text-sm ml-7">{result.spreadRisk}</p>
+              </div>
+            )}
+          </div>
+          
           {/* Treatment */}
           <div>
             <div className="flex items-center mb-2">
@@ -114,6 +163,27 @@ const ResultCardEn: React.FC<ResultCardProps> = ({ result, onNewAnalysis }) => {
             </div>
             <p className="text-sm text-gray-600 ml-6">{result.treatment}</p>
           </div>
+          
+          {/* Preventive Measures */}
+          {result.preventiveMeasures && result.preventiveMeasures.length > 0 && (
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="preventive-measures">
+                <AccordionTrigger className="py-2">
+                  <div className="flex items-center">
+                    <Shield className="h-4 w-4 text-green-700 mr-2" />
+                    <span className="text-sm font-medium text-gray-700">Preventive measures</span>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <ul className="space-y-2 ml-6 mt-1">
+                    {result.preventiveMeasures.map((measure, index) => (
+                      <li key={index} className="text-sm text-gray-600">• {measure}</li>
+                    ))}
+                  </ul>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          )}
           
           {/* Extra Tip */}
           <div className="bg-green-50 p-3 rounded-lg">

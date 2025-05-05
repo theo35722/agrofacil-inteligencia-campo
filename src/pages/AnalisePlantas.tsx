@@ -55,7 +55,7 @@ export default function AnalisePlantas() {
       setLoading(true);
       const base64Image = await toBase64(image);
       
-      // Use the new OpenAI service instead of the old Plant.id service
+      // Use the OpenAI service
       const result = await analyzePlantWithAI(base64Image, questions);
       
       console.log("AI Analysis result:", result);

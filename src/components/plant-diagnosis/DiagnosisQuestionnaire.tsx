@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
 import { LoaderCircle, ArrowRight, Map, X } from "lucide-react";
 import { 
   Select,
@@ -32,10 +33,12 @@ const DiagnosisQuestionnaire: React.FC<DiagnosisQuestionnaireProps> = ({
     symptoms: "",
     affectedArea: "",
     timeFrame: "",
+    recentProducts: "Não",
+    weatherChanges: "",
   });
   const [locationName, setLocationName] = useState<string | null>(null);
   const [step, setStep] = useState(1);
-  const totalSteps = 4;
+  const totalSteps = 6;
 
   // Fetch location name if coordinates are available
   useEffect(() => {
@@ -82,13 +85,19 @@ const DiagnosisQuestionnaire: React.FC<DiagnosisQuestionnaireProps> = ({
         canContinue = !!formData.culture;
         break;
       case 2:
-        canContinue = !!formData.symptoms;
+        canContinue = !!formData.affectedArea;
         break;
       case 3:
-        canContinue = !!formData.affectedArea;
+        canContinue = !!formData.symptoms;
         break;
       case 4:
         canContinue = !!formData.timeFrame;
+        break;
+      case 5:
+        canContinue = !!formData.recentProducts;
+        break;
+      case 6:
+        canContinue = true; // Weather changes can be optional
         break;
     }
     
@@ -156,23 +165,10 @@ const DiagnosisQuestionnaire: React.FC<DiagnosisQuestionnaireProps> = ({
           </div>
         )}
         
-        {/* Step 2: Symptoms */}
+        {/* Step 2: Affected Area */}
         {step === 2 && (
           <div className="space-y-3">
-            <Label className="text-base font-medium">Quais sintomas você observa?</Label>
-            <Textarea
-              value={formData.symptoms}
-              onChange={(e) => handleChange("symptoms", e.target.value)}
-              placeholder="Ex: manchas amarelas, folhas secas, murchamento..."
-              className="min-h-[100px] text-base p-3"
-            />
-          </div>
-        )}
-        
-        {/* Step 3: Affected Area */}
-        {step === 3 && (
-          <div className="space-y-3">
-            <Label className="text-base font-medium">Onde aparecem os sintomas?</Label>
+            <Label className="text-base font-medium">Qual parte da planta está afetada?</Label>
             <Select
               value={formData.affectedArea}
               onValueChange={(value) => handleChange("affectedArea", value)}
@@ -189,6 +185,19 @@ const DiagnosisQuestionnaire: React.FC<DiagnosisQuestionnaireProps> = ({
                 <SelectItem value="planta_toda">Planta toda</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+        )}
+        
+        {/* Step 3: Symptoms */}
+        {step === 3 && (
+          <div className="space-y-3">
+            <Label className="text-base font-medium">Quais sintomas você observa?</Label>
+            <Textarea
+              value={formData.symptoms}
+              onChange={(e) => handleChange("symptoms", e.target.value)}
+              placeholder="Ex: manchas amarelas, folhas secas, murchamento..."
+              className="min-h-[100px] text-base p-3"
+            />
           </div>
         )}
         
@@ -209,6 +218,53 @@ const DiagnosisQuestionnaire: React.FC<DiagnosisQuestionnaireProps> = ({
                 <SelectItem value="1-2 semanas">1-2 semanas</SelectItem>
                 <SelectItem value="2-4 semanas">2-4 semanas</SelectItem>
                 <SelectItem value="mais de 1 mes">Mais de 1 mês</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+        
+        {/* Step 5: Recent Products */}
+        {step === 5 && (
+          <div className="space-y-3">
+            <Label className="text-base font-medium">Aplicou algum produto recentemente?</Label>
+            <Select
+              value={formData.recentProducts}
+              onValueChange={(value) => handleChange("recentProducts", value)}
+            >
+              <SelectTrigger className="w-full p-3 h-auto text-base">
+                <SelectValue placeholder="Selecione uma opção" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Não">Não</SelectItem>
+                <SelectItem value="Sim, herbicida">Sim, herbicida</SelectItem>
+                <SelectItem value="Sim, inseticida">Sim, inseticida</SelectItem>
+                <SelectItem value="Sim, fungicida">Sim, fungicida</SelectItem>
+                <SelectItem value="Sim, fertilizante">Sim, fertilizante</SelectItem>
+                <SelectItem value="Sim, outro">Sim, outro produto</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+        
+        {/* Step 6: Weather Changes */}
+        {step === 6 && (
+          <div className="space-y-3">
+            <Label className="text-base font-medium">Houve alguma mudança recente no clima?</Label>
+            <Select
+              value={formData.weatherChanges}
+              onValueChange={(value) => handleChange("weatherChanges", value)}
+            >
+              <SelectTrigger className="w-full p-3 h-auto text-base">
+                <SelectValue placeholder="Selecione a condição climática" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Sem mudanças">Sem mudanças significativas</SelectItem>
+                <SelectItem value="Muita chuva">Muita chuva</SelectItem>
+                <SelectItem value="Seca prolongada">Seca prolongada</SelectItem>
+                <SelectItem value="Geada">Geada</SelectItem>
+                <SelectItem value="Calor extremo">Calor extremo</SelectItem>
+                <SelectItem value="Vento forte">Vento forte</SelectItem>
+                <SelectItem value="Granizo">Granizo</SelectItem>
               </SelectContent>
             </Select>
             
@@ -259,9 +315,10 @@ const DiagnosisQuestionnaire: React.FC<DiagnosisQuestionnaireProps> = ({
             onClick={handleContinue}
             disabled={isLoading || (
               (step === 1 && !formData.culture) ||
-              (step === 2 && !formData.symptoms) ||
-              (step === 3 && !formData.affectedArea) ||
-              (step === 4 && !formData.timeFrame)
+              (step === 2 && !formData.affectedArea) ||
+              (step === 3 && !formData.symptoms) ||
+              (step === 4 && !formData.timeFrame) ||
+              (step === 5 && !formData.recentProducts)
             )}
           >
             {isLoading ? (

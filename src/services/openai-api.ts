@@ -1,11 +1,11 @@
 
-import { toast } from "sonner";
-
 export interface DiagnosisQuestions {
   culture: string;
   symptoms: string;
   affectedArea: string;
   timeFrame: string;
+  recentProducts?: string;
+  weatherChanges?: string;
   location?: string;
 }
 
@@ -15,6 +15,8 @@ export interface DiagnosisResult {
   affectedArea: string;
   treatment: string;
   extraTip: string;
+  spreadRisk?: string;
+  preventiveMeasures?: string[];
   confidence: number;
 }
 
@@ -25,14 +27,14 @@ export const analyzePlantWithAI = async (
   questions: DiagnosisQuestions
 ): Promise<DiagnosisResult> => {
   try {
-    console.log("Analyzing plant with OpenAI...");
-    console.log("Questions data:", questions);
+    console.log("Analisando planta com OpenAI...");
+    console.log("Dados do questionário:", questions);
     
-    // Simulate API call delay
+    // Simular delay de API
     await new Promise(resolve => setTimeout(resolve, 2000));
     
-    // Mock response based on culture and symptoms for now
-    // This will be replaced with actual OpenAI API call
+    // Respostas simuladas baseadas na cultura e sintomas
+    // Isso será substituído pela chamada real à API da OpenAI
     const mockResponses: Record<string, DiagnosisResult> = {
       "milho": {
         disease: "Ferrugem do Milho",
@@ -40,6 +42,12 @@ export const analyzePlantWithAI = async (
         affectedArea: "Folhas",
         treatment: "Fungicida à base de Azoxistrobina + Ciproconazol, aplicação foliar na dose de 0,3L/ha.",
         extraTip: "Rotação de culturas e escolha de variedades resistentes podem reduzir a incidência desta doença.",
+        spreadRisk: "Médio",
+        preventiveMeasures: [
+          "Utilizar variedades resistentes",
+          "Fazer rotação de culturas",
+          "Monitorar a lavoura regularmente"
+        ],
         confidence: 85
       },
       "soja": {
@@ -48,6 +56,12 @@ export const analyzePlantWithAI = async (
         affectedArea: "Folhas",
         treatment: "Fungicida triazol + estrobilurina, aplicação preventiva e curativa a cada 14 dias.",
         extraTip: "Monitore a lavoura regularmente. A aplicação preventiva tem maior eficácia contra a ferrugem.",
+        spreadRisk: "Alto",
+        preventiveMeasures: [
+          "Aplicação preventiva de fungicidas",
+          "Respeitar o vazio sanitário",
+          "Eliminar plantas voluntárias de soja"
+        ],
         confidence: 92
       },
       "tomate": {
@@ -56,6 +70,12 @@ export const analyzePlantWithAI = async (
         affectedArea: "Folhas e frutos",
         treatment: "Fungicida à base de Mancozeb, aplicação a cada 7 dias em períodos úmidos.",
         extraTip: "Evite irrigação por aspersão e melhore a ventilação entre as plantas para reduzir a umidade.",
+        spreadRisk: "Alto",
+        preventiveMeasures: [
+          "Usar cultivares resistentes",
+          "Evitar irrigação por aspersão",
+          "Aumentar o espaçamento entre plantas"
+        ],
         confidence: 88
       },
       "algodao": {
@@ -64,6 +84,12 @@ export const analyzePlantWithAI = async (
         affectedArea: "Folhas",
         treatment: "Fungicida à base de Fluxapiroxade + Piraclostrobina, aplicação na dose de 0,35L/ha.",
         extraTip: "Faça o monitoramento constante e inicie o controle nos primeiros sintomas.",
+        spreadRisk: "Médio",
+        preventiveMeasures: [
+          "Monitoramento constante",
+          "Destruição de restos culturais",
+          "Rotação de culturas"
+        ],
         confidence: 86
       },
       "cafe": {
@@ -72,6 +98,12 @@ export const analyzePlantWithAI = async (
         affectedArea: "Folhas",
         treatment: "Fungicida cúprico ou triazol, aplicação preventiva antes da estação chuvosa.",
         extraTip: "A nutrição equilibrada da planta aumenta sua resistência à ferrugem.",
+        spreadRisk: "Alto",
+        preventiveMeasures: [
+          "Aplicação preventiva de fungicidas",
+          "Manejo da sombra",
+          "Adubação equilibrada"
+        ],
         confidence: 90
       },
       "default": {
@@ -80,14 +112,20 @@ export const analyzePlantWithAI = async (
         affectedArea: "Planta inteira",
         treatment: "Recomenda-se análise foliar para diagnóstico preciso e aplicação de fertilizante adequado.",
         extraTip: "A correção do pH do solo pode melhorar a absorção de nutrientes pela planta.",
+        spreadRisk: "Baixo",
+        preventiveMeasures: [
+          "Realizar análise de solo",
+          "Aplicar calcário para correção de pH",
+          "Utilizar fertilizantes balanceados"
+        ],
         confidence: 65
       }
     };
     
-    // Select response based on culture, fallback to default if not found
+    // Selecionar resposta baseada na cultura
     const result = mockResponses[questions.culture.toLowerCase()] || mockResponses.default;
     
-    // Customize the mock response a bit based on the symptoms
+    // Personalizar a resposta baseada nos sintomas
     if (questions.symptoms.toLowerCase().includes("amarela")) {
       result.disease = result.disease.includes("deficiência") 
         ? "Deficiência de Nitrogênio" 
@@ -102,18 +140,34 @@ export const analyzePlantWithAI = async (
       result.extraTip = "Murchamento pode indicar problemas radiculares. Verifique se há excesso ou falta de irrigação.";
     }
     
+    // Ajuste com base em aplicações recentes
+    if (questions.recentProducts && questions.recentProducts.toLowerCase() !== "não" && questions.recentProducts.toLowerCase() !== "nao") {
+      result.extraTip = "Avalie se os sintomas podem ser fitotoxidez do produto aplicado recentemente. " + result.extraTip;
+    }
+    
+    // Ajuste com base em mudanças climáticas
+    if (questions.weatherChanges && questions.weatherChanges.toLowerCase().includes("chuva")) {
+      result.extraTip = "Períodos prolongados de chuva favorecem doenças fúngicas. " + result.extraTip;
+    } else if (questions.weatherChanges && questions.weatherChanges.toLowerCase().includes("seca")) {
+      result.extraTip = "A seca pode estressar as plantas e torná-las mais suscetíveis a pragas. " + result.extraTip;
+    }
+    
     return result;
   } catch (error) {
-    console.error("Error analyzing plant with AI:", error);
-    toast.error("Erro ao analisar imagem com IA");
+    console.error("Erro ao analisar planta com IA:", error);
     
-    // Return a fallback diagnosis
+    // Retornar um diagnóstico de fallback
     return {
       disease: "Não foi possível completar a análise",
       severity: "moderate",
       affectedArea: "Não determinado",
       treatment: "Recomendamos consultar um agrônomo local para diagnóstico presencial.",
       extraTip: "Tire uma nova foto com melhor iluminação e maior proximidade da área afetada.",
+      spreadRisk: "Desconhecido",
+      preventiveMeasures: [
+        "Consulte um agrônomo local",
+        "Tire fotos mais claras da área afetada"
+      ],
       confidence: 0
     };
   }
@@ -122,23 +176,27 @@ export const analyzePlantWithAI = async (
 // Future implementation for OpenAI API integration
 /*
 const callOpenAI = async (imageBase64: string, questions: DiagnosisQuestions) => {
-  const apiKey = process.env.OPENAI_API_KEY;
+  const apiKey = Deno.env.get('OPENAI_API_KEY');
   
   const prompt = `
-    Analise esta imagem de uma planta com potenciais problemas:
+    Sua função é agir como um agrônomo digital brasileiro. Analise a imagem da planta e as informações fornecidas:
     
     Cultura: ${questions.culture}
     Sintomas observados: ${questions.symptoms}
-    Área afetada: ${questions.affectedArea}
+    Parte afetada: ${questions.affectedArea}
     Duração dos sintomas: ${questions.timeFrame}
+    Produtos aplicados recentemente: ${questions.recentProducts || "Não informado"}
+    Mudanças climáticas: ${questions.weatherChanges || "Não informado"}
     Localização: ${questions.location || "Não informado"}
     
     Baseado nesta imagem e informações, forneça:
     1. Nome provável da doença ou condição
     2. Nível de severidade (leve, moderado ou grave)
     3. Parte da planta mais afetada
-    4. Tratamento recomendado para um produtor rural brasileiro
-    5. Uma dica adicional para prevenção ou manejo sustentável
+    4. Risco de disseminação (baixo, médio, alto)
+    5. Tratamento recomendado para um produtor rural brasileiro
+    6. 3 medidas preventivas para safras futuras
+    7. Uma dica adicional para manejo sustentável
     
     Responda apenas com estas informações organizadas claramente.
   `;
@@ -150,7 +208,7 @@ const callOpenAI = async (imageBase64: string, questions: DiagnosisQuestions) =>
       "Authorization": `Bearer ${apiKey}`
     },
     body: JSON.stringify({
-      model: "gpt-4-vision-preview",
+      model: "gpt-4o",
       messages: [
         {
           role: "user",
@@ -165,7 +223,7 @@ const callOpenAI = async (imageBase64: string, questions: DiagnosisQuestions) =>
           ]
         }
       ],
-      max_tokens: 500
+      max_tokens: 800
     })
   });
   
