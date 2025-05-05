@@ -5,7 +5,7 @@ import { analyzePlantImage } from "@/services/plantnet-api";
 import ImageUploadArea from "@/components/plant-diagnosis/ImageUploadArea";
 import ImagePreview from "@/components/plant-diagnosis/ImagePreview";
 import ResultCard from "@/components/plant-diagnosis/ResultCard";
-import useIsMobile from "@/hooks/use-mobile";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function PlantDiagnosis() {
   const isMobile = useIsMobile();
