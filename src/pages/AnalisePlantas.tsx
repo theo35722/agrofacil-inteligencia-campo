@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { UploadCloud, ImageIcon, LoaderCircle, CheckCircle2, AlertTriangle } from "lucide-react";
+import { UploadCloud, ImageIcon, LoaderCircle } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 import { analyzePlantImage, getDetailedDiagnosis, DiseaseDiagnosis } from "@/services/plantnet-api";
 import { DiagnosisResult } from "@/components/plant-diagnosis/DiagnosisResult";
@@ -25,7 +25,7 @@ export default function AnalisePlantas() {
   const [image, setImage] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [resultado, setResultado] = useState<string | null>(null);
+  const [apiResponse, setApiResponse] = useState<any>(null);
   const [detailedDiagnosis, setDetailedDiagnosis] = useState<DiseaseDiagnosis | null>(null);
 
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -33,7 +33,7 @@ export default function AnalisePlantas() {
     if (file) {
       setImage(file);
       setPreview(URL.createObjectURL(file));
-      setResultado(null);
+      setApiResponse(null);
       setDetailedDiagnosis(null);
       console.log("Arquivo carregado:", file.name);
     }
@@ -42,7 +42,7 @@ export default function AnalisePlantas() {
   const resetDiagnosis = () => {
     setImage(null);
     setPreview(null);
-    setResultado(null);
+    setApiResponse(null);
     setDetailedDiagnosis(null);
   };
 
@@ -54,7 +54,7 @@ export default function AnalisePlantas() {
 
     try {
       setLoading(true);
-      setResultado(null);
+      setApiResponse(null);
       
       // Converter imagem para base64
       const base64Image = await toBase64(image);
@@ -64,17 +64,11 @@ export default function AnalisePlantas() {
       const result = await analyzePlantImage(base64Image);
       
       console.log("Resposta completa da Plant.id:", result);
+      setApiResponse(result);
       
       // Processar o diagnóstico detalhado
       const diagnosis = getDetailedDiagnosis(result);
       setDetailedDiagnosis(diagnosis);
-      
-      // Criar resumo do diagnóstico para exibir
-      if (diagnosis.disease === "Planta Saudável") {
-        setResultado(`✅ Nenhuma doença detectada. Sua planta parece saudável.`);
-      } else {
-        setResultado(`${diagnosis.disease} (${diagnosis.confidence}% de certeza)\n${diagnosis.symptoms.join(". ")}`);
-      }
       
       setLoading(false);
       toast.success("Análise concluída com sucesso!");
@@ -129,15 +123,14 @@ export default function AnalisePlantas() {
         </div>
       )}
 
-      {resultado && !loading && (
+      {detailedDiagnosis && !loading && (
         <div className="mt-6 max-w-3xl w-full">
-          {detailedDiagnosis && (
-            <DiagnosisResult 
-              imagePreview={preview!}
-              diagnosisResult={detailedDiagnosis}
-              resetDiagnosis={resetDiagnosis}
-            />
-          )}
+          <DiagnosisResult 
+            imagePreview={preview!}
+            diagnosisResult={detailedDiagnosis}
+            apiResponse={apiResponse}
+            resetDiagnosis={resetDiagnosis}
+          />
         </div>
       )}
     </div>
