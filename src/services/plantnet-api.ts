@@ -371,7 +371,25 @@ const diseaseRecommendations: Record<string, DiseaseDiagnosis> = {
 const API_KEY = "2b10xZmIzbSFUbETFOXBO9Kka"; // Replace with actual API key
 
 // Function to analyze a plant image
+export const analyzePlantImage = async (imageBase64: string): Promise<any> => {
+  const response = await fetch("https://api.plant.id/v3/health_assessment", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      api_key: API_KEY,
+      images: [imageBase64],
+      organs: ["leaf"]
+    })
+  });
 
+  if (!response.ok) {
+    throw new Error("Erro ao chamar a API da Plant.id");
+  }
+
+  return response.json();
+};
 
 // Function to save diagnosis locally for offline access
 const saveDiagnosisToLocalStorage = (imageBase64: string, diagnosis: DiseaseDiagnosis) => {
@@ -414,27 +432,27 @@ export const getOfflineDiagnoses = () => {
 };
 
 // Keeping this implementation of analyzePlantImage which calls the Plant.id API
-export const analyzePlantImage = async (imageBase64: string): Promise<any> => {
-  try {
-    const response = await fetch("https://api.plant.id/v3/health_assessment", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Api-Key": "otOllZci1gJz9KpwhUjsUHD15uZSAXZqNUFz1yf2y85FjNcjMD"
-      },
-      body: JSON.stringify({
-        images: [imageBase64],
-        modifiers: ["similar_images"],
-        plant_language: "pt",
-        disease_details: ["description", "treatment", "common_names"]
-      })
-    });
+// export const analyzePlantImage = async (imageBase64: string): Promise<any> => {
+//   try {
+//     const response = await fetch("https://api.plant.id/v3/health_assessment", {
+//       method: "POST",
+//       headers: {
+//         "Content-Type": "application/json",
+//         "Api-Key": "otOllZci1gJz9KpwhUjsUHD15uZSAXZqNUFz1yf2y85FjNcjMD"
+//       },
+//       body: JSON.stringify({
+//         images: [imageBase64],
+//         modifiers: ["similar_images"],
+//         plant_language: "pt",
+//         disease_details: ["description", "treatment", "common_names"]
+//       })
+//     });
 
-    const data = await response.json();
-    console.log("Diagnóstico da IA recebido:", data);
-    return data;
-  } catch (error) {
-    console.error("Erro ao chamar a API do Plant.id:", error);
-    throw error;
-  }
-};
+//     const data = await response.json();
+//     console.log("Diagnóstico da IA recebido:", data);
+//     return data;
+//   } catch (error) {
+//     console.error("Erro ao chamar a API do Plant.id:", error);
+//     throw error;
+//   }
+// };
