@@ -502,6 +502,8 @@ export const getOfflineDiagnoses = () => {
     return {};
   }
 };
+
+// Keeping this implementation of analyzePlantImage which calls the Plant.id API
 export const analyzePlantImage = async (imageBase64: string): Promise<any> => {
   try {
     const response = await fetch("https://api.plant.id/v3/health_assessment", {

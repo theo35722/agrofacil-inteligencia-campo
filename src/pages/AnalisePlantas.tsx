@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { UploadCloud, ImageIcon, LoaderCircle, CheckCircle2, AlertTriangle } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
+import { analyzePlantImage } from "@/services/plantnet-api";
 
 export default function AnalisePlantas() {
   const toBase64 = (file: File): Promise<string> => {
@@ -50,6 +51,10 @@ export default function AnalisePlantas() {
       const nomeArquivo = image.name.toLowerCase();
       console.log("Nome do arquivo para análise:", nomeArquivo);
 
+      // Decidir se usamos a API real ou simulamos a análise baseada no nome do arquivo
+      // Para este exemplo, vamos simular baseado no nome do arquivo
+      // Em um ambiente de produção, você iria comentar este bloco e descomentar o bloco da API real
+
       // Simula o tempo de processamento da IA
       setTimeout(() => {
         let resultado = "";
@@ -89,6 +94,32 @@ export default function AnalisePlantas() {
         // Notifica o usuário que a análise foi concluída
         toast.success("Análise concluída com sucesso!");
       }, 2000);
+
+      // Para usar a API real descomente este bloco e comente o bloco acima
+      /*
+      // Converter imagem para base64
+      const base64Image = await toBase64(image);
+
+      // Chamar a IA real (Plant.id)
+      const result = await analyzePlantImage(base64Image);
+
+      // Pegar a primeira doença identificada
+      const health = result.health_assessment;
+      const disease = health?.diseases?.[0];
+
+      if (disease) {
+        const nome = disease.name?.pt || disease.name?.en || "Doença desconhecida";
+        const confianca = disease.probability ? Math.round(disease.probability * 100) : 0;
+        const descricao = disease.description?.pt || disease.description?.en || "";
+
+        setResultado(`${nome} (${confianca}% de certeza)\n${descricao}`);
+      } else {
+        setResultado("⚠️ Nenhuma doença detectada ou diagnóstico inconclusivo.");
+      }
+      
+      setLoading(false);
+      toast.success("Análise concluída com sucesso!");
+      */
     } catch (error) {
       console.error("Erro ao analisar planta:", error);
       toast.error("Erro ao analisar a planta.");
