@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -14,6 +13,7 @@ import {
 } from "@/components/ui/select";
 import { DiagnosisQuestions } from "@/services/openai-api";
 import { useGeolocation } from "@/hooks/use-geolocation";
+import { toast } from "@/components/ui/sonner";
 
 interface DiagnosisQuestionnaireProps {
   imagePreview: string;
@@ -110,9 +110,55 @@ const DiagnosisQuestionnaire: React.FC<DiagnosisQuestionnaireProps> = ({
     }
   };
 
+  const enviarDadosParaWebhook = async () => {
+    try {
+      // URL do webhook
+      const webhookUrl = "https://hook.us2.make.com/trgfvdersyeosj0gu61p98hle6ffuzd6";
+      
+      // Extrair a base64 da string da imagem (remove o prefixo data:image/jpeg;base64,)
+      const base64Image = imagePreview.split(",")[1];
+      
+      // Preparar os dados para envio
+      const dadosParaEnviar = {
+        image: base64Image,
+        cultura: formData.culture,
+        sintomas: formData.symptoms,
+        parte_afetada: formData.affectedArea,
+        tempo: formData.timeFrame,
+        produtos: formData.recentProducts,
+        clima: formData.weatherChanges,
+        localizacao: locationName,
+        timestamp: new Date().toISOString()
+      };
+      
+      console.log("Enviando dados para webhook:", webhookUrl);
+      
+      const response = await fetch(webhookUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(dadosParaEnviar),
+      });
+      
+      if (!response.ok) {
+        console.error("Erro ao enviar dados para o webhook:", response.statusText);
+        toast.error("Erro ao enviar dados para análise");
+      } else {
+        console.log("Dados enviados para o webhook com sucesso!");
+      }
+    } catch (error) {
+      console.error("Erro ao enviar dados para o webhook:", error);
+      toast.error("Erro ao conectar com o serviço de análise");
+    }
+    
+    // Continua com o fluxo normal de análise
+    onSubmit(formData);
+  };
+
   const handleSubmit = () => {
     setIsLoading(true);
-    onSubmit(formData);
+    enviarDadosParaWebhook();
   };
 
   return (

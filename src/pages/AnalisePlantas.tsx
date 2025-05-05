@@ -53,6 +53,8 @@ export default function AnalisePlantas() {
 
     try {
       setLoading(true);
+      // Note: O envio para o webhook agora é feito diretamente pelo DiagnosisQuestionnaire
+      // antes de chamar esta função. Aqui apenas processamos a análise pelo OpenAI
       const base64Image = await toBase64(image);
       
       // Use the OpenAI service
