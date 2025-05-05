@@ -5,18 +5,19 @@ import { Card, CardContent } from "@/components/ui/card";
 import { UploadCloud, ImageIcon, LoaderCircle, CheckCircle2, AlertTriangle } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
 
-export default function AnalisePlantas() {const toBase64 = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => {
-      const result = reader.result as string;
-      const base64 = result.split(',')[1]; // remove "data:image/jpeg;base64,"
-      resolve(base64);
-    };
-    reader.onerror = (error) => reject(error);
-  });
-};
+export default function AnalisePlantas() {
+  const toBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => {
+        const result = reader.result as string;
+        const base64 = result.split(',')[1]; // remove "data:image/jpeg;base64,"
+        resolve(base64);
+      };
+      reader.onerror = (error) => reject(error);
+    });
+  };
 
   const [image, setImage] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
@@ -36,88 +37,63 @@ export default function AnalisePlantas() {const toBase64 = (file: File): Promise
   };
 
   const analisar = async () => {
-  if (!image) {
-    toast.error("Nenhuma imagem foi enviada para análise.");
-    return;
-  }
-
-  try {
-    setLoading(true);
-    setResultado(null);
-
-    // Converter imagem para base64
-    const base64Image = await toBase64(image);
-
-    // Chamar a IA real (Plant.id)
-    const result = await analyzePlantImage(base64Image);
-
-    // Pegar a primeira doença identificada
-    const health = result.health_assessment;
-    const disease = health?.diseases?.[0];
-
-    if (disease) {
-      const nome = disease.name?.pt || disease.name?.en || "Doença desconhecida";
-      const confianca = disease.probability ? Math.round(disease.probability * 100) : 0;
-      const descricao = disease.description?.pt || disease.description?.en || "";
-
-      setResultado(`${nome} (${confianca}% de certeza)\n${descricao}`);
-    } else {
-      setResultado("⚠️ Nenhuma doença detectada ou diagnóstico inconclusivo.");
+    if (!image) {
+      toast.error("Nenhuma imagem foi enviada para análise.");
+      return;
     }
-  } catch (error) {
-    console.error("Erro ao analisar planta:", error);
-    toast.error("Erro ao analisar a planta.");
-  } finally {
-    setLoading(false);
-  }
-};
 
+    try {
+      setLoading(true);
+      setResultado(null);
 
-    setLoading(true);
-    setResultado(null);
+      // Armazena e loga o nome do arquivo para confirmar que está sendo lido corretamente
+      const nomeArquivo = image.name.toLowerCase();
+      console.log("Nome do arquivo para análise:", nomeArquivo);
 
-    // Armazena e loga o nome do arquivo para confirmar que está sendo lido corretamente
-    const nomeArquivo = image.name.toLowerCase();
-    console.log("Nome do arquivo para análise:", nomeArquivo);
+      // Simula o tempo de processamento da IA
+      setTimeout(() => {
+        let resultado = "";
+        let icone = "⚠️";
+        let certeza = Math.floor(Math.random() * (90 - 40 + 1)) + 40; // Certeza entre 40% e 90%
 
-    setTimeout(() => {
-      let resultado = "";
-      let icone = "⚠️";
-      let certeza = Math.floor(Math.random() * (90 - 40 + 1)) + 40; // Certeza entre 40% e 90%
-
-      if (nomeArquivo.includes("ferrugem")) {
-        resultado = `${icone} Ferrugem Asiática detectada (${certeza}% de certeza)`;
-      } else if (nomeArquivo.includes("pulgao") || nomeArquivo.includes("inseto")) {
-        resultado = `${icone} Infestação de pulgões identificada (${certeza}% de certeza)`;
-      } else if (nomeArquivo.includes("amarela") || nomeArquivo.includes("nitrogenio")) {
-        icone = "💡";
-        resultado = `${icone} Deficiência de nitrogênio provável (${certeza}% de certeza)`;
-      } else if (nomeArquivo.includes("doente") || nomeArquivo.includes("mancha")) {
-        resultado = `${icone} Mancha alvo detectada (${certeza}% de certeza)`;
-      } else {
-        // Diagnóstico saudável com chance de 30%
-        const chanceSaudavel = Math.random() < 0.3;
-        if (chanceSaudavel) {
-          icone = "✅";
-          resultado = `${icone} Sua planta parece saudável (${certeza}% de certeza)`;
+        if (nomeArquivo.includes("ferrugem")) {
+          resultado = `${icone} Ferrugem Asiática detectada (${certeza}% de certeza)`;
+        } else if (nomeArquivo.includes("pulgao") || nomeArquivo.includes("inseto")) {
+          resultado = `${icone} Infestação de pulgões identificada (${certeza}% de certeza)`;
+        } else if (nomeArquivo.includes("amarela") || nomeArquivo.includes("nitrogenio")) {
+          icone = "💡";
+          resultado = `${icone} Deficiência de nitrogênio provável (${certeza}% de certeza)`;
+        } else if (nomeArquivo.includes("doente") || nomeArquivo.includes("mancha")) {
+          resultado = `${icone} Mancha alvo detectada (${certeza}% de certeza)`;
         } else {
-          const outrosProblemas = [
-            `${icone} Sinais de estresse hídrico (${certeza}% de certeza)`,
-            `${icone} Excesso de adubo (${certeza}% de certeza)`,
-            `${icone} Possível deficiência de potássio (${certeza}% de certeza)`,
-            `${icone} Sinais de antracnose (${certeza}% de certeza)`
-          ];
-          resultado = outrosProblemas[Math.floor(Math.random() * outrosProblemas.length)];
+          // Diagnóstico saudável com chance de 30%
+          const chanceSaudavel = Math.random() < 0.3;
+          if (chanceSaudavel) {
+            icone = "✅";
+            resultado = `${icone} Sua planta parece saudável (${certeza}% de certeza)`;
+          } else {
+            const outrosProblemas = [
+              `${icone} Sinais de estresse hídrico (${certeza}% de certeza)`,
+              `${icone} Excesso de adubo (${certeza}% de certeza)`,
+              `${icone} Possível deficiência de potássio (${certeza}% de certeza)`,
+              `${icone} Sinais de antracnose (${certeza}% de certeza)`
+            ];
+            resultado = outrosProblemas[Math.floor(Math.random() * outrosProblemas.length)];
+          }
         }
-      }
 
-      console.log("Resultado da análise:", resultado);
-      setResultado(resultado);
+        console.log("Resultado da análise:", resultado);
+        setResultado(resultado);
+        setLoading(false);
+        
+        // Notifica o usuário que a análise foi concluída
+        toast.success("Análise concluída com sucesso!");
+      }, 2000);
+    } catch (error) {
+      console.error("Erro ao analisar planta:", error);
+      toast.error("Erro ao analisar a planta.");
       setLoading(false);
-      
-      // Notifica o usuário que a análise foi concluída
-      toast.success("Análise concluída com sucesso!");
-    }, 2000);
+    }
   };
 
   return (
