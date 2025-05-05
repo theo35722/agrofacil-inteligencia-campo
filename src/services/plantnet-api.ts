@@ -383,7 +383,8 @@ export const analyzePlantImage = async (imageBase64: string): Promise<any> => {
       body: JSON.stringify({
         api_key: API_KEY,
         images: [imageBase64],
-        modifiers: ["crops_fast"],
+        // Updated modifiers to use valid values from the error message
+        modifiers: ["health=all"],
         language: "pt",
         details: ["description", "treatment", "classification", "common_names"]
       })

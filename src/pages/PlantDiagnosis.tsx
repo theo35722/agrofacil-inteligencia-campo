@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { toast } from "@/components/ui/sonner";
-import { analyzePlantImage } from "@/services/plantnet-api";
+import { analyzePlantImage, getDetailedDiagnosis } from "@/services/plantnet-api";
 import ImageUploadArea from "@/components/plant-diagnosis/ImageUploadArea";
 import ImagePreview from "@/components/plant-diagnosis/ImagePreview";
 import ResultCard from "@/components/plant-diagnosis/ResultCard";
@@ -46,6 +46,7 @@ export default function PlantDiagnosis() {
       setLoading(true);
       const base64Image = await toBase64(image);
       const result = await analyzePlantImage(base64Image);
+      console.log("Analysis result:", result);
       setResultado(result);
       toast.success("Analysis completed successfully!");
     } catch (error) {
