@@ -2,14 +2,13 @@
 import React from "react";
 import { Camera, Image, Upload, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { PhotoTips } from "./PhotoTips";
 import { 
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import { useIsMobile } from "@/hooks/use-mobile";
+import useIsMobile from "@/hooks/use-mobile";
 
 interface ImageUploadAreaProps {
   captureImage: () => void;
@@ -18,7 +17,7 @@ interface ImageUploadAreaProps {
   setShowTips: (show: boolean) => void;
 }
 
-export const ImageUploadArea: React.FC<ImageUploadAreaProps> = ({ 
+const ImageUploadArea: React.FC<ImageUploadAreaProps> = ({ 
   captureImage, 
   handleImageUpload,
   showTips,
@@ -37,7 +36,7 @@ export const ImageUploadArea: React.FC<ImageUploadAreaProps> = ({
           <Button
             variant="outline"
             size="sm"
-            className="w-full border-agro-green-300 text-agro-green-700 mb-4"
+            className="w-full border-green-300 text-green-700 mb-4"
           >
             <Info className="h-4 w-4 mr-2" />
             {showTips ? "Ocultar dicas" : "Dicas para tirar a melhor foto"}
@@ -49,11 +48,11 @@ export const ImageUploadArea: React.FC<ImageUploadAreaProps> = ({
       </Collapsible>
       
       <div 
-        className="border-2 border-dashed border-agro-green-300 rounded-lg p-6 sm:p-8
-          flex flex-col items-center justify-center text-center bg-agro-green-50"
+        className="border-2 border-dashed border-green-300 rounded-lg p-6 sm:p-8
+          flex flex-col items-center justify-center text-center bg-green-50"
       >
-        <Image className={`${isMobile ? 'h-12 w-12' : 'h-16 w-16'} text-agro-green-400 mb-4`} />
-        <p className="text-agro-green-800 font-medium">
+        <Image className={`${isMobile ? 'h-12 w-12' : 'h-16 w-16'} text-green-400 mb-4`} />
+        <p className="text-green-800 font-medium">
           Envie uma imagem da planta
         </p>
         <p className="text-gray-500 text-xs sm:text-sm mt-1">
@@ -64,22 +63,22 @@ export const ImageUploadArea: React.FC<ImageUploadAreaProps> = ({
       <div className="grid grid-cols-2 gap-3">
         <Button 
           variant="outline" 
-          className="h-16 sm:h-20 border-agro-green-300 w-full"
+          className="h-16 sm:h-20 border-green-300 w-full"
           onClick={captureImage}
         >
           <div className="flex flex-col items-center">
-            <Camera className="h-5 w-5 mb-1 text-agro-green-600" />
+            <Camera className="h-5 w-5 mb-1 text-green-600" />
             <span className="text-sm">Tirar foto</span>
           </div>
         </Button>
         
         <Button
           variant="outline"
-          className="h-16 sm:h-20 border-agro-green-300 w-full"
+          className="h-16 sm:h-20 border-green-300 w-full"
           onClick={() => document.getElementById('image-upload')?.click()}
         >
           <div className="flex flex-col items-center">
-            <Upload className="h-5 w-5 mb-1 text-agro-green-600" />
+            <Upload className="h-5 w-5 mb-1 text-green-600" />
             <span className="text-sm">Enviar foto</span>
           </div>
           <input
@@ -94,3 +93,5 @@ export const ImageUploadArea: React.FC<ImageUploadAreaProps> = ({
     </div>
   );
 };
+
+export default ImageUploadArea;

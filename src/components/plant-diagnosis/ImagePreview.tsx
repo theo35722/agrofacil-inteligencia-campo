@@ -1,29 +1,29 @@
 
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, LoaderCircle } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ImagePreviewProps {
-  imagePreview: string;
-  resetDiagnosis: () => void;
-  startAnalysis: () => void;
-  isLoading?: boolean;
+  preview: string;
+  onCancel: () => void;
+  onAnalyze: () => void;
+  loading?: boolean;
 }
 
-export const ImagePreview: React.FC<ImagePreviewProps> = ({ 
-  imagePreview, 
-  resetDiagnosis, 
-  startAnalysis,
-  isLoading = false
+const ImagePreview: React.FC<ImagePreviewProps> = ({ 
+  preview, 
+  onCancel, 
+  onAnalyze,
+  loading = false
 }) => {
   const isMobile = useIsMobile();
   
   return (
     <div className="space-y-4">
-      <div className="rounded-lg overflow-hidden border border-agro-green-200 shadow-sm">
+      <div className="rounded-lg overflow-hidden border border-green-200 shadow-sm">
         <img 
-          src={imagePreview} 
+          src={preview} 
           alt="Prévia da imagem" 
           className={`w-full object-cover ${isMobile ? 'max-h-56' : 'max-h-72'}`}
         />
@@ -33,21 +33,21 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({
         <Button 
           variant="outline" 
           className="flex-1 border-gray-300"
-          onClick={resetDiagnosis}
-          disabled={isLoading}
+          onClick={onCancel}
+          disabled={loading}
         >
           Cancelar
         </Button>
         
         <Button 
-          className="flex-1 bg-agro-green-500 hover:bg-agro-green-600 text-white py-6 font-medium"
-          onClick={startAnalysis}
-          disabled={isLoading}
+          className="flex-1 bg-green-500 hover:bg-green-600 text-white py-6 font-medium"
+          onClick={onAnalyze}
+          disabled={loading}
         >
-          {isLoading ? (
+          {loading ? (
             <span className="flex items-center justify-center">
               <span className="mr-2">Analisando</span>
-              <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></span>
+              <LoaderCircle className="h-5 w-5 animate-spin" />
             </span>
           ) : (
             <>
@@ -59,3 +59,5 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({
     </div>
   );
 };
+
+export default ImagePreview;
