@@ -2,21 +2,21 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { UploadCloud, ImageIcon, LoaderCircle, Share2, Info } from "lucide-react";
 import { toast } from "@/components/ui/sonner";
-import { analyzePlantImage, getDetailedDiagnosis, DiseaseDiagnosis } from "@/services/plantnet-api";
-import { DiagnosisResult } from "@/components/plant-diagnosis/DiagnosisResult";
+import { analyzePlantImage } from "@/services/plantnet-api";
 import { ImagePreview } from "@/components/plant-diagnosis/ImagePreview";
 import { ImageUploadArea } from "@/components/plant-diagnosis/ImageUploadArea";
+import { ResultCard } from "@/components/plant-diagnosis/ResultCard";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { 
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 
 export default function AnalisePlantas() {
   const isMobile = useIsMobile();
+  const [image, setImage] = useState<File | null>(null);
+  const [preview, setPreview] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [resultado, setResultado] = useState<string | null>(null);
+  const [showTips, setShowTips] = useState(false);
+
   const toBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -30,20 +30,12 @@ export default function AnalisePlantas() {
     });
   };
 
-  const [image, setImage] = useState<File | null>(null);
-  const [preview, setPreview] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [apiResponse, setApiResponse] = useState<any>(null);
-  const [detailedDiagnosis, setDetailedDiagnosis] = useState<DiseaseDiagnosis | null>(null);
-  const [showPhotoTips, setShowPhotoTips] = useState(false);
-
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setImage(file);
       setPreview(URL.createObjectURL(file));
-      setApiResponse(null);
-      setDetailedDiagnosis(null);
+      setResultado(null);
       console.log("Arquivo carregado:", file.name);
     }
   };
@@ -51,8 +43,7 @@ export default function AnalisePlantas() {
   const resetDiagnosis = () => {
     setImage(null);
     setPreview(null);
-    setApiResponse(null);
-    setDetailedDiagnosis(null);
+    setResultado(null);
   };
 
   const captureImage = () => {
@@ -73,7 +64,7 @@ export default function AnalisePlantas() {
 
     try {
       setLoading(true);
-      setApiResponse(null);
+      setResultado(null);
       
       // Converter imagem para base64
       const base64Image = await toBase64(image);
@@ -82,12 +73,22 @@ export default function AnalisePlantas() {
       console.log("Enviando imagem para análise...");
       const result = await analyzePlantImage(base64Image);
       
-      console.log("Resposta completa da Plant.id:", result);
-      setApiResponse(result);
+      console.log("Resposta da Plant.id:", result);
       
-      // Processar o diagnóstico detalhado
-      const diagnosis = getDetailedDiagnosis(result);
-      setDetailedDiagnosis(diagnosis);
+      // Processar a resposta
+      const health = result.health_assessment;
+      const disease = health?.diseases?.[0];
+      
+      if (disease) {
+        const nome = disease.name?.pt || disease.name?.en || "Doença desconhecida";
+        const confianca = disease.probability ? Math.round(disease.probability * 100) : 0;
+        const descricao = disease.description?.pt || disease.description?.en || "";
+        setResultado(`${nome} (${confianca}% de certeza)\n${descricao}`);
+      } else if (health?.is_healthy) {
+        setResultado("✓ Planta aparentemente saudável. Não foram detectados sinais de doenças.");
+      } else {
+        setResultado("⚠️ Nenhuma doença detectada ou diagnóstico inconclusivo.");
+      }
       
       setLoading(false);
       toast.success("Análise concluída com sucesso!");
@@ -111,64 +112,30 @@ export default function AnalisePlantas() {
           <ImageUploadArea
             captureImage={captureImage}
             handleImageUpload={handleUpload}
+            showTips={showTips}
+            setShowTips={setShowTips}
           />
         </div>
       )}
 
-      {preview && !loading && !detailedDiagnosis && (
+      {preview && (
         <Card className="w-full max-w-md mb-6 shadow-md animate-fade-in">
           <CardContent className="p-4">
             <ImagePreview 
               imagePreview={preview}
               resetDiagnosis={resetDiagnosis}
               startAnalysis={analisar}
+              isLoading={loading}
             />
           </CardContent>
         </Card>
       )}
 
-      {loading && (
-        <div className="flex flex-col items-center justify-center py-12 animate-fade-in">
-          <LoaderCircle className="h-12 w-12 text-agro-green-600 animate-spin mb-4" />
-          <p className="text-agro-green-700 font-medium">Analisando sua planta...</p>
-          <p className="text-gray-500 text-sm mt-1">Isso pode levar alguns segundos</p>
-        </div>
-      )}
-
-      {detailedDiagnosis && !loading && (
-        <div className="mt-4 max-w-3xl w-full animate-fade-in">
-          <DiagnosisResult 
-            imagePreview={preview!}
-            diagnosisResult={detailedDiagnosis}
-            apiResponse={apiResponse}
-            resetDiagnosis={resetDiagnosis}
-          />
-          
-          {/* Botão de compartilhar */}
-          <div className="mt-4 text-center">
-            <Button 
-              variant="outline" 
-              className="bg-white text-agro-green-700 border-agro-green-300 hover:bg-agro-green-50"
-              onClick={() => {
-                if (navigator.share) {
-                  navigator.share({
-                    title: `Diagnóstico de Planta: ${detailedDiagnosis.disease}`,
-                    text: `Análise de saúde da planta: ${detailedDiagnosis.disease}. Nível de confiança: ${detailedDiagnosis.confidence}%. Verifique os detalhes completos no app AgroFácil.`,
-                  }).catch(err => {
-                    console.log('Erro ao compartilhar:', err);
-                    toast.error('Não foi possível compartilhar o diagnóstico');
-                  });
-                } else {
-                  toast.error('Compartilhamento não suportado neste dispositivo');
-                }
-              }}
-            >
-              <Share2 className="h-4 w-4 mr-2" />
-              Compartilhar diagnóstico
-            </Button>
-          </div>
+      {resultado && !loading && (
+        <div className="w-full max-w-md animate-fade-in">
+          <ResultCard resultado={resultado} />
         </div>
       )}
     </div>
   );
-}
+};

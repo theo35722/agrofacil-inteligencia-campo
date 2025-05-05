@@ -14,14 +14,17 @@ import { useIsMobile } from "@/hooks/use-mobile";
 interface ImageUploadAreaProps {
   captureImage: () => void;
   handleImageUpload: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  showTips: boolean;
+  setShowTips: (show: boolean) => void;
 }
 
 export const ImageUploadArea: React.FC<ImageUploadAreaProps> = ({ 
   captureImage, 
-  handleImageUpload 
+  handleImageUpload,
+  showTips,
+  setShowTips
 }) => {
   const isMobile = useIsMobile();
-  const [showTips, setShowTips] = React.useState(false);
 
   return (
     <div className="space-y-4">
