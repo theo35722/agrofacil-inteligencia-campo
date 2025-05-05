@@ -6,7 +6,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Leaf } from "lucide-react";
+import { Leaf, Info } from "lucide-react";
 
 export const photoTips = [
   {
