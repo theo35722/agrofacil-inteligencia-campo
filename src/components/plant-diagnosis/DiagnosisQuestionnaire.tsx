@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -118,9 +119,9 @@ const DiagnosisQuestionnaire: React.FC<DiagnosisQuestionnaireProps> = ({
       // Extrair a base64 da string da imagem (remove o prefixo data:image/jpeg;base64,)
       const base64Image = imagePreview.split(",")[1];
       
-      // Preparar os dados para envio
-      const dadosParaEnviar = {
-        image: base64Image,
+      // Preparar os dados para envio no formato especificado
+      const dados = {
+        imagem: base64Image,
         cultura: formData.culture,
         sintomas: formData.symptoms,
         parte_afetada: formData.affectedArea,
@@ -128,7 +129,7 @@ const DiagnosisQuestionnaire: React.FC<DiagnosisQuestionnaireProps> = ({
         produtos: formData.recentProducts,
         clima: formData.weatherChanges,
         localizacao: locationName,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toLocaleString("pt-BR")
       };
       
       console.log("Enviando dados para webhook:", webhookUrl);
@@ -138,18 +139,19 @@ const DiagnosisQuestionnaire: React.FC<DiagnosisQuestionnaireProps> = ({
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(dadosParaEnviar),
+        body: JSON.stringify(dados),
       });
       
-      if (!response.ok) {
+      if (response.ok) {
+        console.log("Dados enviados para o webhook com sucesso!");
+        toast.success("Dados enviados com sucesso!");
+      } else {
         console.error("Erro ao enviar dados para o webhook:", response.statusText);
         toast.error("Erro ao enviar dados para análise");
-      } else {
-        console.log("Dados enviados para o webhook com sucesso!");
       }
     } catch (error) {
       console.error("Erro ao enviar dados para o webhook:", error);
-      toast.error("Erro ao conectar com o serviço de análise");
+      toast.error("Erro na análise. Verifique sua conexão.");
     }
     
     // Continua com o fluxo normal de análise
