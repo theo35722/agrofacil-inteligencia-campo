@@ -26,10 +26,16 @@ export default function PlantDiagnosis() {
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      setImage(file);
-      setPreview(URL.createObjectURL(file));
-      setResultado(null);
-      setCurrentStep(DiagnosisStep.QUESTIONS);
+      // Converter para base64 usando FileReader em vez de URL.createObjectURL
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string; // Resultado já é uma data URL completa
+        setPreview(result);
+        setImage(file);
+        setResultado(null);
+        setCurrentStep(DiagnosisStep.QUESTIONS);
+      };
+      reader.readAsDataURL(file); // Isso gera uma data URL completa com o formato correto
     }
   };
 
