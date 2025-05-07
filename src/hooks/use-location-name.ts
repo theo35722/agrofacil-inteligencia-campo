@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import { useGeolocation } from './use-mobile';
+import { useGeolocation } from './use-geolocation';
 
 export const useLocationName = () => {
   const location = useGeolocation();
