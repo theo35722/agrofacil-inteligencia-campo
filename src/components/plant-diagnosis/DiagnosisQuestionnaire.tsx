@@ -116,8 +116,16 @@ const DiagnosisQuestionnaire: React.FC<DiagnosisQuestionnaireProps> = ({
       // URL do webhook
       const webhookUrl = "https://hook.us2.make.com/trgfvdersyeosj0gu61p98hle6ffuzd6";
       
-      // Extrair a base64 da string da imagem (remove o prefixo data:image/jpeg;base64,)
-      const base64Image = imagePreview.split(",")[1];
+      // Verificar se a imagePreview é uma URL ou um data URL
+      let base64Image;
+      if (imagePreview && imagePreview.startsWith('data:')) {
+        // É um data URL, extrair parte base64
+        base64Image = imagePreview.split(",")[1];
+      } else {
+        // É uma URL de objeto ou outra string, não podemos extrair base64
+        console.error("imagePreview não está em formato data URL:", imagePreview);
+        base64Image = ""; // Falha graciosamente com string vazia
+      }
       
       // Preparar os dados para envio no formato especificado
       const dados = {
@@ -133,6 +141,7 @@ const DiagnosisQuestionnaire: React.FC<DiagnosisQuestionnaireProps> = ({
       };
       
       console.log("Enviando dados para webhook:", webhookUrl);
+      console.log("Preview da imagem recebida:", imagePreview?.substring(0, 50) + "...");
       
       const response = await fetch(webhookUrl, {
         method: "POST",
