@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -117,23 +116,18 @@ const DiagnosisQuestionnaire: React.FC<DiagnosisQuestionnaireProps> = ({
       const webhookUrl = "https://hook.us2.make.com/trgfvdersyeosj0gu61p98hle6ffuzd6";
       
       // Verificar se imagePreview contém uma data URL válida
-      const base64Image = imagePreview?.includes("base64,")
-        ? imagePreview.split("base64,")[1]
-        : "";
+      console.log("Valor de imagePreview:", imagePreview);
       
-      console.log("Base64 da imagem (primeiros 50 caracteres):", base64Image?.substring(0, 50) + "...");
-      
-      // Verificar se a base64Image está vazia
-      if (!base64Image) {
-        console.error("Erro: base64Image está vazia");
-        toast.error("Erro ao processar imagem. Tente novamente.");
+      if (!imagePreview || !imagePreview.startsWith("data:image/")) {
+        console.error("Erro: imagePreview não é uma data URL válida");
+        toast.error("Erro ao processar imagem. Formato inválido.");
         setIsLoading(false);
         return;
       }
       
       // Preparar os dados para envio no formato especificado
       const dados = {
-        imagem: base64Image,
+        imagem: imagePreview, // Enviar a imagem completa com o prefixo
         cultura: formData.culture,
         sintomas: formData.symptoms,
         parte_afetada: formData.affectedArea,
@@ -145,6 +139,7 @@ const DiagnosisQuestionnaire: React.FC<DiagnosisQuestionnaireProps> = ({
       };
       
       console.log("Enviando dados para webhook:", webhookUrl);
+      console.log("Primeiros 50 caracteres da imagem:", imagePreview.substring(0, 50) + "...");
       
       const response = await fetch(webhookUrl, {
         method: "POST",
