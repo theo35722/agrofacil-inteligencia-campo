@@ -24,6 +24,7 @@ export default function PlantDiagnosis() {
   const [resultado, setResultado] = useState<DiagnosisResult | null>(null);
   const [showTips, setShowTips] = useState(false);
   const [currentStep, setCurrentStep] = useState<DiagnosisStep>(DiagnosisStep.UPLOAD);
+  const [isUsingFallback, setIsUsingFallback] = useState(false);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -62,20 +63,50 @@ export default function PlantDiagnosis() {
     try {
       setLoading(true);
       setCurrentStep(DiagnosisStep.ANALYZING);
+      setIsUsingFallback(false);
       
       // Extrair base64 da imagem
       const base64Image = await toBase64(image);
       
-      // Usar a API OpenAI diretamente
-      const result = await analyzePlantWithAI(base64Image, questions);
-      
-      console.log("AI Analysis result:", result);
-      setResultado(result);
-      setCurrentStep(DiagnosisStep.RESULT);
-      toast.success("Analysis completed successfully!");
+      try {
+        // Usar a API OpenAI diretamente
+        const result = await analyzePlantWithAI(base64Image, questions);
+        
+        console.log("AI Analysis result:", result);
+        setResultado(result);
+        
+        // Verificar se estamos usando fallback
+        if (!import.meta.env.VITE_OPENAI_API_KEY) {
+          setIsUsingFallback(true);
+          toast.warning("Using offline diagnosis (no AI). Configure API key for advanced analysis.", {
+            duration: 5000,
+          });
+        } else {
+          toast.success("Analysis completed successfully!");
+        }
+        
+        setCurrentStep(DiagnosisStep.RESULT);
+      } catch (error) {
+        console.error("Error:", error);
+        setIsUsingFallback(true);
+        
+        if (error.message === "API key não configurada") {
+          toast.warning("Using offline diagnosis (no AI). Configure API key for advanced analysis.", {
+            duration: 5000,
+          });
+          
+          // Continuar com fallback
+          const fallbackResult = await analyzePlantWithAI(base64Image, questions);
+          setResultado(fallbackResult);
+          setCurrentStep(DiagnosisStep.RESULT);
+        } else {
+          toast.error("Error analyzing the image.");
+          setCurrentStep(DiagnosisStep.QUESTIONS);
+        }
+      }
     } catch (error) {
       console.error("Error:", error);
-      toast.error("Error analyzing the image.");
+      toast.error("Error processing the image.");
       setCurrentStep(DiagnosisStep.QUESTIONS);
     } finally {
       setLoading(false);
@@ -87,6 +118,7 @@ export default function PlantDiagnosis() {
     setPreview(null);
     setResultado(null);
     setCurrentStep(DiagnosisStep.UPLOAD);
+    setIsUsingFallback(false);
   };
 
   const cancelQuestions = () => {
@@ -133,7 +165,7 @@ export default function PlantDiagnosis() {
       )}
       
       {currentStep === DiagnosisStep.ANALYZING && (
-        <AnalyzingState />
+        <AnalyzingState isUsingFallback={isUsingFallback} />
       )}
 
       {currentStep === DiagnosisStep.RESULT && resultado && (

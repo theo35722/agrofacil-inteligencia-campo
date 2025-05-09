@@ -1,18 +1,26 @@
 
 import React, { useState, useEffect } from "react";
-import { MapPin, Info, Database, Zap, CheckCircle, Leaf, Eye } from "lucide-react";
+import { MapPin, Info, Database, Zap, CheckCircle, Leaf, Eye, AlertTriangle } from "lucide-react";
 import { useGeolocation } from "@/hooks/use-geolocation";
 import { Progress } from "@/components/ui/progress";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
-export const AnalyzingState: React.FC = () => {
+interface AnalyzingStateProps {
+  isUsingFallback?: boolean;
+}
+
+export const AnalyzingState: React.FC<AnalyzingStateProps> = ({ isUsingFallback = false }) => {
   const location = useGeolocation();
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
   
   // Simulate analysis progress with real-like timing
   useEffect(() => {
+    // Se estamos usando fallback, vamos mostrar um progresso mais rápido
     const steps = [15, 35, 65, 85, 100];
-    const delays = [2000, 4000, 6000, 8000]; // Tempos mais realistas para análise
+    const delays = isUsingFallback 
+      ? [500, 1000, 1500, 2000] // Simulação rápida para fallback
+      : [2000, 4000, 6000, 8000]; // Tempos mais realistas para análise com IA
     
     let timeouts: NodeJS.Timeout[] = []; // Using the correct type for setTimeout
     
@@ -33,7 +41,7 @@ export const AnalyzingState: React.FC = () => {
     return () => {
       timeouts.forEach(clearTimeout);
     };
-  }, []);
+  }, [isUsingFallback]);
   
   const analysisSteps = [
     { 
@@ -60,6 +68,16 @@ export const AnalyzingState: React.FC = () => {
   
   return (
     <div className="flex flex-col items-center py-10">
+      {isUsingFallback && (
+        <Alert variant="warning" className="mb-6 w-full max-w-md bg-amber-50 border-amber-200">
+          <AlertTriangle className="h-4 w-4 text-amber-600" />
+          <AlertTitle className="text-amber-800">Modo de diagnóstico offline</AlertTitle>
+          <AlertDescription className="text-amber-700 text-sm">
+            Usando banco de dados local para análise. Configure a chave da API OpenAI para análise avançada com IA.
+          </AlertDescription>
+        </Alert>
+      )}
+      
       <div className="w-24 h-24 relative mb-6">
         <div className="w-full h-full border-4 border-agro-green-500 border-t-transparent rounded-full animate-spin"></div>
         <div className="absolute inset-0 flex items-center justify-center">
@@ -67,7 +85,9 @@ export const AnalyzingState: React.FC = () => {
         </div>
       </div>
       
-      <p className="text-agro-green-800 font-medium mb-4">Analisando imagem com IA avançada</p>
+      <p className="text-agro-green-800 font-medium mb-4">
+        {isUsingFallback ? "Analisando com base de dados local" : "Analisando imagem com IA avançada"}
+      </p>
       
       <div className="w-full max-w-md mb-4">
         <Progress value={progress} className="h-2 bg-gray-100" />
@@ -129,7 +149,11 @@ export const AnalyzingState: React.FC = () => {
         <ul className="space-y-2">
           <li className="flex items-start text-xs text-gray-600">
             <Zap className="h-3 w-3 mr-1.5 mt-0.5 text-agro-green-600" />
-            <span>Inteligência artificial treinada com +50.000 imagens de plantas</span>
+            <span>
+              {isUsingFallback 
+                ? "Sistema de comparação com banco de dados local de doenças"
+                : "Inteligência artificial treinada com +50.000 imagens de plantas"}
+            </span>
           </li>
           <li className="flex items-start text-xs text-gray-600">
             <Database className="h-3 w-3 mr-1.5 mt-0.5 text-agro-green-600" />
