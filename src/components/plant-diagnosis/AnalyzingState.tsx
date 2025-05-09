@@ -14,7 +14,7 @@ export const AnalyzingState: React.FC = () => {
     const steps = [15, 35, 65, 85, 100];
     const delays = [2000, 4000, 6000, 8000]; // Tempos mais realistas para análise
     
-    let timeouts: number[] = [];
+    let timeouts: NodeJS.Timeout[] = []; // Using the correct type for setTimeout
     
     steps.forEach((step, index) => {
       if (index === 0) {
