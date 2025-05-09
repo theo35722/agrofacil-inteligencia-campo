@@ -7,6 +7,7 @@ export interface DiagnosisQuestions {
   recentProducts?: string;
   weatherChanges?: string;
   location?: string;
+  imageUrl?: string;  // Adicionado campo para URL da imagem do Supabase
 }
 
 export interface DiagnosisResult {
@@ -20,41 +21,72 @@ export interface DiagnosisResult {
   confidence: number;
 }
 
-// Implementação real da API OpenAI
+// Atualização para usar a Edge Function do Supabase
 export const analyzePlantWithAI = async (
   imageBase64: string,
   questions: DiagnosisQuestions
 ): Promise<DiagnosisResult> => {
   try {
-    console.log("Analisando planta com OpenAI...");
+    console.log("Analisando planta com AI...");
     console.log("Dados do questionário:", questions);
     
-    // Em vez de process.env, usamos import.meta.env (padrão Vite)
-    const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-    
-    // Verificação melhorada para a API key
-    if (!apiKey) {
-      console.error("VITE_OPENAI_API_KEY não encontrada. Configure a chave da API.");
-      throw new Error("API key não configurada");
+    if (questions.imageUrl) {
+      // Se tivermos uma URL da imagem do Supabase (método novo), usamos a Edge Function
+      console.log("URL da imagem disponível. Usando Edge Function para análise.");
+      
+      // Aqui importamos o cliente do Supabase em cada função que o usa
+      const { supabase } = await import('@/integrations/supabase/client');
+      
+      try {
+        const { data, error } = await supabase.functions.invoke('analyze-plant-image', {
+          body: {
+            imageUrl: questions.imageUrl,
+            ...questions
+          }
+        });
+
+        if (error) {
+          console.error("Erro na chamada à Edge Function:", error);
+          throw new Error("Erro ao chamar a função de análise");
+        }
+
+        if (!data) {
+          console.error("Resposta vazia da Edge Function");
+          throw new Error("Resposta vazia da análise");
+        }
+
+        return data as DiagnosisResult;
+        
+      } catch (error) {
+        console.error("Erro ao chamar Edge Function:", error);
+        return getFallbackDiagnosis(questions);
+      }
+    } 
+    // Método antigo usando API key diretamente
+    else {
+      const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+      
+      // Verificação para a API key
+      if (!apiKey) {
+        console.error("VITE_OPENAI_API_KEY não encontrada. Configure a chave da API.");
+        throw new Error("API key não configurada");
+      }
+      
+      if (!apiKey.startsWith("sk-")) {
+        console.warn("Formato de API key possivelmente inválido. As chaves da OpenAI geralmente começam com 'sk-'");
+        console.log("Tentando usar a chave mesmo assim...");
+      }
+      
+      console.log("Chamando API OpenAI diretamente...");
+      const result = await callOpenAI(imageBase64, questions, apiKey);
+      
+      if (!result) {
+        console.log("Usando diagnóstico de fallback...");
+        return getFallbackDiagnosis(questions);
+      }
+      
+      return result;
     }
-    
-    // Validar formato da chave (chaves da OpenAI geralmente começam com "sk-")
-    if (!apiKey.startsWith("sk-")) {
-      console.warn("Formato de API key possivelmente inválido. As chaves da OpenAI geralmente começam com 'sk-'");
-      console.log("Tentando usar a chave mesmo assim...");
-    }
-    
-    console.log("Chamando API OpenAI...");
-    const result = await callOpenAI(imageBase64, questions, apiKey);
-    console.log("Resposta da OpenAI recebida:", result ? "Dados recebidos" : "Falha na resposta");
-    
-    // Se não conseguiu analisar com a OpenAI, use as respostas mockadas como fallback
-    if (!result) {
-      console.log("Usando diagnóstico de fallback...");
-      return getFallbackDiagnosis(questions);
-    }
-    
-    return result;
   } catch (error) {
     console.error("Erro ao analisar planta com IA:", error);
     console.log("Detalhes do erro:", error.message || "Erro sem detalhes");

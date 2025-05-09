@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { toast } from "@/components/ui/sonner";
 import { DiagnosisQuestions, DiagnosisResult, analyzePlantWithAI } from "@/services/openai-api";
@@ -63,16 +64,18 @@ export default function PlantDiagnosis() {
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Converter para base64 usando FileReader em vez de URL.createObjectURL
+      // Store the original file
+      setImage(file);
+      
+      // Convert to base64 using FileReader for preview
       const reader = new FileReader();
       reader.onloadend = () => {
-        const result = reader.result as string; // Resultado já é uma data URL completa
+        const result = reader.result as string;
         setPreview(result);
-        setImage(file);
         setResultado(null);
         setCurrentStep(DiagnosisStep.QUESTIONS);
       };
-      reader.readAsDataURL(file); // Isso gera uma data URL completa com o formato correto
+      reader.readAsDataURL(file);
     }
   };
 
@@ -89,7 +92,7 @@ export default function PlantDiagnosis() {
     });
 
   const handleQuestionsSubmit = async (questions: DiagnosisQuestions) => {
-    if (!image) {
+    if (!image && !preview) {
       toast.error("Please upload an image first.");
       return;
     }
@@ -99,18 +102,22 @@ export default function PlantDiagnosis() {
       setCurrentStep(DiagnosisStep.ANALYZING);
       setIsUsingFallback(false);
       
-      // Extrair base64 da imagem
-      const base64Image = await toBase64(image);
+      // If there's no imageUrl in the data, extract base64 from image
+      // (old method for compatibility)
+      let base64Image = "";
+      if (image) {
+        base64Image = await toBase64(image);
+      }
       
       try {
-        // Usar a API OpenAI diretamente
+        // Use API with the new method
         const result = await analyzePlantWithAI(base64Image, questions);
         
         console.log("AI Analysis result:", result);
         setResultado(result);
         
-        // Verificar se estamos usando fallback
-        if (!import.meta.env.VITE_OPENAI_API_KEY) {
+        // Check if we're using fallback
+        if (!questions.imageUrl && !import.meta.env.VITE_OPENAI_API_KEY) {
           setIsUsingFallback(true);
           toast.warning("Using offline diagnosis (no AI). Configure API key for advanced analysis.", {
             duration: 5000,
@@ -129,7 +136,7 @@ export default function PlantDiagnosis() {
             duration: 5000,
           });
           
-          // Continuar com fallback
+          // Continue with fallback
           const fallbackResult = await analyzePlantWithAI(base64Image, questions);
           setResultado(fallbackResult);
           setCurrentStep(DiagnosisStep.RESULT);
@@ -209,6 +216,7 @@ export default function PlantDiagnosis() {
       {currentStep === DiagnosisStep.QUESTIONS && preview && (
         <DiagnosisQuestionnaireEn
           imagePreview={preview}
+          imageFile={image}
           onSubmit={handleQuestionsSubmit}
           onCancel={cancelQuestions}
         />

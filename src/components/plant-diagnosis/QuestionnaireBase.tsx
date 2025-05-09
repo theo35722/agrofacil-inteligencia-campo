@@ -13,9 +13,11 @@ import { StepProducts } from "./steps/StepProducts";
 import { StepWeather } from "./steps/StepWeather";
 import { DiagnosisQuestions } from "@/services/openai-api";
 import { useLocationName } from "@/hooks/use-location-name";
+import { supabase } from "@/integrations/supabase/client";
 
 interface QuestionnaireBaseProps {
   imagePreview: string;
+  imageFile?: File;
   onSubmit: (data: DiagnosisQuestions) => void;
   onCancel: () => void;
   locale?: "pt" | "en";
@@ -23,6 +25,7 @@ interface QuestionnaireBaseProps {
 
 export const QuestionnaireBase: React.FC<QuestionnaireBaseProps> = ({ 
   imagePreview, 
+  imageFile,
   onSubmit, 
   onCancel,
   locale = "pt" 
@@ -73,17 +76,124 @@ export const QuestionnaireBase: React.FC<QuestionnaireBaseProps> = ({
     }
   };
 
+  const uploadImage = async (): Promise<string | null> => {
+    if (!imageFile && !imagePreview) {
+      toast.error(locale === "pt" ? "Imagem não encontrada" : "Image not found");
+      return null;
+    }
+
+    try {
+      // Se temos um File, usamos ele diretamente
+      if (imageFile) {
+        const fileName = `plant_${Date.now()}_${imageFile.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+        
+        const { data, error } = await supabase.storage
+          .from('plant-images')
+          .upload(fileName, imageFile, {
+            cacheControl: '3600',
+            upsert: false,
+          });
+
+        if (error) throw error;
+
+        // Obter a URL pública da imagem
+        const { data: { publicUrl } } = supabase.storage
+          .from('plant-images')
+          .getPublicUrl(data.path);
+
+        return publicUrl;
+      } 
+      // Se não temos um File mas temos uma string base64, convertemos para um File
+      else if (imagePreview) {
+        // Converter base64 para blob
+        const base64Response = await fetch(imagePreview);
+        const blob = await base64Response.blob();
+        
+        // Criar um nome de arquivo único
+        const fileName = `plant_${Date.now()}.jpg`;
+        
+        const { data, error } = await supabase.storage
+          .from('plant-images')
+          .upload(fileName, blob, {
+            contentType: 'image/jpeg',
+            cacheControl: '3600',
+            upsert: false,
+          });
+
+        if (error) throw error;
+
+        // Obter a URL pública da imagem
+        const { data: { publicUrl } } = supabase.storage
+          .from('plant-images')
+          .getPublicUrl(data.path);
+
+        return publicUrl;
+      }
+    } catch (error) {
+      console.error("Erro ao fazer upload da imagem:", error);
+      toast.error(locale === "pt" 
+        ? "Erro ao fazer upload da imagem" 
+        : "Error uploading image");
+      return null;
+    }
+    
+    return null;
+  };
+
+  const callAnalysisFunction = async (imageUrl: string, formData: DiagnosisQuestions) => {
+    try {
+      const response = await supabase.functions.invoke('analyze-plant-image', {
+        body: {
+          imageUrl,
+          ...formData
+        }
+      });
+
+      if (!response.data) {
+        throw new Error("Resposta vazia da análise");
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error("Erro ao chamar Edge Function:", error);
+      throw error;
+    }
+  };
+
   const handleSubmit = async () => {
     setIsLoading(true);
     
     try {
-      // Remover a integração com webhook do Make.com
-      // E enviar diretamente para análise com OpenAI
-      toast.success(locale === "pt" ? "Enviando dados para análise..." : "Sending data for analysis...");
-      onSubmit(formData);
+      // 1. Upload da imagem para o Supabase Storage
+      const imageUrl = await uploadImage();
+      
+      if (!imageUrl) {
+        toast.error(locale === "pt" 
+          ? "Não foi possível fazer upload da imagem" 
+          : "Could not upload image");
+        setIsLoading(false);
+        return;
+      }
+
+      toast.success(locale === "pt" 
+        ? "Imagem enviada com sucesso! Analisando..." 
+        : "Image uploaded successfully! Analyzing...");
+
+      // 2. Chamar a Edge Function com a URL da imagem e os dados do formulário
+      const result = await callAnalysisFunction(imageUrl, formData);
+      
+      // 3. Processar o resultado e passar para o manipulador onSubmit
+      toast.success(locale === "pt" ? "Análise concluída!" : "Analysis completed!");
+      onSubmit({
+        ...formData,
+        imageUrl  // Adicionar a URL da imagem aos dados
+      });
+
     } catch (error) {
-      console.error("Erro:", error);
-      toast.error(locale === "pt" ? "Erro na análise. Verifique sua conexão." : "Analysis error. Check your connection.");
+      console.error("Erro no processo de submissão:", error);
+      toast.error(locale === "pt" 
+        ? "Erro na análise. Verifique sua conexão." 
+        : "Analysis error. Check your connection.");
       setIsLoading(false);
     }
   };

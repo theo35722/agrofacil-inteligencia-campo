@@ -1,22 +1,24 @@
 
-import React from 'react';
-import { DiagnosisQuestions } from "@/services/openai-api";
 import { QuestionnaireBase } from "./QuestionnaireBase";
+import { DiagnosisQuestions } from "@/services/openai-api";
 
 interface DiagnosisQuestionnaireProps {
   imagePreview: string;
+  imageFile?: File;
   onSubmit: (data: DiagnosisQuestions) => void;
   onCancel: () => void;
 }
 
-const DiagnosisQuestionnaire: React.FC<DiagnosisQuestionnaireProps> = ({
+const DiagnosisQuestionnaire: React.FC<DiagnosisQuestionnaireProps> = ({ 
   imagePreview,
-  onSubmit,
-  onCancel
+  imageFile,
+  onSubmit, 
+  onCancel 
 }) => {
   return (
-    <QuestionnaireBase
+    <QuestionnaireBase 
       imagePreview={imagePreview}
+      imageFile={imageFile}
       onSubmit={onSubmit}
       onCancel={onCancel}
       locale="pt"
