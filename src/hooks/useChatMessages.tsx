@@ -13,7 +13,7 @@ export const useChatMessages = () => {
     {
       id: "1",
       sender: "assistant",
-      text: "E aí, parceiro! Eu sou o Seu Calunga, cabra vivido no campo. Fala comigo que eu te ajudo com o que for: praga, plantio, tempo ou aperreio!",
+      text: "Ô de casa! Eu sou o Seu Calunga, bicho sabido da roça. Tô aqui pra ajudar no que precisar: plantio, criação, pastagem ou qualquer aperreio do campo!",
       timestamp: new Date(),
     },
   ]);
