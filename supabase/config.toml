@@ -1,6 +1,3 @@
 
-project_id = "euzaloymjefsdravbmcd"
-
-[storage]
-[storage.plant-images]
-public = true
+[functions.generate-calunga-response]
+verify_jwt = false

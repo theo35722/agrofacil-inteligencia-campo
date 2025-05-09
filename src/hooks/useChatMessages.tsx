@@ -51,36 +51,72 @@ export const useChatMessages = () => {
     setInputValue("");
     setIsTyping(true);
     
-    // Simulate assistant typing response
-    setTimeout(() => {
-      const assistantResponse = generateResponse(inputValue.trim());
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: (Date.now() + 1).toString(),
-          sender: "assistant",
-          text: assistantResponse,
-          timestamp: new Date(),
-        },
-      ]);
-      setIsTyping(false);
-    }, 1500);
+    // Enviar para a API
+    generateAIResponse(inputValue.trim())
+      .then((aiResponse) => {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: (Date.now() + 1).toString(),
+            sender: "assistant",
+            text: aiResponse,
+            timestamp: new Date(),
+          },
+        ]);
+        setIsTyping(false);
+      })
+      .catch((error) => {
+        console.error("Erro ao gerar resposta:", error);
+        // Fallback para resposta local em caso de falha
+        const fallbackResponse = generateLocalResponse(inputValue.trim());
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: (Date.now() + 1).toString(),
+            sender: "assistant",
+            text: fallbackResponse,
+            timestamp: new Date(),
+          },
+        ]);
+        setIsTyping(false);
+      });
   };
 
-  // Simple response generator (to be expanded later)
-  const generateResponse = (userMessage: string): string => {
+  // Função para enviar mensagem à API
+  const generateAIResponse = async (userMessage: string): Promise<string> => {
+    try {
+      const { supabase } = await import('@/integrations/supabase/client');
+      
+      const { data, error } = await supabase.functions.invoke('generate-calunga-response', {
+        body: {
+          userMessage,
+        }
+      });
+
+      if (error) throw new Error(error.message);
+      if (!data?.response) throw new Error("Resposta vazia");
+      
+      return data.response;
+    } catch (error) {
+      console.error("Erro chamando a edge function:", error);
+      throw error;
+    }
+  };
+
+  // Gerador de respostas local (fallback)
+  const generateLocalResponse = (userMessage: string): string => {
     const lowerCaseMessage = userMessage.toLowerCase();
     
     if (lowerCaseMessage.includes("olá") || lowerCaseMessage.includes("oi") || lowerCaseMessage.includes("boa")) {
       return "Salve, parceiro! Como vai a vida na roça? Tô aqui pra te ajudar com o que precisar na sua lavoura!";
     } else if (lowerCaseMessage.includes("clima") || lowerCaseMessage.includes("tempo") || lowerCaseMessage.includes("chuva")) {
-      return "Pra saber do tempo e da chuva, é só dar uma olhada na seção de Clima. Quer que eu te mostre como chegar lá?";
+      return "Rapaz, pra saber do tempo e da chuva, é só dar uma espiada na seção de Clima. Os cabra lá entende das nuvem! Quer que eu te mostre como chegar?";
     } else if (lowerCaseMessage.includes("praga") || lowerCaseMessage.includes("doença") || lowerCaseMessage.includes("fungo")) {
-      return "Tá com praga na lavoura? Me manda uma foto da planta sofrendo que eu vou te ajudar a descobrir o problema e resolver o aperreio!";
+      return "Eita, tá com praga na lavoura, caboco? Me manda uma foto da planta sofrendo que eu vou te ajudar a descobrir o problema e resolver esse aperreio!";
     } else if (lowerCaseMessage.includes("fertilizante") || lowerCaseMessage.includes("adubo")) {
-      return "Adubo bom é coisa séria! Melhor ver como tá o solo antes de sair jogando produto. Quer que eu te indique alguém pra analisar sua terra?";
+      return "Adubo bom é coisa séria, parceiro! Melhor ver como tá o solo antes de sair jogando produto. Vamos caprichar na análise pra deixar sua terra nos trinque!";
     } else {
-      return "Entendido, parceiro! Tô aqui aprendendo pra te ajudar cada vez melhor. Se precisar de ajuda com plantio, pragas, clima ou qualquer outro aperreio da roça, é só chamar!";
+      return "Entendido, meu cabra! Tô aqui aprendendo pra te ajudar cada vez melhor. Se tiver com algum aperreio na lavoura, com plantio, pragas, ou o bicho tiver pegando aí no campo, é só chamar o Seu Calunga!";
     }
   };
 
