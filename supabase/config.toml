@@ -1,2 +1,6 @@
 
 project_id = "euzaloymjefsdravbmcd"
+
+[storage]
+[storage.plant-images]
+public = true

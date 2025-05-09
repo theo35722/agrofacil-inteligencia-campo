@@ -15,6 +15,7 @@ const DiagnosisQuestionnaire: React.FC<DiagnosisQuestionnaireProps> = ({
   onSubmit, 
   onCancel 
 }) => {
+  // Ensure the locale is correctly set to "pt" for Portuguese
   return (
     <QuestionnaireBase 
       imagePreview={imagePreview}
