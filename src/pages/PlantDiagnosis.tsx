@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { toast } from "@/components/ui/sonner";
 import { DiagnosisQuestions, DiagnosisResult, analyzePlantWithAI } from "@/services/openai-api";
@@ -10,6 +9,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { AnalyzingState } from "@/components/plant-diagnosis/AnalyzingState";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { ApiKeyValidator } from "@/components/plant-diagnosis/ApiKeyValidator";
 
 enum DiagnosisStep {
   UPLOAD,
@@ -28,6 +28,7 @@ export default function PlantDiagnosis() {
   const [currentStep, setCurrentStep] = useState<DiagnosisStep>(DiagnosisStep.UPLOAD);
   const [isUsingFallback, setIsUsingFallback] = useState(false);
   const [apiKeyConfigured, setApiKeyConfigured] = useState<boolean | null>(null);
+  const [showKeyValidator, setShowKeyValidator] = useState(true);
 
   useEffect(() => {
     // Check if API key is configured
@@ -40,6 +41,24 @@ export default function PlantDiagnosis() {
       });
     }
   }, []);
+
+  const handleApiValidation = (isValid: boolean) => {
+    console.log("API Key valid:", isValid);
+    setApiKeyConfigured(isValid);
+    
+    if (!isValid) {
+      toast.warning("Issues with OpenAI API key. The app will use fallback mode.", {
+        duration: 5000,
+      });
+    } else {
+      toast.success("OpenAI API key validated successfully!", {
+        duration: 3000,
+      });
+    }
+    
+    // Hide validator after a few seconds
+    setTimeout(() => setShowKeyValidator(false), 5000);
+  };
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -147,13 +166,18 @@ export default function PlantDiagnosis() {
         Plant Diagnosis
       </h1>
 
-      {apiKeyConfigured === false && (
+      {/* API Key Validator - shown only at start */}
+      {showKeyValidator && (
+        <ApiKeyValidator onValidationComplete={handleApiValidation} />
+      )}
+
+      {apiKeyConfigured === false && !showKeyValidator && (
         <Alert className="mb-6 border-amber-300 bg-amber-50">
           <AlertCircle className="h-4 w-4 text-amber-700" />
-          <AlertTitle className="text-amber-800">OpenAI API Key Not Configured</AlertTitle>
+          <AlertTitle className="text-amber-800">OpenAI API Key Not Configured Correctly</AlertTitle>
           <AlertDescription className="text-amber-700">
-            For accurate AI analysis, please add your OpenAI API key as VITE_OPENAI_API_KEY in the environment variables.
-            Without an API key, the system will use a fallback database with limited accuracy.
+            For accurate AI analysis, please verify your OpenAI API key as VITE_OPENAI_API_KEY in the environment variables.
+            Without a valid API key, the system will use a fallback database with limited accuracy.
           </AlertDescription>
         </Alert>
       )}

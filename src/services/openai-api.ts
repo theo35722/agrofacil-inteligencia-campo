@@ -31,13 +31,22 @@ export const analyzePlantWithAI = async (
     
     // Em vez de process.env, usamos import.meta.env (padrão Vite)
     const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+    
+    // Verificação melhorada para a API key
     if (!apiKey) {
       console.error("VITE_OPENAI_API_KEY não encontrada. Configure a chave da API.");
       throw new Error("API key não configurada");
     }
     
+    // Validar formato da chave (chaves da OpenAI geralmente começam com "sk-")
+    if (!apiKey.startsWith("sk-")) {
+      console.warn("Formato de API key possivelmente inválido. As chaves da OpenAI geralmente começam com 'sk-'");
+      console.log("Tentando usar a chave mesmo assim...");
+    }
+    
+    console.log("Chamando API OpenAI...");
     const result = await callOpenAI(imageBase64, questions, apiKey);
-    console.log("Resposta da OpenAI:", result);
+    console.log("Resposta da OpenAI recebida:", result ? "Dados recebidos" : "Falha na resposta");
     
     // Se não conseguiu analisar com a OpenAI, use as respostas mockadas como fallback
     if (!result) {
@@ -48,8 +57,10 @@ export const analyzePlantWithAI = async (
     return result;
   } catch (error) {
     console.error("Erro ao analisar planta com IA:", error);
+    console.log("Detalhes do erro:", error.message || "Erro sem detalhes");
     
     // Retornar um diagnóstico de fallback
+    console.log("Usando diagnóstico de fallback devido ao erro...");
     return getFallbackDiagnosis(questions);
   }
 };
@@ -87,6 +98,7 @@ const callOpenAI = async (
     `;
 
     console.log("Enviando imagem para análise pela OpenAI...");
+    console.log(`Usando modelo: gpt-4o`);
     
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -114,12 +126,20 @@ const callOpenAI = async (
       })
     });
     
+    console.log("Status da resposta:", response.status);
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Erro na API da OpenAI:", errorData);
+      throw new Error(`Erro na API OpenAI: ${errorData.error?.message || response.statusText}`);
+    }
+    
     const data = await response.json();
     console.log("Resposta da OpenAI recebida");
     
     if (data.error) {
       console.error("Erro na API da OpenAI:", data.error);
-      return null;
+      throw new Error(`Erro na API OpenAI: ${data.error.message}`);
     }
     
     // Extrair o texto da resposta
