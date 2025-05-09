@@ -5,12 +5,14 @@ import { DiagnosisQuestions, DiagnosisResult, analyzePlantWithAI } from "@/servi
 import ImageUploadArea from "@/components/plant-diagnosis/ImageUploadArea";
 import ImagePreview from "@/components/plant-diagnosis/ImagePreview";
 import ResultCard from "@/components/plant-diagnosis/ResultCard";
-import DiagnosisQuestionnaire from "@/components/plant-diagnosis/DiagnosisQuestionnaire";
+import DiagnosisQuestionnaireEn from "@/components/plant-diagnosis/DiagnosisQuestionnaireEn";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { AnalyzingState } from "@/components/plant-diagnosis/AnalyzingState";
 
 enum DiagnosisStep {
   UPLOAD,
   QUESTIONS,
+  ANALYZING,
   RESULT
 }
 
@@ -53,26 +55,28 @@ export default function PlantDiagnosis() {
 
   const handleQuestionsSubmit = async (questions: DiagnosisQuestions) => {
     if (!image) {
-      toast.error("Envie uma imagem antes de analisar.");
+      toast.error("Please upload an image first.");
       return;
     }
 
     try {
       setLoading(true);
-      // Note: O envio para o webhook agora é feito diretamente pelo DiagnosisQuestionnaire
-      // antes de chamar esta função. Aqui apenas processamos a análise pelo OpenAI
+      setCurrentStep(DiagnosisStep.ANALYZING);
+      
+      // Extrair base64 da imagem
       const base64Image = await toBase64(image);
       
-      // Use the OpenAI service
+      // Usar a API OpenAI diretamente
       const result = await analyzePlantWithAI(base64Image, questions);
       
       console.log("AI Analysis result:", result);
       setResultado(result);
       setCurrentStep(DiagnosisStep.RESULT);
-      toast.success("Análise concluída com sucesso!");
+      toast.success("Analysis completed successfully!");
     } catch (error) {
-      toast.error("Erro ao analisar a imagem.");
-      console.error(error);
+      console.error("Error:", error);
+      toast.error("Error analyzing the image.");
+      setCurrentStep(DiagnosisStep.QUESTIONS);
     } finally {
       setLoading(false);
     }
@@ -93,7 +97,7 @@ export default function PlantDiagnosis() {
   return (
     <div className="min-h-screen px-4 py-6 md:px-12 md:py-10 bg-gradient-to-br from-green-50 to-white">
       <h1 className="text-3xl md:text-4xl font-bold text-green-800 mb-6 text-center">
-        Diagnóstico de Planta
+        Plant Diagnosis
       </h1>
 
       {currentStep === DiagnosisStep.UPLOAD && (
@@ -121,11 +125,15 @@ export default function PlantDiagnosis() {
       )}
 
       {currentStep === DiagnosisStep.QUESTIONS && preview && (
-        <DiagnosisQuestionnaire
+        <DiagnosisQuestionnaireEn
           imagePreview={preview}
           onSubmit={handleQuestionsSubmit}
           onCancel={cancelQuestions}
         />
+      )}
+      
+      {currentStep === DiagnosisStep.ANALYZING && (
+        <AnalyzingState />
       )}
 
       {currentStep === DiagnosisStep.RESULT && resultado && (

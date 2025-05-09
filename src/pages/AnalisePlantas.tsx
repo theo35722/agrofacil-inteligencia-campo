@@ -7,10 +7,12 @@ import ImagePreview from "@/components/plant-diagnosis/ImagePreview";
 import ResultCard from "@/components/plant-diagnosis/ResultCard";
 import DiagnosisQuestionnaire from "@/components/plant-diagnosis/DiagnosisQuestionnaire";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { AnalyzingState } from "@/components/plant-diagnosis/AnalyzingState";
 
 enum DiagnosisStep {
   UPLOAD,
   QUESTIONS,
+  ANALYZING,
   RESULT
 }
 
@@ -59,11 +61,12 @@ export default function AnalisePlantas() {
 
     try {
       setLoading(true);
-      // Note: O envio para o webhook agora é feito diretamente pelo DiagnosisQuestionnaire
-      // antes de chamar esta função. Aqui apenas processamos a análise pelo OpenAI
+      setCurrentStep(DiagnosisStep.ANALYZING);
+      
+      // Extrair base64 da imagem
       const base64Image = await toBase64(image);
       
-      // Use the OpenAI service
+      // Usar a API OpenAI diretamente
       const result = await analyzePlantWithAI(base64Image, questions);
       
       console.log("AI Analysis result:", result);
@@ -71,8 +74,9 @@ export default function AnalisePlantas() {
       setCurrentStep(DiagnosisStep.RESULT);
       toast.success("Análise concluída com sucesso!");
     } catch (error) {
+      console.error("Erro:", error);
       toast.error("Erro ao analisar a imagem.");
-      console.error(error);
+      setCurrentStep(DiagnosisStep.QUESTIONS);
     } finally {
       setLoading(false);
     }
@@ -126,6 +130,10 @@ export default function AnalisePlantas() {
           onSubmit={handleQuestionsSubmit}
           onCancel={cancelQuestions}
         />
+      )}
+
+      {currentStep === DiagnosisStep.ANALYZING && (
+        <AnalyzingState />
       )}
 
       {currentStep === DiagnosisStep.RESULT && resultado && (

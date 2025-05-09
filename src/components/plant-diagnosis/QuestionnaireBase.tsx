@@ -13,7 +13,6 @@ import { StepProducts } from "./steps/StepProducts";
 import { StepWeather } from "./steps/StepWeather";
 import { DiagnosisQuestions } from "@/services/openai-api";
 import { useLocationName } from "@/hooks/use-location-name";
-import { enviarDadosParaWebhook } from "@/services/webhookService";
 
 interface QuestionnaireBaseProps {
   imagePreview: string;
@@ -78,37 +77,10 @@ export const QuestionnaireBase: React.FC<QuestionnaireBaseProps> = ({
     setIsLoading(true);
     
     try {
-      // Verificar se imagePreview contém uma data URL válida
-      if (!imagePreview || !imagePreview.startsWith("data:image/")) {
-        console.error("Erro: imagePreview não é uma data URL válida");
-        toast.error(locale === "pt" ? "Erro ao processar imagem. Formato inválido." : "Error processing image. Invalid format.");
-        setIsLoading(false);
-        return;
-      }
-      
-      // Preparar os dados para envio
-      const webhookData = {
-        imagem: imagePreview,
-        cultura: formData.culture,
-        sintomas: formData.symptoms,
-        parte_afetada: formData.affectedArea,
-        tempo: formData.timeFrame,
-        produtos: formData.recentProducts || "",
-        clima: formData.weatherChanges || "",
-        localizacao: locationName || "",
-        timestamp: new Date().toLocaleString(locale === "pt" ? "pt-BR" : "en-US")
-      };
-      
-      // Enviar dados para webhook
-      const success = await enviarDadosParaWebhook(webhookData);
-      
-      if (success) {
-        toast.success(locale === "pt" ? "Dados enviados com sucesso!" : "Data sent successfully!");
-        onSubmit(formData);
-      } else {
-        toast.error(locale === "pt" ? "Erro ao enviar dados para análise" : "Error sending data for analysis");
-        setIsLoading(false);
-      }
+      // Remover a integração com webhook do Make.com
+      // E enviar diretamente para análise com OpenAI
+      toast.success(locale === "pt" ? "Enviando dados para análise..." : "Sending data for analysis...");
+      onSubmit(formData);
     } catch (error) {
       console.error("Erro:", error);
       toast.error(locale === "pt" ? "Erro na análise. Verifique sua conexão." : "Analysis error. Check your connection.");
