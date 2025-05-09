@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send, X, MessageSquare, Bot } from "lucide-react";
+import { Send, X } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
@@ -34,7 +34,7 @@ export const ChatDialog: React.FC<ChatDialogProps> = ({ open, onOpenChange }) =>
     {
       id: "1",
       sender: "assistant",
-      text: "Olá! Sou o assistente agrícola virtual. Como posso te ajudar hoje?",
+      text: "Olá! Sou o Seu Zé, seu assistente agrícola. Como posso te ajudar hoje?",
       timestamp: new Date(),
     },
   ]);
@@ -111,11 +111,15 @@ export const ChatDialog: React.FC<ChatDialogProps> = ({ open, onOpenChange }) =>
         <DrawerHeader className="border-b">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Avatar className="h-10 w-10 bg-agro-green-600">
-                <Bot className="h-6 w-6 text-white" />
+              <Avatar className="h-10 w-10">
+                <img 
+                  src="/lovable-uploads/8ac540a4-ed74-4c29-98a2-22f75a415068.png"
+                  alt="Seu Zé"
+                  className="h-full w-full object-cover"
+                />
               </Avatar>
               <div>
-                <DrawerTitle>Assistente Virtual</DrawerTitle>
+                <DrawerTitle>Seu Zé</DrawerTitle>
                 <DrawerDescription className="flex items-center">
                   <span className="mr-2">Especialista Agrícola</span>
                   <Badge variant="outline" className="bg-green-100 text-agro-green-700">Online</Badge>
@@ -142,8 +146,12 @@ export const ChatDialog: React.FC<ChatDialogProps> = ({ open, onOpenChange }) =>
                 }`}
               >
                 {message.sender === "assistant" ? (
-                  <Avatar className="bg-agro-green-600 w-8 h-8 mt-1">
-                    <Bot className="h-5 w-5 text-white" />
+                  <Avatar className="w-8 h-8 mt-1">
+                    <img 
+                      src="/lovable-uploads/8ac540a4-ed74-4c29-98a2-22f75a415068.png"
+                      alt="Seu Zé"
+                      className="h-full w-full object-cover"
+                    />
                   </Avatar>
                 ) : (
                   <Avatar className="bg-agro-green-600 w-8 h-8 mt-1">
@@ -178,8 +186,12 @@ export const ChatDialog: React.FC<ChatDialogProps> = ({ open, onOpenChange }) =>
           {isTyping && (
             <div className="flex justify-start mb-4">
               <div className="flex items-start gap-2 max-w-[85%]">
-                <Avatar className="bg-agro-green-600 w-8 h-8 mt-1">
-                  <Bot className="h-5 w-5 text-white" />
+                <Avatar className="w-8 h-8 mt-1">
+                  <img 
+                    src="/lovable-uploads/8ac540a4-ed74-4c29-98a2-22f75a415068.png"
+                    alt="Seu Zé"
+                    className="h-full w-full object-cover"
+                  />
                 </Avatar>
                 <div className="p-3 rounded-lg bg-white border border-gray-200">
                   <div className="flex gap-1">
@@ -213,7 +225,7 @@ export const ChatDialog: React.FC<ChatDialogProps> = ({ open, onOpenChange }) =>
             </Button>
           </div>
           <p className="text-xs text-center text-gray-500 mt-1">
-            O assistente virtual está em versão beta. Ele está sempre aprendendo para te ajudar melhor!
+            Seu Zé está sempre aprendendo para te ajudar melhor na sua lavoura!
           </p>
         </DrawerFooter>
       </DrawerContent>
