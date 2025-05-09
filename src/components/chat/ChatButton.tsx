@@ -1,6 +1,5 @@
 
 import React, { useState, useEffect } from "react";
-import SeuZeIcon from "../icons/SeuZeIcon";
 import { MessageSquare, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -61,7 +60,7 @@ export const ChatButton: React.FC<ChatButtonProps> = ({ onClick, isOpen, classNa
               <X size={12} />
             </button>
             <p className="text-sm">
-              Precisa de ajuda com sua lavoura? Converse com o Seu Zé!
+              Precisa de ajuda com sua lavoura? Converse com o assistente virtual!
             </p>
           </motion.div>
         )}
@@ -72,12 +71,12 @@ export const ChatButton: React.FC<ChatButtonProps> = ({ onClick, isOpen, classNa
         className={`fixed bottom-16 right-4 z-50 flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r from-agro-green-500 to-agro-green-600 shadow-lg hover:shadow-xl transition-all ${className} ${
           showPulse ? "animate-bounce" : ""
         }`}
-        aria-label="Abrir chat com Seu Zé"
+        aria-label="Abrir chat com assistente virtual"
       >
         <div className="relative">
           <div className="absolute inset-0 rounded-full bg-white opacity-20 animate-ping" />
           <div className="relative z-10">
-            <SeuZeIcon size={46} />
+            <MessageSquare className="text-white h-8 w-8" />
           </div>
         </div>
       </button>

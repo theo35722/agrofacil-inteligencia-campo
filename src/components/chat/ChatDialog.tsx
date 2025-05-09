@@ -11,8 +11,7 @@ import {
 } from "@/components/ui/drawer";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Send, X, MessageSquare } from "lucide-react";
-import SeuZeIcon from "../icons/SeuZeIcon";
+import { Send, X, MessageSquare, Bot } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
@@ -20,7 +19,7 @@ import { toast } from "sonner";
 
 type Message = {
   id: string;
-  sender: "user" | "seuze";
+  sender: "user" | "assistant";
   text: string;
   timestamp: Date;
 };
@@ -34,8 +33,8 @@ export const ChatDialog: React.FC<ChatDialogProps> = ({ open, onOpenChange }) =>
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
-      sender: "seuze",
-      text: "Olá! Sou o Seu Zé, seu assistente agrícola. Como posso te ajudar hoje?",
+      sender: "assistant",
+      text: "Olá! Sou o assistente agrícola virtual. Como posso te ajudar hoje?",
       timestamp: new Date(),
     },
   ]);
@@ -73,15 +72,15 @@ export const ChatDialog: React.FC<ChatDialogProps> = ({ open, onOpenChange }) =>
     setInputValue("");
     setIsTyping(true);
     
-    // Simulate Seu Zé typing response
+    // Simulate assistant typing response
     setTimeout(() => {
-      const seuZeResponse = generateResponse(inputValue.trim());
+      const assistantResponse = generateResponse(inputValue.trim());
       setMessages((prev) => [
         ...prev,
         {
           id: (Date.now() + 1).toString(),
-          sender: "seuze",
-          text: seuZeResponse,
+          sender: "assistant",
+          text: assistantResponse,
           timestamp: new Date(),
         },
       ]);
@@ -112,11 +111,13 @@ export const ChatDialog: React.FC<ChatDialogProps> = ({ open, onOpenChange }) =>
         <DrawerHeader className="border-b">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <SeuZeIcon size={36} />
+              <Avatar className="h-10 w-10 bg-agro-green-600">
+                <Bot className="h-6 w-6 text-white" />
+              </Avatar>
               <div>
-                <DrawerTitle>Chat com Seu Zé</DrawerTitle>
+                <DrawerTitle>Assistente Virtual</DrawerTitle>
                 <DrawerDescription className="flex items-center">
-                  <span className="mr-2">Assistente Agrícola</span>
+                  <span className="mr-2">Especialista Agrícola</span>
                   <Badge variant="outline" className="bg-green-100 text-agro-green-700">Online</Badge>
                 </DrawerDescription>
               </div>
@@ -140,10 +141,10 @@ export const ChatDialog: React.FC<ChatDialogProps> = ({ open, onOpenChange }) =>
                   message.sender === "user" ? "flex-row-reverse" : "flex-row"
                 }`}
               >
-                {message.sender === "seuze" ? (
-                  <div className="mt-1">
-                    <SeuZeIcon size={32} />
-                  </div>
+                {message.sender === "assistant" ? (
+                  <Avatar className="bg-agro-green-600 w-8 h-8 mt-1">
+                    <Bot className="h-5 w-5 text-white" />
+                  </Avatar>
                 ) : (
                   <Avatar className="bg-agro-green-600 w-8 h-8 mt-1">
                     <div className="flex items-center justify-center h-full text-white text-xs font-semibold">
@@ -177,9 +178,9 @@ export const ChatDialog: React.FC<ChatDialogProps> = ({ open, onOpenChange }) =>
           {isTyping && (
             <div className="flex justify-start mb-4">
               <div className="flex items-start gap-2 max-w-[85%]">
-                <div className="mt-1">
-                  <SeuZeIcon size={32} />
-                </div>
+                <Avatar className="bg-agro-green-600 w-8 h-8 mt-1">
+                  <Bot className="h-5 w-5 text-white" />
+                </Avatar>
                 <div className="p-3 rounded-lg bg-white border border-gray-200">
                   <div className="flex gap-1">
                     <div className="w-2 h-2 bg-gray-300 rounded-full animate-bounce delay-0"></div>
@@ -212,7 +213,7 @@ export const ChatDialog: React.FC<ChatDialogProps> = ({ open, onOpenChange }) =>
             </Button>
           </div>
           <p className="text-xs text-center text-gray-500 mt-1">
-            Seu Zé está em versão beta. Ele está sempre aprendendo para te ajudar melhor!
+            O assistente virtual está em versão beta. Ele está sempre aprendendo para te ajudar melhor!
           </p>
         </DrawerFooter>
       </DrawerContent>
