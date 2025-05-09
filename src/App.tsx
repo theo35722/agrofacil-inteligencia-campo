@@ -46,7 +46,8 @@ const App = () => (
               }
             >
               <Route path="dashboard" element={<Dashboard />} />
-              <Route path="diagnostico" element={<PlantDiagnosis />} />
+              <Route path="diagnostico" element={<AnalisePlantas />} />
+              <Route path="plant-diagnosis" element={<PlantDiagnosis />} />
               <Route path="analise-plantas" element={<AnalisePlantas />} />
               <Route path="analise" element={<AnalisePlantas />} />
               <Route path="clima" element={<Weather />} />
