@@ -9,22 +9,30 @@ export const AnalyzingState: React.FC = () => {
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
   
-  // Simulate analysis progress
+  // Simulate analysis progress with real-like timing
   useEffect(() => {
     const steps = [15, 35, 65, 85, 100];
-    const interval = setInterval(() => {
-      setCurrentStep((prev) => {
-        if (prev < 4) {
-          setProgress(steps[prev + 1]);
-          return prev + 1;
-        } else {
-          clearInterval(interval);
-          return prev;
-        }
-      });
-    }, 800);
+    const delays = [2000, 4000, 6000, 8000]; // Tempos mais realistas para análise
     
-    return () => clearInterval(interval);
+    let timeouts: number[] = [];
+    
+    steps.forEach((step, index) => {
+      if (index === 0) {
+        setProgress(step);
+        return;
+      }
+      
+      const timeout = setTimeout(() => {
+        setProgress(step);
+        setCurrentStep(index);
+      }, delays[index - 1]);
+      
+      timeouts.push(timeout);
+    });
+    
+    return () => {
+      timeouts.forEach(clearTimeout);
+    };
   }, []);
   
   const analysisSteps = [

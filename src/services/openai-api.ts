@@ -29,9 +29,11 @@ export const analyzePlantWithAI = async (
     console.log("Analisando planta com OpenAI...");
     console.log("Dados do questionário:", questions);
     
-    const apiKey = process.env.OPENAI_API_KEY;
+    // Em vez de process.env, usamos import.meta.env (padrão Vite)
+    const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
     if (!apiKey) {
-      throw new Error("OPENAI_API_KEY não encontrada. Configure a chave da API.");
+      console.error("VITE_OPENAI_API_KEY não encontrada. Configure a chave da API.");
+      throw new Error("API key não configurada");
     }
     
     const result = await callOpenAI(imageBase64, questions, apiKey);
