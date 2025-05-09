@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { toast } from "@/components/ui/sonner";
 import { DiagnosisQuestions, DiagnosisResult, analyzePlantWithAI } from "@/services/openai-api";
@@ -25,11 +24,11 @@ export default function AnalisePlantas() {
   const [preview, setPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [resultado, setResultado] = useState<DiagnosisResult | null>(null);
-  const [showTips, setShowTips] = useState(false);
+  const [showTips, setShowTips] = useState(true); // Dicas visíveis por padrão
   const [currentStep, setCurrentStep] = useState<DiagnosisStep>(DiagnosisStep.UPLOAD);
   const [isUsingFallback, setIsUsingFallback] = useState(false);
   const [apiKeyConfigured, setApiKeyConfigured] = useState<boolean | null>(null);
-  const [showKeyValidator, setShowKeyValidator] = useState(true);
+  const [showKeyValidator, setShowKeyValidator] = useState(false); // Escondemos o validador por padrão
 
   useEffect(() => {
     // Check if API key is configured
@@ -172,7 +171,7 @@ export default function AnalisePlantas() {
         Diagnóstico de Planta
       </h1>
 
-      {/* Validador de API Key - mostrado apenas no início */}
+      {/* Validador de API Key - oculto por padrão */}
       {showKeyValidator && (
         <ApiKeyValidator onValidationComplete={handleApiValidation} />
       )}

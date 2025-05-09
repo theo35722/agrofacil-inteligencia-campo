@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { toast } from "@/components/ui/sonner";
 import { DiagnosisQuestions, DiagnosisResult, analyzePlantWithAI } from "@/services/openai-api";
@@ -8,8 +7,6 @@ import ResultCard from "@/components/plant-diagnosis/ResultCard";
 import DiagnosisQuestionnaireEn from "@/components/plant-diagnosis/DiagnosisQuestionnaireEn";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { AnalyzingState } from "@/components/plant-diagnosis/AnalyzingState";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
 import { ApiKeyValidator } from "@/components/plant-diagnosis/ApiKeyValidator";
 
 enum DiagnosisStep {
@@ -25,11 +22,11 @@ export default function PlantDiagnosis() {
   const [preview, setPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [resultado, setResultado] = useState<DiagnosisResult | null>(null);
-  const [showTips, setShowTips] = useState(false);
+  const [showTips, setShowTips] = useState(true); // Tips visible by default
   const [currentStep, setCurrentStep] = useState<DiagnosisStep>(DiagnosisStep.UPLOAD);
   const [isUsingFallback, setIsUsingFallback] = useState(false);
   const [apiKeyConfigured, setApiKeyConfigured] = useState<boolean | null>(null);
-  const [showKeyValidator, setShowKeyValidator] = useState(true);
+  const [showKeyValidator, setShowKeyValidator] = useState(false); // Hide validator by default
 
   useEffect(() => {
     // Check if API key is configured
@@ -173,20 +170,9 @@ export default function PlantDiagnosis() {
         Plant Diagnosis
       </h1>
 
-      {/* API Key Validator - shown only at start */}
+      {/* API Key Validator - hidden by default */}
       {showKeyValidator && (
         <ApiKeyValidator onValidationComplete={handleApiValidation} />
-      )}
-
-      {apiKeyConfigured === false && !showKeyValidator && (
-        <Alert className="mb-6 border-amber-300 bg-amber-50">
-          <AlertCircle className="h-4 w-4 text-amber-700" />
-          <AlertTitle className="text-amber-800">OpenAI API Key Not Configured Correctly</AlertTitle>
-          <AlertDescription className="text-amber-700">
-            For accurate AI analysis, please verify your OpenAI API key as VITE_OPENAI_API_KEY in the environment variables.
-            Without a valid API key, the system will use a fallback database with limited accuracy.
-          </AlertDescription>
-        </Alert>
       )}
 
       {currentStep === DiagnosisStep.UPLOAD && (
