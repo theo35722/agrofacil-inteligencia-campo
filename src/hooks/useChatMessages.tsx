@@ -13,7 +13,7 @@ export const useChatMessages = () => {
     {
       id: "1",
       sender: "assistant",
-      text: "Olá! Sou o Seu Zé, seu assistente agrícola. Como posso te ajudar hoje?",
+      text: "E aí, parceiro! Eu sou o Seu Calunga, cabra vivido no campo. Fala comigo que eu te ajudo com o que for: praga, plantio, tempo ou aperreio!",
       timestamp: new Date(),
     },
   ]);
@@ -72,15 +72,15 @@ export const useChatMessages = () => {
     const lowerCaseMessage = userMessage.toLowerCase();
     
     if (lowerCaseMessage.includes("olá") || lowerCaseMessage.includes("oi") || lowerCaseMessage.includes("boa")) {
-      return "Olá! Tudo bem? Em que posso ajudar você hoje na sua lavoura?";
+      return "Salve, parceiro! Como vai a vida na roça? Tô aqui pra te ajudar com o que precisar na sua lavoura!";
     } else if (lowerCaseMessage.includes("clima") || lowerCaseMessage.includes("tempo") || lowerCaseMessage.includes("chuva")) {
-      return "Para obter informações sobre o clima atual e previsão para os próximos dias, recomendo verificar nossa seção de Clima. Deseja que eu te mostre como chegar lá?";
+      return "Pra saber do tempo e da chuva, é só dar uma olhada na seção de Clima. Quer que eu te mostre como chegar lá?";
     } else if (lowerCaseMessage.includes("praga") || lowerCaseMessage.includes("doença") || lowerCaseMessage.includes("fungo")) {
-      return "Estou vendo que você está com problemas de pragas ou doenças. Para identificar o problema, você pode usar nosso Diagnóstico de Plantas com IA. Envie uma foto da sua planta afetada e eu posso ajudar a identificar o problema!";
+      return "Tá com praga na lavoura? Me manda uma foto da planta sofrendo que eu vou te ajudar a descobrir o problema e resolver o aperreio!";
     } else if (lowerCaseMessage.includes("fertilizante") || lowerCaseMessage.includes("adubo")) {
-      return "A aplicação correta de fertilizantes é essencial! Recomendo verificar o solo primeiro antes de aplicar qualquer produto. Posso te ajudar a encontrar um especialista em análise de solo?";
+      return "Adubo bom é coisa séria! Melhor ver como tá o solo antes de sair jogando produto. Quer que eu te indique alguém pra analisar sua terra?";
     } else {
-      return "Entendi! Estou sempre aprendendo para ajudar melhor. Se precisar de orientações sobre cultivo, tratamento de pragas, clima ou qualquer outra questão agrícola, é só me perguntar!";
+      return "Entendido, parceiro! Tô aqui aprendendo pra te ajudar cada vez melhor. Se precisar de ajuda com plantio, pragas, clima ou qualquer outro aperreio da roça, é só chamar!";
     }
   };
 

@@ -60,7 +60,7 @@ export const ChatButton: React.FC<ChatButtonProps> = ({ onClick, isOpen, classNa
               <X size={12} />
             </button>
             <p className="text-sm">
-              Precisa de ajuda com sua lavoura? Converse com o Seu Zé!
+              Precisa de ajuda com sua lavoura? Converse com o Seu Calunga!
             </p>
           </motion.div>
         )}
@@ -71,14 +71,14 @@ export const ChatButton: React.FC<ChatButtonProps> = ({ onClick, isOpen, classNa
         className={`fixed bottom-16 right-4 z-50 flex items-center justify-center w-16 h-16 rounded-full shadow-lg hover:shadow-xl transition-all ${className} ${
           showPulse ? "animate-bounce" : ""
         }`}
-        aria-label="Abrir chat com Seu Zé"
+        aria-label="Abrir chat com Seu Calunga"
       >
         <div className="relative">
           <div className="absolute inset-0 rounded-full bg-white opacity-20 animate-ping" />
           <div className="relative z-10 w-16 h-16">
             <img 
               src="/lovable-uploads/8ac540a4-ed74-4c29-98a2-22f75a415068.png" 
-              alt="Seu Zé" 
+              alt="Seu Calunga" 
               className="w-full h-full object-cover rounded-full" 
             />
           </div>

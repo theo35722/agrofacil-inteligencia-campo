@@ -18,12 +18,12 @@ const ChatHeader: React.FC = () => {
           <Avatar className="h-10 w-10">
             <img 
               src="/lovable-uploads/8ac540a4-ed74-4c29-98a2-22f75a415068.png"
-              alt="Seu Zé"
+              alt="Seu Calunga"
               className="h-full w-full object-cover"
             />
           </Avatar>
           <div>
-            <DrawerTitle>Seu Zé</DrawerTitle>
+            <DrawerTitle>Seu Calunga</DrawerTitle>
             <DrawerDescription className="flex items-center">
               <span className="mr-2">Especialista Agrícola</span>
               <Badge variant="outline" className="bg-green-100 text-agro-green-700">Online</Badge>

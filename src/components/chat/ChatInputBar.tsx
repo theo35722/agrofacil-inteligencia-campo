@@ -38,7 +38,7 @@ const ChatInputBar: React.FC<ChatInputBarProps> = ({
         </Button>
       </div>
       <p className="text-xs text-center text-gray-500 mt-1">
-        Seu Zé está sempre aprendendo para te ajudar melhor na sua lavoura!
+        Seu Calunga está sempre aprendendo para te ajudar melhor na sua lavoura!
       </p>
     </DrawerFooter>
   );

@@ -23,7 +23,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
           <Avatar className="w-8 h-8 mt-1">
             <img 
               src="/lovable-uploads/8ac540a4-ed74-4c29-98a2-22f75a415068.png"
-              alt="Seu Zé"
+              alt="Seu Calunga"
               className="h-full w-full object-cover"
             />
           </Avatar>
