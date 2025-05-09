@@ -7,7 +7,6 @@ import { MenuIcon, Sprout, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
-import SeuZeIcon from "@/components/icons/SeuZeIcon";
 
 export const Header = () => {
   const [isNavOpen, setIsNavOpen] = useState(false);
@@ -41,16 +40,10 @@ export const Header = () => {
             <span className="sr-only">Abrir menu</span>
           </Button>
           <Link to="/" className="flex items-center space-x-2">
-            {isMobile ? (
-              <SeuZeIcon size={28} className="text-white" />
-            ) : (
-              <>
-                <Sprout className="h-6 w-6 text-white" />
-                <span className="font-bold text-xl text-white">
-                  AgroFácil
-                </span>
-              </>
-            )}
+            <Sprout className="h-6 w-6 text-white" />
+            <span className="font-bold text-xl text-white">
+              AgroFácil
+            </span>
           </Link>
         </div>
 
@@ -68,7 +61,7 @@ export const Header = () => {
           <SheetContent side="left" className="p-0 w-4/5 max-w-[280px] bg-white">
             <div className="flex items-center justify-between px-4 py-3 border-b">
               <div className="flex items-center gap-2">
-                <SeuZeIcon size={32} />
+                <Sprout className="h-6 w-6 text-agro-green-700" />
                 <span className="font-bold text-xl text-agro-green-700">AgroFácil</span>
               </div>
               <Button variant="ghost" size="icon" onClick={() => setIsNavOpen(false)}>

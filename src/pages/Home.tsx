@@ -2,9 +2,8 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
-import { Sparkles, Leaf, MessageCircle } from "lucide-react";
+import { Sparkles, Leaf, MessageCircle, Sprout } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import SeuZeIcon from "@/components/icons/SeuZeIcon";
 
 export default function Home() {
   const isMobile = useIsMobile();
@@ -12,13 +11,15 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-agro-green-100 to-agro-green-50 flex flex-col items-center justify-center px-4 py-8 md:py-12 animate-fade-in">
       <div className="flex flex-col items-center mb-6">
-        <SeuZeIcon size={isMobile ? 72 : 96} className="mb-4" />
+        <div className="p-4 bg-agro-green-600 rounded-full mb-4">
+          <Sprout size={isMobile ? 48 : 64} className="text-white" />
+        </div>
         <h1 className="text-3xl md:text-4xl font-bold text-agro-green-800 text-center">
           AgroFácil
         </h1>
         <p className="text-base md:text-lg text-agro-green-700 text-center max-w-md mt-3 px-4">
           Tecnologia simples para o campo inteligente. Organize, analise e
-          converse com o Seu Zé — seu parceiro digital na lavoura.
+          gerencie sua lavoura com eficiência.
         </p>
       </div>
       
@@ -31,10 +32,10 @@ export default function Home() {
           <CardContent className="p-5 flex flex-col items-center">
             <Sparkles className="text-agro-green-600 mb-3" size={isMobile ? 28 : 32} />
             <h2 className="text-lg md:text-xl font-semibold text-agro-green-800 mb-2">
-              Assistente Seu Zé
+              Inteligência Agrícola
             </h2>
             <p className="text-sm text-gray-600 text-center">
-              Tire dúvidas e receba dicas direto do seu parceiro virtual.
+              Recursos inteligentes para otimizar sua produção agrícola.
             </p>
           </CardContent>
         </Card>
