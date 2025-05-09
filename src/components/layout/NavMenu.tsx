@@ -34,7 +34,7 @@ export const NavMenu = ({ className, isMobile, onItemClick }: NavMenuProps) => {
 
   return (
     <nav className={cn(
-      "flex flex-col md:flex-row gap-4", 
+      "flex flex-col md:flex-row gap-3", 
       isMobile ? "py-2" : "", 
       className
     )}>
@@ -48,7 +48,7 @@ export const NavMenu = ({ className, isMobile, onItemClick }: NavMenuProps) => {
             to={item.path}
             onClick={onItemClick}
             className={cn(
-              "text-agro-green-700 font-medium hover:text-agro-green-200 transition-colors flex items-center gap-2 py-2 px-3 rounded-md",
+              "text-agro-green-700 font-medium transition-colors flex items-center gap-2 py-3 px-3 rounded-md",
               active ? "bg-agro-green-100" : "",
               isMobile ? "justify-between" : "md:text-white md:hover:text-agro-green-200",
               isMobile && active ? "bg-agro-green-100" : "",
