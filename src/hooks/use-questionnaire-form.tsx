@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { toast } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -193,13 +192,13 @@ export function useQuestionnaireForm({
 
   return {
     step,
+    setStep,
     totalSteps,
     formData,
     isLoading,
     locationName,
     locationLoading,
     locationError,
-    setStep,
     handleChange,
     handleContinue,
     clearLocation,

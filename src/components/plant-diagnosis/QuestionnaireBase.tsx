@@ -30,6 +30,7 @@ export const QuestionnaireBase: React.FC<QuestionnaireBaseProps> = ({
 }) => {
   const {
     step,
+    setStep,
     totalSteps,
     formData,
     isLoading,
@@ -47,6 +48,15 @@ export const QuestionnaireBase: React.FC<QuestionnaireBaseProps> = ({
   });
 
   const t = questionnaireTranslations[locale];
+
+  // Handle going back one step
+  const handleBack = () => {
+    if (step > 1) {
+      setStep(step - 1);
+    } else {
+      onCancel();
+    }
+  };
 
   // Check if the continue button should be disabled based on current step
   const isNextButtonDisabled = () => {
@@ -143,7 +153,7 @@ export const QuestionnaireBase: React.FC<QuestionnaireBaseProps> = ({
           currentStep={step}
           totalSteps={totalSteps}
           isLoading={isLoading}
-          onCancel={step === 1 ? onCancel : () => step > 1 && step--}
+          onCancel={handleBack}
           onContinue={handleContinue}
           isNextDisabled={isNextButtonDisabled()}
           stepLabels={t.stepLabel}
