@@ -69,7 +69,7 @@ export const AnalyzingState: React.FC<AnalyzingStateProps> = ({ isUsingFallback 
   return (
     <div className="flex flex-col items-center py-10">
       {isUsingFallback && (
-        <Alert variant="warning" className="mb-6 w-full max-w-md bg-amber-50 border-amber-200">
+        <Alert variant="default" className="mb-6 w-full max-w-md bg-amber-50 border-amber-200">
           <AlertTriangle className="h-4 w-4 text-amber-600" />
           <AlertTitle className="text-amber-800">Modo de diagnóstico offline</AlertTitle>
           <AlertDescription className="text-amber-700 text-sm">

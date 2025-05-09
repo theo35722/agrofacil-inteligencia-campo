@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "@/components/ui/sonner";
 import { DiagnosisQuestions, DiagnosisResult, analyzePlantWithAI } from "@/services/openai-api";
 import ImageUploadArea from "@/components/plant-diagnosis/ImageUploadArea";
@@ -8,6 +8,8 @@ import ResultCard from "@/components/plant-diagnosis/ResultCard";
 import DiagnosisQuestionnaireEn from "@/components/plant-diagnosis/DiagnosisQuestionnaireEn";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { AnalyzingState } from "@/components/plant-diagnosis/AnalyzingState";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 enum DiagnosisStep {
   UPLOAD,
@@ -25,6 +27,19 @@ export default function PlantDiagnosis() {
   const [showTips, setShowTips] = useState(false);
   const [currentStep, setCurrentStep] = useState<DiagnosisStep>(DiagnosisStep.UPLOAD);
   const [isUsingFallback, setIsUsingFallback] = useState(false);
+  const [apiKeyConfigured, setApiKeyConfigured] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    // Check if API key is configured
+    const hasApiKey = !!import.meta.env.VITE_OPENAI_API_KEY;
+    setApiKeyConfigured(hasApiKey);
+    
+    if (!hasApiKey) {
+      toast.warning("OpenAI API key not configured. The app will use fallback mode.", {
+        duration: 5000,
+      });
+    }
+  }, []);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -131,6 +146,17 @@ export default function PlantDiagnosis() {
       <h1 className="text-3xl md:text-4xl font-bold text-green-800 mb-6 text-center">
         Plant Diagnosis
       </h1>
+
+      {apiKeyConfigured === false && (
+        <Alert className="mb-6 border-amber-300 bg-amber-50">
+          <AlertCircle className="h-4 w-4 text-amber-700" />
+          <AlertTitle className="text-amber-800">OpenAI API Key Not Configured</AlertTitle>
+          <AlertDescription className="text-amber-700">
+            For accurate AI analysis, please add your OpenAI API key as VITE_OPENAI_API_KEY in the environment variables.
+            Without an API key, the system will use a fallback database with limited accuracy.
+          </AlertDescription>
+        </Alert>
+      )}
 
       {currentStep === DiagnosisStep.UPLOAD && (
         <>

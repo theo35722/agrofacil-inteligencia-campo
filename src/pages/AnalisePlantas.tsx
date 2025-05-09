@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "@/components/ui/sonner";
 import { DiagnosisQuestions, DiagnosisResult, analyzePlantWithAI } from "@/services/openai-api";
 import ImageUploadArea from "@/components/plant-diagnosis/ImageUploadArea";
@@ -8,6 +8,8 @@ import ResultCard from "@/components/plant-diagnosis/ResultCard";
 import DiagnosisQuestionnaire from "@/components/plant-diagnosis/DiagnosisQuestionnaire";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { AnalyzingState } from "@/components/plant-diagnosis/AnalyzingState";
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 enum DiagnosisStep {
   UPLOAD,
@@ -25,6 +27,19 @@ export default function AnalisePlantas() {
   const [showTips, setShowTips] = useState(false);
   const [currentStep, setCurrentStep] = useState<DiagnosisStep>(DiagnosisStep.UPLOAD);
   const [isUsingFallback, setIsUsingFallback] = useState(false);
+  const [apiKeyConfigured, setApiKeyConfigured] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    // Check if API key is configured
+    const hasApiKey = !!import.meta.env.VITE_OPENAI_API_KEY;
+    setApiKeyConfigured(hasApiKey);
+    
+    if (!hasApiKey) {
+      toast.warning("Chave da API OpenAI não configurada. O app usará o modo fallback.", {
+        duration: 5000,
+      });
+    }
+  }, []);
 
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -134,6 +149,17 @@ export default function AnalisePlantas() {
         Diagnóstico de Planta
       </h1>
 
+      {apiKeyConfigured === false && (
+        <Alert className="mb-6 border-amber-300 bg-amber-50">
+          <AlertCircle className="h-4 w-4 text-amber-700" />
+          <AlertTitle className="text-amber-800">Chave da API OpenAI não configurada</AlertTitle>
+          <AlertDescription className="text-amber-700">
+            Para análises precisas com IA, adicione sua chave da API OpenAI como VITE_OPENAI_API_KEY nas variáveis de ambiente.
+            Sem uma chave de API, o sistema usará um banco de dados offline com precisão limitada.
+          </AlertDescription>
+        </Alert>
+      )}
+
       {currentStep === DiagnosisStep.UPLOAD && (
         <>
           <ImageUploadArea
@@ -188,4 +214,4 @@ export default function AnalisePlantas() {
       />
     </div>
   );
-};
+}
