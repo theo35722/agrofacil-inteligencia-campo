@@ -1,0 +1,8 @@
+# Arquivos que não devem ir para o GitHub
+.env
+.dev
+*.key
+.env.
+config.js
+openai_config.js
+secret.json
