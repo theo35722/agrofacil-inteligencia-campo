@@ -45,18 +45,8 @@ export const ApiKeyValidator: React.FC<ApiKeyValidatorProps> = ({
     validateApiKey();
   }, [onValidationComplete]);
 
-  if (status === "loading") {
-    return (
-      <Alert className="mb-4 border-blue-300 bg-blue-50">
-        <AlertCircle className="h-4 w-4 text-blue-700" />
-        <AlertTitle className="text-blue-800">Validando chave API</AlertTitle>
-        <AlertDescription className="text-blue-700">
-          Verificando configuração da chave API da OpenAI...
-        </AlertDescription>
-      </Alert>
-    );
-  }
-
+  // Apenas exibimos o alerta se a API key for válida
+  // Para os estados "missing", "invalid" e "loading", não mostramos nenhum alerta
   if (status === "valid") {
     return (
       <Alert className="mb-4 border-green-300 bg-green-50">
@@ -69,7 +59,6 @@ export const ApiKeyValidator: React.FC<ApiKeyValidatorProps> = ({
     );
   }
 
-  // Para os estados "missing" e "invalid", não mostramos nenhum alerta
-  // A aplicação continuará em modo offline silenciosamente
+  // Para os estados "missing", "invalid" e "loading", não mostramos nenhum alerta
   return null;
-};
+}

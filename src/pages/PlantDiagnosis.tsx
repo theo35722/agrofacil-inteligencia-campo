@@ -34,9 +34,8 @@ export default function PlantDiagnosis() {
     setApiKeyConfigured(hasApiKey);
     
     if (!hasApiKey) {
-      toast.warning("OpenAI API key not configured. The app will use fallback mode.", {
-        duration: 5000,
-      });
+      // We remove the warning toast here
+      console.log("OpenAI API key not configured. The app will use fallback mode silently.");
     }
   }, []);
 
@@ -44,11 +43,8 @@ export default function PlantDiagnosis() {
     console.log("API Key valid:", isValid);
     setApiKeyConfigured(isValid);
     
-    if (!isValid) {
-      toast.warning("Issues with OpenAI API key. The app will use fallback mode.", {
-        duration: 5000,
-      });
-    } else {
+    // We only keep success messages
+    if (isValid) {
       toast.success("OpenAI API key validated successfully!", {
         duration: 3000,
       });

@@ -7,8 +7,6 @@ import ResultCard from "@/components/plant-diagnosis/ResultCard";
 import DiagnosisQuestionnaire from "@/components/plant-diagnosis/DiagnosisQuestionnaire";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { AnalyzingState } from "@/components/plant-diagnosis/AnalyzingState";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
-import { AlertCircle } from "lucide-react";
 import { ApiKeyValidator } from "@/components/plant-diagnosis/ApiKeyValidator";
 
 enum DiagnosisStep {
@@ -36,9 +34,7 @@ export default function AnalisePlantas() {
     setApiKeyConfigured(hasApiKey);
     
     if (!hasApiKey) {
-      toast.warning("Chave da API OpenAI não configurada. O app usará o modo fallback.", {
-        duration: 5000,
-      });
+      console.log("Chave da API OpenAI não configurada. O app usará o modo fallback silenciosamente.");
     }
   }, []);
 
@@ -46,11 +42,7 @@ export default function AnalisePlantas() {
     console.log("API Key válida:", isValid);
     setApiKeyConfigured(isValid);
     
-    if (!isValid) {
-      toast.warning("Problemas com a chave da API OpenAI. O app usará o modo fallback.", {
-        duration: 5000,
-      });
-    } else {
+    if (isValid) {
       toast.success("Chave da API OpenAI validada com sucesso!", {
         duration: 3000,
       });
@@ -174,17 +166,6 @@ export default function AnalisePlantas() {
       {/* Validador de API Key - oculto por padrão */}
       {showKeyValidator && (
         <ApiKeyValidator onValidationComplete={handleApiValidation} />
-      )}
-
-      {apiKeyConfigured === false && !showKeyValidator && (
-        <Alert className="mb-6 border-amber-300 bg-amber-50">
-          <AlertCircle className="h-4 w-4 text-amber-700" />
-          <AlertTitle className="text-amber-800">Chave da API OpenAI não configurada corretamente</AlertTitle>
-          <AlertDescription className="text-amber-700">
-            Para análises precisas com IA, verifique sua chave da API OpenAI como VITE_OPENAI_API_KEY nas variáveis de ambiente.
-            Sem uma chave de API válida, o sistema usará um banco de dados offline com precisão limitada.
-          </AlertDescription>
-        </Alert>
       )}
 
       {currentStep === DiagnosisStep.UPLOAD && (
