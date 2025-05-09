@@ -25,8 +25,9 @@ export const ApiKeyValidator: React.FC<ApiKeyValidatorProps> = ({
           return;
         }
 
+        // Atualizar validação de formato: aceitar tanto sk- quanto sk-proj- e outras variações
         if (!apiKey.startsWith("sk-")) {
-          console.warn("Formato de API key possivelmente inválido");
+          console.warn("Formato de API key inválido");
           setStatus("invalid");
           setErrorMessage("A chave não está no formato padrão da OpenAI (deve começar com 'sk-')");
           if (onValidationComplete) onValidationComplete(false);
@@ -34,6 +35,7 @@ export const ApiKeyValidator: React.FC<ApiKeyValidatorProps> = ({
         }
 
         // Fazer uma chamada simples para testar a API key
+        console.log("Testando conexão com a API da OpenAI...");
         const response = await fetch("https://api.openai.com/v1/models", {
           method: "GET",
           headers: {
@@ -41,15 +43,24 @@ export const ApiKeyValidator: React.FC<ApiKeyValidatorProps> = ({
           }
         });
 
+        const responseData = await response.json();
+        
         if (!response.ok) {
-          const errorData = await response.json();
-          console.error("Erro ao validar chave API:", errorData);
+          console.error("Erro ao validar chave API:", responseData);
           setStatus("invalid");
-          setErrorMessage(errorData.error?.message || "Erro na validação da chave API");
+          
+          // Mensagens de erro mais específicas com base no código de erro
+          if (responseData.error?.code === "invalid_api_key") {
+            setErrorMessage("Chave API inválida. Verifique se a chave está correta e ativa.");
+          } else {
+            setErrorMessage(responseData.error?.message || "Erro na validação da chave API");
+          }
+          
           if (onValidationComplete) onValidationComplete(false);
           return;
         }
 
+        console.log("Chave API validada com sucesso!");
         setStatus("valid");
         if (onValidationComplete) onValidationComplete(true);
       } catch (error) {
@@ -107,7 +118,8 @@ export const ApiKeyValidator: React.FC<ApiKeyValidatorProps> = ({
       <AlertDescription className="text-red-700">
         {errorMessage || "Ocorreu um erro ao validar sua chave API da OpenAI."}
         <div className="mt-2">
-          <strong>Dica:</strong> Verifique se a chave está no formato correto (começa com sk-) e se tem permissões para acessar a API.
+          <strong>Dica:</strong> Verifique se a chave começa com "sk-" e tem permissões para acessar a API. 
+          Chaves de API OpenAI geralmente são longas e têm o formato "sk-XXXXXXXXXXXXXXXXXXXXXXX".
         </div>
       </AlertDescription>
     </Alert>
