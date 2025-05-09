@@ -27,25 +27,33 @@ const ImageUploadArea: React.FC<ImageUploadAreaProps> = ({
 
   return (
     <div className="space-y-4">
-      <Collapsible
-        open={showTips}
-        onOpenChange={setShowTips}
-        className="w-full"
-      >
-        <CollapsibleTrigger asChild>
+      {/* Show photo tips by default, but user can collapse them */}
+      <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+        <div className="flex justify-between items-center mb-2">
+          <div className="flex items-center">
+            <Info className="h-4 w-4 text-green-600 mr-2" />
+            <h3 className="text-green-700 font-medium">Dicas para tirar a melhor foto</h3>
+          </div>
           <Button
-            variant="outline"
+            variant="ghost"
             size="sm"
-            className="w-full border-green-300 text-green-700 mb-4"
+            className="h-7 text-green-700 hover:bg-green-100"
+            onClick={() => setShowTips(!showTips)}
           >
-            <Info className="h-4 w-4 mr-2" />
-            {showTips ? "Ocultar dicas" : "Dicas para tirar a melhor foto"}
+            {showTips ? "Ocultar" : "Mostrar"}
           </Button>
-        </CollapsibleTrigger>
-        <CollapsibleContent className="space-y-4">
-          <PhotoTips />
-        </CollapsibleContent>
-      </Collapsible>
+        </div>
+        
+        <Collapsible
+          open={showTips}
+          onOpenChange={setShowTips}
+          className="w-full"
+        >
+          <CollapsibleContent>
+            <PhotoTips />
+          </CollapsibleContent>
+        </Collapsible>
+      </div>
       
       <div 
         className="border-2 border-dashed border-green-300 rounded-lg p-6 sm:p-8
