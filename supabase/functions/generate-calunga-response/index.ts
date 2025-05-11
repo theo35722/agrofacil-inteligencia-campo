@@ -17,6 +17,7 @@ serve(async (req) => {
     // Obter a chave da API OpenAI do ambiente
     const openaiApiKey = Deno.env.get("OPENAI_API_KEY");
     if (!openaiApiKey) {
+      console.error("OPENAI_API_KEY não configurada");
       throw new Error("OPENAI_API_KEY não configurada");
     }
 
@@ -25,8 +26,12 @@ serve(async (req) => {
     const { userMessage } = requestData;
 
     if (!userMessage) {
+      console.error("Mensagem do usuário não fornecida");
       throw new Error("Mensagem do usuário não fornecida");
     }
+
+    // Log para depuração
+    console.log("Chave API encontrada e mensagem recebida:", userMessage.substring(0, 20) + "...");
 
     // Definir o prompt do Seu Calunga
     const calungaPrompt = `
@@ -64,6 +69,15 @@ serve(async (req) => {
       }),
     });
 
+    console.log("Status da resposta OpenAI:", response.status);
+
+    // Verificar se a resposta foi bem-sucedida
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Erro da API OpenAI (${response.status}): ${errorText}`);
+      throw new Error(`Erro ao chamar API OpenAI: ${response.status} - ${errorText}`);
+    }
+
     const data = await response.json();
     
     // Verificar se há um erro na resposta da API
@@ -77,7 +91,7 @@ serve(async (req) => {
       ? data.choices[0].message.content
       : "Eita, tive um aperreio aqui. Vamos tentar de novo, parceiro?";
 
-    console.log("Resposta gerada:", aiResponse);
+    console.log("Resposta gerada com sucesso:", aiResponse.substring(0, 20) + "...");
 
     // Retornar a resposta
     return new Response(
@@ -92,7 +106,7 @@ serve(async (req) => {
   } catch (error) {
     console.error("Erro:", error);
     return new Response(
-      JSON.stringify({ error: error.message || "Erro desconhecido" }),
+      JSON.stringify({ error: error.message || "Erro desconhecido", fallback: true }),
       {
         status: 500,
         headers: {
