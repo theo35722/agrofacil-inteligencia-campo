@@ -52,10 +52,8 @@ export const DiagnosisContainer: React.FC<DiagnosisContainerProps> = ({ locale }
           showTips={showTips}
           setShowTips={setShowTips}
           handleImageUpload={handleImageUpload}
-          onCancel={() => {
-            resetAnalysis();
-          }}
-          onAnalyze={() => currentStep === DiagnosisStep.UPLOAD && preview && handleQuestionsSubmit}
+          onCancel={resetAnalysis}
+          onAnalyze={() => {}} // This is handled inside the component now
           loading={loading}
           locale={locale}
         />
