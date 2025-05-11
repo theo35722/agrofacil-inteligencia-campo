@@ -20,7 +20,7 @@ export const NavMenu = ({ className, isMobile, onItemClick }: NavMenuProps) => {
   const location = useLocation();
   
   const navItems = [
-    { name: "Início", path: "/", icon: Home },
+    { name: "Início", path: "/dashboard", icon: Home },
     { name: "Diagnóstico", path: "/diagnostico", icon: Leaf },
     { name: "Clima", path: "/clima", icon: CloudSun },
     { name: "Lavouras", path: "/lavouras", icon: Thermometer },

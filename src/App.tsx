@@ -29,9 +29,8 @@ const App = () => (
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            {/* Página inicial pública - agora também acessível pelo caminho raiz */}
+            {/* Página inicial pública - apenas para usuários não autenticados */}
             <Route path="/" element={<Home />} />
-            <Route path="/home" element={<Home />} />
             
             {/* Rota de autenticação */}
             <Route path="/auth" element={<Auth />} />
@@ -59,7 +58,7 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Route>
             
-            {/* Default redirection - removemos pois agora a rota raiz exibe a Home */}
+            {/* Redireção padrão */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </AuthProvider>
