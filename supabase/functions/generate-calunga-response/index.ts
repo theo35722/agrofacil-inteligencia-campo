@@ -23,15 +23,19 @@ serve(async (req) => {
 
     // Analisar o corpo da solicitação
     const requestData = await req.json();
-    const { userMessage } = requestData;
+    const { messageHistory } = requestData;
 
-    if (!userMessage) {
-      console.error("Mensagem do usuário não fornecida");
-      throw new Error("Mensagem do usuário não fornecida");
+    if (!messageHistory || !Array.isArray(messageHistory) || messageHistory.length === 0) {
+      console.error("Histórico de mensagens não fornecido ou inválido");
+      throw new Error("Histórico de mensagens não fornecido ou inválido");
     }
 
+    // Extrair a mensagem mais recente para logging
+    const latestMessage = messageHistory.find(msg => msg.role === "user");
+    const userMessagePreview = latestMessage ? latestMessage.content.substring(0, 20) + "..." : "Nenhuma mensagem do usuário";
+
     // Log para depuração
-    console.log("Chave API encontrada e mensagem recebida:", userMessage.substring(0, 20) + "...");
+    console.log("Chave API encontrada e histórico recebido com", messageHistory.length, "mensagens. Última mensagem:", userMessagePreview);
 
     // Definir o prompt do Seu Calunga
     const calungaPrompt = `
@@ -47,9 +51,19 @@ serve(async (req) => {
       Você é um verdadeiro parceiro do produtor rural.
       
       Mantenha suas respostas concisas, entre 2-4 frases.
+
+      IMPORTANTE: Você DEVE se referir a conversas anteriores quando o contexto for relevante. Mantenha continuidade na conversa.
     `;
 
-    console.log("Chamando API OpenAI para mensagem:", userMessage);
+    // Limite o número de mensagens para não exceder o limite de tokens
+    // Mantenha o sistema + até 10 mensagens anteriores
+    const systemMessage = { role: "system", content: calungaPrompt };
+    let limitedHistory = messageHistory.slice(-10);
+    
+    // Montar o array de mensagens com o sistema primeiro
+    const messages = [systemMessage, ...limitedHistory];
+
+    console.log("Chamando API OpenAI com", messages.length, "mensagens no histórico");
 
     // Chamar a API da OpenAI
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -60,10 +74,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: "gpt-4o-mini",
-        messages: [
-          { role: "system", content: calungaPrompt },
-          { role: "user", content: userMessage }
-        ],
+        messages: messages,
         temperature: 0.7,
         max_tokens: 150
       }),

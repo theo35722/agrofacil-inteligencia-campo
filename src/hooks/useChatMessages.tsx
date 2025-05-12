@@ -52,7 +52,7 @@ export const useChatMessages = () => {
     setIsTyping(true);
     
     // Enviar para a API
-    generateAIResponse(inputValue.trim())
+    generateAIResponse(inputValue.trim(), [...messages, newUserMessage])
       .then((aiResponse) => {
         setMessages((prev) => [
           ...prev,
@@ -82,14 +82,20 @@ export const useChatMessages = () => {
       });
   };
 
-  // Função para enviar mensagem à API
-  const generateAIResponse = async (userMessage: string): Promise<string> => {
+  // Função para enviar mensagem à API com o histórico completo
+  const generateAIResponse = async (userMessage: string, messageHistory: Message[]): Promise<string> => {
     try {
       const { supabase } = await import('@/integrations/supabase/client');
       
+      // Converter o histórico de mensagens para o formato esperado pela OpenAI
+      const formattedHistory = messageHistory.map(msg => ({
+        role: msg.sender === "user" ? "user" : "assistant",
+        content: msg.text
+      }));
+      
       const { data, error } = await supabase.functions.invoke('generate-calunga-response', {
         body: {
-          userMessage,
+          messageHistory: formattedHistory,
         }
       });
 
