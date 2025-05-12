@@ -23,11 +23,11 @@ const ChatHeader: React.FC = () => {
             />
           </Avatar>
           <div>
-            <DrawerTitle>Seu Calunga</DrawerTitle>
-            <DrawerDescription className="flex items-center">
-              <span className="mr-2">Especialista Agrícola</span>
+            <DrawerTitle className="text-base">Seu Calunga</DrawerTitle>
+            <div className="flex items-center">
+              <span className="mr-2 text-sm text-gray-500">Especialista Agrícola</span>
               <Badge variant="outline" className="bg-green-100 text-agro-green-700">Online</Badge>
-            </DrawerDescription>
+            </div>
           </div>
         </div>
         <DrawerClose className="p-1 rounded-full hover:bg-gray-100">
