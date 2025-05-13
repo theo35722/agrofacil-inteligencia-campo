@@ -4,10 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/utils";
-import { Loader2, MessageCircle } from "lucide-react";
+import { Loader2, MessageCircle, PlusCircle } from "lucide-react";
 import { MarketplaceItem } from "@/components/marketplace/MarketplaceItem";
 import { MarketplaceHeader } from "@/components/marketplace/MarketplaceHeader";
 import { toast } from "sonner";
+import { Link } from "react-router-dom";
 
 export type MarketplaceProduct = {
   id: string;
@@ -53,7 +54,15 @@ const Marketplace = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <MarketplaceHeader />
+      <div className="flex justify-between items-start">
+        <MarketplaceHeader />
+        <Link to="/create-marketplace-product">
+          <Button className="bg-agro-green-600 hover:bg-agro-green-700">
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Anunciar Produto
+          </Button>
+        </Link>
+      </div>
       
       {loading ? (
         <div className="flex justify-center items-center py-12">
@@ -63,7 +72,13 @@ const Marketplace = () => {
       ) : products.length === 0 ? (
         <div className="text-center py-12 border rounded-lg bg-gray-50">
           <h3 className="text-xl font-medium text-gray-600">Nenhum produto disponível</h3>
-          <p className="text-gray-500 mt-2">Em breve você poderá anunciar seus produtos aqui!</p>
+          <p className="text-gray-500 mt-2">Seja o primeiro a anunciar um produto!</p>
+          <Link to="/create-marketplace-product" className="mt-4 inline-block">
+            <Button className="bg-agro-green-600 hover:bg-agro-green-700 mt-4">
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Anunciar Produto
+            </Button>
+          </Link>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
