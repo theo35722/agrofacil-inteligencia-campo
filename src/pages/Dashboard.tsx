@@ -1,5 +1,5 @@
 
-import { Sprout, CloudSun, MapPin, CalendarCheck, FileText, Bell } from "lucide-react";
+import { Sprout, CloudSun, MapPin, CalendarCheck, FileText, Bell, ShoppingBag } from "lucide-react";
 import { FeatureCard } from "@/components/dashboard/FeatureCard";
 import { WeatherPreview } from "@/components/dashboard/WeatherPreview";
 import { ActivityPreview } from "@/components/dashboard/ActivityPreview";
@@ -47,6 +47,13 @@ const Dashboard = () => {
       description: "Dicas e conhecimentos agrícolas",
       to: "/boas-praticas",
       bgColor: "bg-indigo-100",
+    },
+    {
+      icon: ShoppingBag,
+      title: "Marketplace",
+      description: "Compra e venda de produtos agrícolas",
+      to: "/marketplace",
+      bgColor: "bg-green-100",
     },
     {
       icon: Bell,

@@ -15,6 +15,7 @@ import Fields from "./pages/Fields";
 import Activities from "./pages/Activities";
 import BestPractices from "./pages/BestPractices";
 import Notifications from "./pages/Notifications";
+import Marketplace from "./pages/Marketplace";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import Home from "./pages/Home";
@@ -54,6 +55,7 @@ const App = () => (
               <Route path="atividades" element={<Activities />} />
               <Route path="boas-praticas" element={<BestPractices />} />
               <Route path="notificacoes" element={<Notifications />} />
+              <Route path="marketplace" element={<Marketplace />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Route>

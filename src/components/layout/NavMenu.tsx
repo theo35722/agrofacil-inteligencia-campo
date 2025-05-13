@@ -7,7 +7,8 @@ import {
   CloudSun,
   Leaf, 
   CalendarDays, 
-  BookOpen
+  BookOpen,
+  ShoppingBag
 } from "lucide-react";
 
 type NavMenuProps = {
@@ -26,6 +27,7 @@ export const NavMenu = ({ className, isMobile, onItemClick }: NavMenuProps) => {
     { name: "Lavouras", path: "/lavouras", icon: Thermometer },
     { name: "Atividades", path: "/atividades", icon: CalendarDays },
     { name: "Boas Práticas", path: "/boas-praticas", icon: BookOpen },
+    { name: "Marketplace", path: "/marketplace", icon: ShoppingBag },
   ];
 
   const isActive = (path: string) => {

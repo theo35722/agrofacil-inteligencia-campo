@@ -39,6 +39,39 @@ export type Database = {
         }
         Relationships: []
       }
+      marketplace_products: {
+        Row: {
+          contact_phone: string
+          created_at: string
+          description: string
+          id: string
+          image_url: string | null
+          location: string
+          price: number
+          title: string
+        }
+        Insert: {
+          contact_phone: string
+          created_at?: string
+          description: string
+          id?: string
+          image_url?: string | null
+          location: string
+          price: number
+          title: string
+        }
+        Update: {
+          contact_phone?: string
+          created_at?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          location?: string
+          price?: number
+          title?: string
+        }
+        Relationships: []
+      }
       practice_articles: {
         Row: {
           category: string
