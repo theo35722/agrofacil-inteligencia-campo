@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/utils";
-import { Loader2, WhatsappIcon } from "lucide-react";
+import { Loader2, MessageCircle } from "lucide-react";
 import { MarketplaceItem } from "@/components/marketplace/MarketplaceItem";
 import { MarketplaceHeader } from "@/components/marketplace/MarketplaceHeader";
 import { toast } from "sonner";
