@@ -77,6 +77,7 @@ export const DiagnosisContainer: React.FC<DiagnosisContainerProps> = ({ locale }
         <DiagnosisResultStep
           resultado={resultado}
           onNewAnalysis={resetAnalysis}
+          locale={locale}
         />
       )}
 

@@ -43,27 +43,56 @@ serve(async (req) => {
     console.log("Analisando imagem:", imageUrl);
     console.log("Cultura:", culture);
 
-    // Construct the prompt for GPT-4 Vision
+    // Construct the prompt for GPT-4 Vision with improved structure
     const prompt = `
-      Sua função é agir como um agrônomo digital brasileiro. Analise a imagem da planta e as informações fornecidas:
+      Você é um agrônomo digital especialista em diagnósticos de doenças em plantas.
       
+      Análise as informações fornecidas e responda de forma estruturada:
+      
+      Dados recebidos:
+      
+      Imagem da planta: URL fornecida
       Cultura: ${culture}
       Sintomas observados: ${symptoms}
       Parte afetada: ${affectedArea}
-      Duração dos sintomas: ${timeFrame}
+      Tempo de surgimento dos sintomas: ${timeFrame}
       Produtos aplicados recentemente: ${recentProducts || "Não informado"}
-      Mudanças climáticas: ${weatherChanges || "Não informado"}
+      Condições climáticas recentes: ${weatherChanges || "Não informado"}
       Localização: ${location || "Não informado"}
       
       Baseado nesta imagem e informações, forneça um JSON com o seguinte formato:
       {
-        "disease": "Nome provável da doença ou condição",
-        "severity": "low, moderate ou high",
+        "disease": {
+          "name": "Nome provável da doença ou condição",
+          "description": "Descrição breve da doença, incluindo o agente causador e como ela afeta a planta"
+        },
+        "severity": {
+          "level": "low, moderate ou high",
+          "justification": "Justificativa para essa classificação de severidade"
+        },
+        "treatment": {
+          "products": [
+            {
+              "name": "Nome do produto recomendado",
+              "activeIngredient": "Ingrediente ativo principal",
+              "dosage": "Dosagem recomendada",
+              "application": "Como aplicar",
+              "interval": "Intervalo entre aplicações",
+              "timing": "Melhor horário para aplicação",
+              "weather": "Condições climáticas ideais",
+              "preharvest": "Período de carência"
+            }
+          ],
+          "additionalRecommendations": "Recomendações adicionais de tratamento"
+        },
+        "preventiveMeasures": [
+          "Medida preventiva 1",
+          "Medida preventiva 2",
+          "Medida preventiva 3"
+        ],
+        "extraTips": "Dicas extras importantes para o agricultor",
         "affectedArea": "Parte da planta mais afetada",
         "spreadRisk": "Risco de disseminação (baixo, médio, alto)",
-        "treatment": "Tratamento recomendado para um produtor rural brasileiro",
-        "preventiveMeasures": ["3 medidas preventivas para safras futuras"],
-        "extraTip": "Uma dica adicional para manejo sustentável",
         "confidence": 85 // Um número de 0 a 100 representando a confiança no diagnóstico
       }
       
@@ -93,7 +122,7 @@ serve(async (req) => {
             ]
           }
         ],
-        max_tokens: 800,
+        max_tokens: 1200,
       }),
     });
 
@@ -121,8 +150,26 @@ serve(async (req) => {
         const jsonStr = jsonMatch[0];
         const parsedResult = JSON.parse(jsonStr);
         
+        // Transform the enhanced response to match the current interface expectations
+        // This ensures backward compatibility while providing more detailed information
+        const compatibleResult = {
+          disease: parsedResult.disease.name,
+          scientificName: parsedResult.disease.scientificName || "",
+          description: parsedResult.disease.description || "",
+          severity: parsedResult.severity.level,
+          severityJustification: parsedResult.severity.justification || "",
+          affectedArea: parsedResult.affectedArea,
+          spreadRisk: parsedResult.spreadRisk,
+          treatment: parsedResult.treatment.additionalRecommendations || "",
+          extraTip: parsedResult.extraTips,
+          preventiveMeasures: parsedResult.preventiveMeasures,
+          confidence: parsedResult.confidence,
+          recommendations: parsedResult.treatment.products || [],
+          symptoms: parsedResult.symptoms || ["Sintomas não especificados"]
+        };
+        
         return new Response(
-          JSON.stringify(parsedResult),
+          JSON.stringify(compatibleResult),
           { headers: { ...corsHeaders, "Content-Type": "application/json" } }
         );
       } else {

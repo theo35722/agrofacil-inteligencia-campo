@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { 
@@ -12,7 +12,9 @@ import {
   Share2,
   RefreshCw,
   Shield,
-  TrendingUp
+  TrendingUp,
+  Info,
+  Microscope
 } from "lucide-react";
 import { DiagnosisResult } from "@/services/openai-api";
 import { Badge } from "@/components/ui/badge";
@@ -107,6 +109,11 @@ const ResultCard: React.FC<ResultCardProps> = ({ result, onNewAnalysis }) => {
           <span className="ml-2 font-medium">
             {getSeverityText(result.severity)}
           </span>
+          {result.severityJustification && (
+            <span className="ml-2 text-xs">
+              {" - "}{result.severityJustification}
+            </span>
+          )}
         </div>
       </div>
       
@@ -115,6 +122,9 @@ const ResultCard: React.FC<ResultCardProps> = ({ result, onNewAnalysis }) => {
           {/* Disease Name */}
           <div>
             <h3 className="text-xl font-semibold text-gray-800">{result.disease}</h3>
+            {result.scientificName && (
+              <p className="text-xs text-gray-600 italic">{result.scientificName}</p>
+            )}
             <div className="flex justify-between items-center mt-1">
               <Badge variant="outline" className="text-xs px-2 py-0">
                 {result.affectedArea}
@@ -126,6 +136,13 @@ const ResultCard: React.FC<ResultCardProps> = ({ result, onNewAnalysis }) => {
               )}
             </div>
           </div>
+          
+          {/* Disease Description */}
+          {result.description && (
+            <div className="bg-gray-50 p-3 rounded-lg text-sm">
+              <p className="text-gray-700">{result.description}</p>
+            </div>
+          )}
           
           <Separator />
           
@@ -152,6 +169,27 @@ const ResultCard: React.FC<ResultCardProps> = ({ result, onNewAnalysis }) => {
             )}
           </div>
           
+          {/* Symptoms */}
+          {result.symptoms && result.symptoms.length > 0 && (
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="symptoms">
+                <AccordionTrigger className="py-2">
+                  <div className="flex items-center">
+                    <Microscope className="h-4 w-4 text-agro-green-700 mr-2" />
+                    <span className="text-sm font-medium text-gray-700">Sintomas identificados</span>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <ul className="space-y-2 ml-6 mt-1">
+                    {result.symptoms.map((symptom, index) => (
+                      <li key={index} className="text-sm text-gray-600">• {symptom}</li>
+                    ))}
+                  </ul>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          )}
+          
           {/* Treatment */}
           <div>
             <div className="flex items-center mb-2">
@@ -160,6 +198,69 @@ const ResultCard: React.FC<ResultCardProps> = ({ result, onNewAnalysis }) => {
             </div>
             <p className="text-sm text-gray-600 ml-6">{result.treatment}</p>
           </div>
+          
+          {/* Specific Product Recommendations */}
+          {result.recommendations && result.recommendations.length > 0 && (
+            <Accordion type="single" collapsible className="w-full">
+              <AccordionItem value="recommendations">
+                <AccordionTrigger className="py-2">
+                  <div className="flex items-center">
+                    <Info className="h-4 w-4 text-blue-700 mr-2" />
+                    <span className="text-sm font-medium text-gray-700">Produtos recomendados</span>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="space-y-3">
+                    {result.recommendations.map((rec, index) => (
+                      <div 
+                        key={index}
+                        className="p-3 bg-blue-50 border border-blue-100 rounded-md"
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <p className="font-medium text-blue-800">{rec.product || rec.name}</p>
+                            <p className="text-xs text-gray-600">{rec.activeIngredient}</p>
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-x-3 gap-y-2 mt-3 text-xs">
+                          <div>
+                            <p className="font-medium text-gray-600">Dosagem:</p>
+                            <p>{rec.dosage}</p>
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-600">Aplicação:</p>
+                            <p>{rec.application}</p>
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-600">Intervalo:</p>
+                            <p>{rec.interval}</p>
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-600">Carência:</p>
+                            <p>{rec.preharvest}</p>
+                          </div>
+                        </div>
+                        
+                        <Separator className="my-2" />
+                        
+                        <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
+                          <div>
+                            <p className="font-medium text-gray-600">Melhor horário:</p>
+                            <p>{rec.timing}</p>
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-600">Condições climáticas:</p>
+                            <p>{rec.weather}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          )}
           
           {/* Preventive Measures */}
           {result.preventiveMeasures && result.preventiveMeasures.length > 0 && (

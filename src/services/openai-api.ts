@@ -1,4 +1,3 @@
-
 export interface DiagnosisQuestions {
   culture: string;
   symptoms: string;
@@ -12,13 +11,28 @@ export interface DiagnosisQuestions {
 
 export interface DiagnosisResult {
   disease: string;
+  scientificName?: string;
+  description?: string;
   severity: "low" | "moderate" | "high";
+  severityJustification?: string;
   affectedArea: string;
   treatment: string;
   extraTip: string;
   spreadRisk?: string;
   preventiveMeasures?: string[];
   confidence: number;
+  recommendations?: Array<{
+    name?: string;
+    product: string;
+    activeIngredient: string;
+    dosage: string;
+    application: string;
+    interval: string;
+    timing: string;
+    weather: string;
+    preharvest: string;
+  }>;
+  symptoms?: string[];
 }
 
 // Atualização para usar a Edge Function do Supabase
@@ -117,7 +131,10 @@ const callOpenAI = async (
       Baseado nesta imagem e informações, forneça um JSON com o seguinte formato:
       {
         "disease": "Nome provável da doença ou condição",
+        "scientificName": "Nome científico da doença",
+        "description": "Descrição da doença",
         "severity": "low, moderate ou high",
+        "severityJustification": "Justificativa para a severidade",
         "affectedArea": "Parte da planta mais afetada",
         "spreadRisk": "Risco de disseminação (baixo, médio, alto)",
         "treatment": "Tratamento recomendado para um produtor rural brasileiro",
@@ -190,7 +207,10 @@ const callOpenAI = async (
         // Mapear o resultado para o formato esperado
         const result: DiagnosisResult = {
           disease: parsedResult.disease || "Diagnóstico não identificado",
+          scientificName: parsedResult.scientificName || "Nome científico não identificado",
+          description: parsedResult.description || "Descrição não identificada",
           severity: (parsedResult.severity as "low" | "moderate" | "high") || "moderate",
+          severityJustification: parsedResult.severityJustification || "Justificativa de severidade não identificada",
           affectedArea: parsedResult.affectedArea || questions.affectedArea,
           treatment: parsedResult.treatment || "Consulte um agrônomo para diagnóstico presencial",
           extraTip: parsedResult.extraTip || "Monitore regularmente sua plantação",
@@ -198,7 +218,9 @@ const callOpenAI = async (
           preventiveMeasures: Array.isArray(parsedResult.preventiveMeasures) 
             ? parsedResult.preventiveMeasures 
             : ["Consultar um agrônomo", "Monitorar a plantação regularmente", "Realizar análise de solo"],
-          confidence: parsedResult.confidence || 70
+          confidence: parsedResult.confidence || 70,
+          recommendations: parsedResult.recommendations || [],
+          symptoms: parsedResult.symptoms || []
         };
         
         return result;
@@ -222,7 +244,10 @@ const getFallbackDiagnosis = (questions: DiagnosisQuestions): DiagnosisResult =>
   const mockResponses: Record<string, DiagnosisResult> = {
     "milho": {
       disease: "Ferrugem do Milho",
+      scientificName: "Fusarium graminearum",
+      description: "Doença causada por fungos do gênero Fusarium.",
       severity: "moderate",
+      severityJustification: "A doença pode afetar a produtividade e a qualidade do milho.",
       affectedArea: "Folhas",
       treatment: "Fungicida à base de Azoxistrobina + Ciproconazol, aplicação foliar na dose de 0,3L/ha.",
       extraTip: "Rotação de culturas e escolha de variedades resistentes podem reduzir a incidência desta doença.",
@@ -232,11 +257,19 @@ const getFallbackDiagnosis = (questions: DiagnosisQuestions): DiagnosisResult =>
         "Fazer rotação de culturas",
         "Monitorar a lavoura regularmente"
       ],
-      confidence: 85
+      confidence: 85,
+      recommendations: [
+        { name: "Fungicida", product: "Azoxistrobina", activeIngredient: "Azoxistrobina", dosage: "0,3L/ha", application: "Foliar", interval: "14 dias", timing: "Diária", weather: "Nenhuma", preharvest: "Não" },
+        { name: "Ciproconazol", product: "Ciproconazol", activeIngredient: "Ciproconazol", dosage: "0,3L/ha", application: "Foliar", interval: "14 dias", timing: "Diária", weather: "Nenhuma", preharvest: "Não" }
+      ],
+      symptoms: ["Folhas amareladas", "Folhas secas", "Folhas com manchas vermelhas"]
     },
     "soja": {
       disease: "Ferrugem Asiática",
+      scientificName: "Fusarium oxysporum f. sp. vasinfectum",
+      description: "Doença causada por fungos do gênero Fusarium.",
       severity: "high",
+      severityJustification: "A doença pode afetar a produtividade e a qualidade da soja.",
       affectedArea: "Folhas",
       treatment: "Fungicida triazol + estrobilurina, aplicação preventiva e curativa a cada 14 dias.",
       extraTip: "Monitore a lavoura regularmente. A aplicação preventiva tem maior eficácia contra a ferrugem.",
@@ -246,11 +279,19 @@ const getFallbackDiagnosis = (questions: DiagnosisQuestions): DiagnosisResult =>
         "Respeitar o vazio sanitário",
         "Eliminar plantas voluntárias de soja"
       ],
-      confidence: 92
+      confidence: 92,
+      recommendations: [
+        { name: "Fungicida triazol", product: "Triazol", activeIngredient: "Triazol", dosage: "0,3L/ha", application: "Preventiva", interval: "14 dias", timing: "Diária", weather: "Nenhuma", preharvest: "Não" },
+        { name: "Estrobilurina", product: "Estrobilurina", activeIngredient: "Estrobilurina", dosage: "0,3L/ha", application: "Curativa", interval: "14 dias", timing: "Diária", weather: "Nenhuma", preharvest: "Não" }
+      ],
+      symptoms: ["Folhas amareladas", "Folhas secas", "Folhas com manchas vermelhas"]
     },
     "tomate": {
       disease: "Requeima",
+      scientificName: "Cladosporium fulvum",
+      description: "Doença causada por fungos do gênero Cladosporium.",
       severity: "high",
+      severityJustification: "A doença pode afetar a produtividade e a qualidade do tomate.",
       affectedArea: "Folhas e frutos",
       treatment: "Fungicida à base de Mancozeb, aplicação a cada 7 dias em períodos úmidos.",
       extraTip: "Evite irrigação por aspersão e melhore a ventilação entre as plantas para reduzir a umidade.",
@@ -260,11 +301,18 @@ const getFallbackDiagnosis = (questions: DiagnosisQuestions): DiagnosisResult =>
         "Evitar irrigação por aspersão",
         "Aumentar o espaçamento entre plantas"
       ],
-      confidence: 88
+      confidence: 88,
+      recommendations: [
+        { name: "Fungicida Mancozeb", product: "Mancozeb", activeIngredient: "Mancozeb", dosage: "0,3L/ha", application: "Foliar", interval: "7 dias", timing: "Diária", weather: "Nenhuma", preharvest: "Não" }
+      ],
+      symptoms: ["Folhas amareladas", "Folhas secas", "Folhas com manchas vermelhas"]
     },
     "algodao": {
       disease: "Ramulária",
+      scientificName: "Phytophthora ramorum",
+      description: "Doença causada por fungos do gênero Phytophthora.",
       severity: "moderate",
+      severityJustification: "A doença pode afetar a produtividade e a qualidade do algodão.",
       affectedArea: "Folhas",
       treatment: "Fungicida à base de Fluxapiroxade + Piraclostrobina, aplicação na dose de 0,35L/ha.",
       extraTip: "Faça o monitoramento constante e inicie o controle nos primeiros sintomas.",
@@ -274,11 +322,19 @@ const getFallbackDiagnosis = (questions: DiagnosisQuestions): DiagnosisResult =>
         "Destruição de restos culturais",
         "Rotação de culturas"
       ],
-      confidence: 86
+      confidence: 86,
+      recommendations: [
+        { name: "Fungicida Fluxapiroxade", product: "Fluxapiroxade", activeIngredient: "Fluxapiroxade", dosage: "0,35L/ha", application: "Foliar", interval: "14 dias", timing: "Diária", weather: "Nenhuma", preharvest: "Não" },
+        { name: "Piraclostrobina", product: "Piraclostrobina", activeIngredient: "Piraclostrobina", dosage: "0,35L/ha", application: "Foliar", interval: "14 dias", timing: "Diária", weather: "Nenhuma", preharvest: "Não" }
+      ],
+      symptoms: ["Folhas amareladas", "Folhas secas", "Folhas com manchas vermelhas"]
     },
     "cafe": {
       disease: "Ferrugem do Cafeeiro",
+      scientificName: "Fusarium virgilioides",
+      description: "Doença causada por fungos do gênero Fusarium.",
       severity: "high",
+      severityJustification: "A doença pode afetar a produtividade e a qualidade do café.",
       affectedArea: "Folhas",
       treatment: "Fungicida cúprico ou triazol, aplicação preventiva antes da estação chuvosa.",
       extraTip: "A nutrição equilibrada da planta aumenta sua resistência à ferrugem.",
@@ -288,11 +344,19 @@ const getFallbackDiagnosis = (questions: DiagnosisQuestions): DiagnosisResult =>
         "Manejo da sombra",
         "Adubação equilibrada"
       ],
-      confidence: 90
+      confidence: 90,
+      recommendations: [
+        { name: "Fungicida cúprico", product: "Cúprico", activeIngredient: "Cúprico", dosage: "0,3L/ha", application: "Preventiva", interval: "14 dias", timing: "Diária", weather: "Nenhuma", preharvest: "Não" },
+        { name: "Fungicida triazol", product: "Triazol", activeIngredient: "Triazol", dosage: "0,3L/ha", application: "Preventiva", interval: "14 dias", timing: "Diária", weather: "Nenhuma", preharvest: "Não" }
+      ],
+      symptoms: ["Folhas amareladas", "Folhas secas", "Folhas com manchas vermelhas"]
     },
     "default": {
       disease: "Possível deficiência nutricional",
+      scientificName: "N/A",
+      description: "Possível deficiência nutricional na planta.",
       severity: "moderate",
+      severityJustification: "A deficiência nutricional pode afetar a produtividade e a qualidade da planta.",
       affectedArea: "Planta inteira",
       treatment: "Recomenda-se análise foliar para diagnóstico preciso e aplicação de fertilizante adequado.",
       extraTip: "A correção do pH do solo pode melhorar a absorção de nutrientes pela planta.",
@@ -302,7 +366,12 @@ const getFallbackDiagnosis = (questions: DiagnosisQuestions): DiagnosisResult =>
         "Aplicar calcário para correção de pH",
         "Utilizar fertilizantes balanceados"
       ],
-      confidence: 65
+      confidence: 65,
+      recommendations: [
+        { name: "Análise foliar", product: "Análise foliar", activeIngredient: "N/A", dosage: "N/A", application: "N/A", interval: "N/A", timing: "N/A", weather: "Nenhuma", preharvest: "N/A" },
+        { name: "Aplicação de fertilizante", product: "Fertilizante", activeIngredient: "N/A", dosage: "N/A", application: "N/A", interval: "N/A", timing: "N/A", weather: "Nenhuma", preharvest: "N/A" }
+      ],
+      symptoms: ["Folhas amareladas", "Folhas secas", "Folhas com manchas vermelhas"]
     }
   };
   
