@@ -17,6 +17,7 @@ import BestPractices from "./pages/BestPractices";
 import Notifications from "./pages/Notifications";
 import Marketplace from "./pages/Marketplace";
 import CreateMarketplaceProduct from "./pages/CreateMarketplaceProduct";
+import EditMarketplaceProduct from "./pages/EditMarketplaceProduct";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import Home from "./pages/Home";
@@ -58,6 +59,7 @@ const App = () => (
               <Route path="notificacoes" element={<Notifications />} />
               <Route path="marketplace" element={<Marketplace />} />
               <Route path="create-marketplace-product" element={<CreateMarketplaceProduct />} />
+              <Route path="edit-marketplace-product/:productId" element={<EditMarketplaceProduct />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Route>

@@ -3,8 +3,10 @@ import { useState } from "react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
-import { MapPin, MessageCircle } from "lucide-react";
+import { MapPin, MessageCircle, Edit } from "lucide-react";
 import { MarketplaceProduct } from "@/pages/Marketplace";
+import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 interface MarketplaceItemProps {
   product: MarketplaceProduct;
@@ -12,6 +14,11 @@ interface MarketplaceItemProps {
 
 export const MarketplaceItem: React.FC<MarketplaceItemProps> = ({ product }) => {
   const [imageError, setImageError] = useState(false);
+  const [isCurrentUser, setIsCurrentUser] = useState(false);
+  
+  // Check if the current user is the owner of this product
+  // Since we don't have user authentication tied to products currently,
+  // all products can be edited by any user
   
   const handleContactSeller = () => {
     const phoneNumber = product.contact_phone.replace(/\D/g, "");
@@ -47,7 +54,7 @@ export const MarketplaceItem: React.FC<MarketplaceItemProps> = ({ product }) => 
           <span className="text-sm">{product.location}</span>
         </div>
       </CardContent>
-      <CardFooter className="pt-0 pb-4 px-4">
+      <CardFooter className="pt-0 pb-4 px-4 flex flex-col gap-2">
         <Button 
           onClick={handleContactSeller}
           className="w-full gap-2 bg-green-600 hover:bg-green-700"
@@ -55,6 +62,16 @@ export const MarketplaceItem: React.FC<MarketplaceItemProps> = ({ product }) => 
           <MessageCircle className="h-4 w-4" />
           Falar com Vendedor
         </Button>
+        
+        <Link to={`/edit-marketplace-product/${product.id}`} className="w-full">
+          <Button 
+            variant="outline"
+            className="w-full gap-2 border-green-600 text-green-700 hover:bg-green-50"
+          >
+            <Edit className="h-4 w-4" />
+            Editar Produto
+          </Button>
+        </Link>
       </CardFooter>
     </Card>
   );
