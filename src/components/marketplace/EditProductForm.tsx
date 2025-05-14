@@ -12,6 +12,7 @@ import { uploadProductImage } from "./form/ProductImageService";
 import { ProductFormFields } from "./form/ProductFormFields";
 import { ProductFormActions } from "./form/ProductFormActions";
 import { MarketplaceProduct } from "@/types/marketplace";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 // Form schema for validation
 const productFormSchema = z.object({
@@ -27,21 +28,24 @@ type ProductFormValues = z.infer<typeof productFormSchema>;
 
 interface EditProductFormProps {
   productId: string;
+  userPhone: string;
 }
 
-export const EditProductForm = ({ productId }: EditProductFormProps) => {
+export const EditProductForm = ({ productId, userPhone }: EditProductFormProps) => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageChanged, setImageChanged] = useState(false);
+  const [isOwner, setIsOwner] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productFormSchema),
     defaultValues: {
       title: "",
       description: "",
-      price: 0, // Default to number 0 instead of empty string
+      price: 0,
       location: "",
       contact_phone: "",
       image: null,
@@ -53,6 +57,8 @@ export const EditProductForm = ({ productId }: EditProductFormProps) => {
     async function fetchProduct() {
       try {
         setIsLoading(true);
+        setError(null);
+        
         const { data, error } = await supabase
           .from("marketplace_products")
           .select("*")
@@ -60,36 +66,42 @@ export const EditProductForm = ({ productId }: EditProductFormProps) => {
           .single();
 
         if (error) {
-          toast.error("Erro ao carregar dados do produto");
+          setError("Erro ao carregar dados do produto");
           console.error("Error fetching product:", error);
-          navigate("/marketplace");
           return;
         }
 
         if (data) {
-          form.reset({
-            title: data.title,
-            description: data.description,
-            price: data.price, // Use the numeric value directly
-            location: data.location,
-            contact_phone: data.contact_phone,
-            image: null,
-          });
-          
-          if (data.image_url) {
-            setImagePreview(data.image_url);
+          // Check if the current user is the owner of this product
+          if (data.contact_phone === userPhone) {
+            setIsOwner(true);
+            
+            form.reset({
+              title: data.title,
+              description: data.description,
+              price: data.price,
+              location: data.location,
+              contact_phone: data.contact_phone,
+              image: null,
+            });
+            
+            if (data.image_url) {
+              setImagePreview(data.image_url);
+            }
+          } else {
+            setError("Você não tem permissão para editar este produto");
           }
         }
       } catch (err) {
         console.error("Unexpected error:", err);
-        toast.error("Erro ao carregar dados do produto");
+        setError("Erro ao carregar dados do produto");
       } finally {
         setIsLoading(false);
       }
     }
 
     fetchProduct();
-  }, [productId, navigate, form]);
+  }, [productId, navigate, form, userPhone]);
 
   // Watch for image changes
   useEffect(() => {
@@ -104,7 +116,7 @@ export const EditProductForm = ({ productId }: EditProductFormProps) => {
   }, [form]);
 
   const onSubmit = async (data: ProductFormValues) => {
-    if (!data.image && !imagePreview) {
+    if (!imagePreview && !imageChanged) {
       toast.error("Por favor, adicione uma imagem para o produto");
       return;
     }
@@ -127,7 +139,7 @@ export const EditProductForm = ({ productId }: EditProductFormProps) => {
       const updateObject: Partial<MarketplaceProduct> = {
         title: data.title,
         description: data.description,
-        price: data.price, // Use the numeric value directly
+        price: data.price,
         location: data.location,
         contact_phone: data.contact_phone,
       };
@@ -167,11 +179,20 @@ export const EditProductForm = ({ productId }: EditProductFormProps) => {
     );
   }
 
+  if (error || !isOwner) {
+    return (
+      <Alert variant="destructive" className="mb-6">
+        <AlertTitle>Não foi possível editar</AlertTitle>
+        <AlertDescription>
+          {error || "Você não tem permissão para editar este produto"}
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 animate-fade-in">
-        <h1 className="text-2xl font-bold text-agro-green-800 mb-6">Editar Produto</h1>
-        
         <ProductFormFields form={form} existingImageUrl={imagePreview} />
         
         <ProductFormActions 

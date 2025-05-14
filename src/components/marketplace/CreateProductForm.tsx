@@ -12,14 +12,15 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
+import { PhoneSettings } from "./PhoneSettings";
 
 const productSchema = z.object({
   title: z.string().min(3, "Título deve ter pelo menos 3 caracteres"),
   description: z.string().min(10, "Descrição deve ter pelo menos 10 caracteres"),
-  price: z.string().min(1, "Informe o preço"),
+  price: z.coerce.number().nonnegative("O preço não pode ser negativo"),
   location: z.string().min(1, "Localização é obrigatória"),
   contact_phone: z.string().min(8, "Informe um número de telefone válido"),
-  image: z.any().optional(),
+  image: z.string().nullable(),
 });
 
 type ProductFormValues = z.infer<typeof productSchema>;
@@ -28,20 +29,31 @@ export const CreateProductForm = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const { locationName, isLoading: locationLoading, error: locationError } = useLocationName();
+  const [userPhone, setUserPhone] = useState<string | null>(null);
+  const { locationName, isLoading: locationLoading } = useLocationName();
   
   const form = useForm<ProductFormValues>({
     resolver: zodResolver(productSchema),
     defaultValues: {
       title: "",
       description: "",
-      price: "",
+      price: 0,
       location: "",
       contact_phone: "",
+      image: null,
     },
   });
 
-  // Atualizar o campo de localização quando a localização do usuário for detectada
+  // Get user phone from localStorage on component mount
+  useEffect(() => {
+    const storedPhone = localStorage.getItem('userPhone');
+    if (storedPhone) {
+      setUserPhone(storedPhone);
+      form.setValue("contact_phone", storedPhone);
+    }
+  }, [form]);
+
+  // Update location field when user's location is detected
   useEffect(() => {
     if (locationName) {
       form.setValue("location", locationName);
@@ -55,7 +67,7 @@ export const CreateProductForm = () => {
 
   const removeImage = () => {
     setImagePreview(null);
-    form.setValue("image", undefined);
+    form.setValue("image", null);
   };
 
   const onSubmit = async (data: ProductFormValues) => {
@@ -78,7 +90,7 @@ export const CreateProductForm = () => {
         .insert({
           title: data.title,
           description: data.description,
-          price: parseFloat(data.price),
+          price: data.price,
           location: data.location,
           contact_phone: data.contact_phone,
           image_url: publicUrl,
@@ -107,6 +119,8 @@ export const CreateProductForm = () => {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 animate-fade-in">
         <h1 className="text-2xl font-bold text-agro-green-800 mb-6">Cadastrar Novo Produto</h1>
+        
+        <PhoneSettings userPhone={userPhone} setUserPhone={setUserPhone} />
         
         <ProductFormFields 
           form={form}

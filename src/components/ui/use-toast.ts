@@ -1,5 +1,5 @@
 
-import { useToast as useToastOriginal } from "@/hooks/use-toast";
-import { toast as toastOriginal } from "sonner";
+import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
-export { useToastOriginal as useToast, toastOriginal as toast };
+export { useToast, toast };
