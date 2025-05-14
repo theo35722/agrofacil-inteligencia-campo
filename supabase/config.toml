@@ -1,3 +1,6 @@
 
 [functions.generate-calunga-response]
 verify_jwt = false
+
+[functions.delete-marketplace-listings]
+verify_jwt = false

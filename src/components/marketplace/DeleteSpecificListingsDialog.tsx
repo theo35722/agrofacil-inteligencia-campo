@@ -35,38 +35,32 @@ export const DeleteSpecificListingsDialog = ({ onSuccess }: DeleteSpecificListin
     try {
       setIsDeleting(true);
       
-      // First, try to find the listings that match the title
-      const { data: matchingProducts } = await supabase
-        .from('marketplace_products')
-        .select('*')
-        .ilike('title', `%${productTitle.trim()}%`);
-        
-      if (!matchingProducts || matchingProducts.length === 0) {
-        toast.error(`Não foi possível encontrar anúncios com título similar a "${productTitle}"`);
-        setIsDeleting(false);
-        return;
+      // Call our Edge Function to delete listings by title
+      // This bypasses RLS and allows deletion of any listings matching the title
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-marketplace-listings`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+        },
+        body: JSON.stringify({
+          searchQuery: productTitle.trim()
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(result.error || `Error: ${response.status}`);
       }
       
-      console.log("Found matching products:", matchingProducts.length, matchingProducts.map(p => p.title));
-      
-      // Now delete the found listings
-      const { data, error } = await supabase
-        .from('marketplace_products')
-        .delete()
-        .ilike('title', `%${productTitle.trim()}%`)
-        .select();
-        
-      if (error) {
-        throw new Error(`Erro ao excluir anúncio: ${error.message}`);
-      }
-      
-      if (data && data.length > 0) {
-        toast.success(`${data.length} anúncio(s) com título similar a "${productTitle}" foram excluídos!`);
+      if (result.success && result.count > 0) {
+        toast.success(`${result.count} anúncio(s) com título similar a "${productTitle}" foram excluídos!`);
         setProductTitle("");
         setOpen(false);
         onSuccess();
       } else {
-        toast.error(`Nenhum anúncio excluído para "${productTitle}"`);
+        toast.error(`Não foi possível encontrar anúncios com título similar a "${productTitle}"`);
       }
     } catch (error) {
       console.error("Erro ao excluir anúncio específico:", error);
