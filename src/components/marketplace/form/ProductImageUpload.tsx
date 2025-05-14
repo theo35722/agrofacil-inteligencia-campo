@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Camera, X } from "lucide-react";
 import { CameraCapture } from "../../plant-diagnosis/CameraCapture";
 
-interface ProductImageUploadProps {
+export interface ProductImageUploadProps {
   imagePreview: string | null;
   onImageCapture: (imageDataUrl: string) => void;
   onImageRemove: () => void;
