@@ -2,10 +2,14 @@
 import { ShoppingBag } from "lucide-react";
 
 interface MarketplaceHeaderProps {
-  location: string | null;
+  city: string | null;
+  state: string | null;
+  isLoading: boolean;
 }
 
-export const MarketplaceHeader = ({ location }: MarketplaceHeaderProps) => {
+export const MarketplaceHeader = ({ city, state, isLoading }: MarketplaceHeaderProps) => {
+  const locationText = city && state ? `${city}/${state}` : null;
+
   return (
     <section className="text-center mb-6">
       <div className="flex justify-center">
@@ -15,7 +19,11 @@ export const MarketplaceHeader = ({ location }: MarketplaceHeaderProps) => {
       </div>
       <h1 className="text-2xl font-bold text-agro-green-800 mb-2">
         Marketplace AgroFácil
-        {location && <span className="block text-xl mt-1">Produtos em {location}</span>}
+        {isLoading ? (
+          <span className="block text-xl mt-1">Detectando sua localização...</span>
+        ) : locationText ? (
+          <span className="block text-xl mt-1">Produtos em {locationText}</span>
+        ) : null}
       </h1>
       <p className="text-gray-600 max-w-lg mx-auto">
         Compre e venda produtos agrícolas diretamente de outros produtores rurais da sua região

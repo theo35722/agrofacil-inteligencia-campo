@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Loader2, MapPin, PlusCircle } from "lucide-react";
+import { Loader2, MapPin, PlusCircle, AlertCircle } from "lucide-react";
 import { MarketplaceItem } from "@/components/marketplace/MarketplaceItem";
 import { MarketplaceHeader } from "@/components/marketplace/MarketplaceHeader";
 import { toast } from "@/components/ui/sonner";
 import { Link } from "react-router-dom";
-import { useLocationName } from "@/hooks/use-location-name";
 import { LocationFilter } from "@/components/marketplace/LocationFilter";
+import { useLocationManager } from "@/hooks/use-location-manager";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export type MarketplaceProduct = {
   id: string;
@@ -23,19 +24,14 @@ export type MarketplaceProduct = {
 const Marketplace = () => {
   const [products, setProducts] = useState<MarketplaceProduct[]>([]);
   const [loading, setLoading] = useState(true);
-  const [locationFilter, setLocationFilter] = useState<string | null>(null);
-  const { locationName, isLoading: locationLoading } = useLocationName();
-  
-  // Set initial location filter from user's detected location
-  useEffect(() => {
-    if (locationName && !locationFilter) {
-      // Extract just the city name from "City, State"
-      const cityName = locationName.split(',')[0]?.trim();
-      if (cityName) {
-        setLocationFilter(cityName);
-      }
-    }
-  }, [locationName, locationFilter]);
+  const { 
+    locationData, 
+    isLoading: locationLoading, 
+    permissionDenied,
+    setManualLocation,
+    clearLocation,
+    requestGeolocation
+  } = useLocationManager();
 
   // Fetch products when the component mounts
   useEffect(() => {
@@ -65,30 +61,71 @@ const Marketplace = () => {
     }
   }
   
-  // Filter products by location
-  const filteredProducts = locationFilter
-    ? products.filter(product => 
-        product.location.toLowerCase().includes(locationFilter.toLowerCase())
-      )
-    : products;
+  // Filter products by city, state or both
+  const getFilteredProducts = () => {
+    // If no location data is set, return all products
+    if (!locationData.city && !locationData.state) return products;
+
+    // Filter products based on available location data
+    return products.filter(product => {
+      if (locationData.city && locationData.state) {
+        // Try to match both city and state
+        return product.location.toLowerCase().includes(locationData.city.toLowerCase()) &&
+               product.location.toLowerCase().includes(locationData.state.toLowerCase());
+      } else if (locationData.city) {
+        // Only match city
+        return product.location.toLowerCase().includes(locationData.city.toLowerCase());
+      } else if (locationData.state) {
+        // Only match state
+        return product.location.toLowerCase().includes(locationData.state.toLowerCase());
+      }
+      return true;
+    });
+  };
+
+  // Get products from the same state but different cities
+  const getNearbyStateProducts = () => {
+    if (!locationData.state) return [];
     
-  // Separate local and other products
-  const localProducts = filteredProducts;
-  const otherProducts = locationFilter 
-    ? products.filter(product => 
-        !product.location.toLowerCase().includes(locationFilter.toLowerCase())
-      )
-    : [];
+    return products.filter(product => {
+      // Include products from the same state but not already in the city-filtered list
+      return product.location.toLowerCase().includes(locationData.state!.toLowerCase()) &&
+             (!locationData.city || !product.location.toLowerCase().includes(locationData.city.toLowerCase()));
+    });
+  };
+
+  // Get products that don't match our location filters
+  const getOtherProducts = () => {
+    if (!locationData.state && !locationData.city) return [];
+    
+    return products.filter(product => {
+      if (locationData.state) {
+        return !product.location.toLowerCase().includes(locationData.state.toLowerCase());
+      }
+      return !product.location.toLowerCase().includes(locationData.city?.toLowerCase() || "");
+    });
+  };
+
+  const cityFilteredProducts = getFilteredProducts();
+  const nearbyStateProducts = getNearbyStateProducts();
+  const otherProducts = getOtherProducts();
   
-  // Handle location change
-  const handleLocationChange = (newLocation: string | null) => {
-    setLocationFilter(newLocation);
+  // Show nearby state products only if there are few city products
+  const showNearbyStateProducts = cityFilteredProducts.length < 3 && nearbyStateProducts.length > 0;
+
+  // Handle location change from the LocationFilter component
+  const handleLocationChange = (city: string, state: string) => {
+    setManualLocation(city, state);
   };
 
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex justify-between items-start">
-        <MarketplaceHeader location={locationFilter} />
+        <MarketplaceHeader 
+          city={locationData.city} 
+          state={locationData.state} 
+          isLoading={locationLoading}
+        />
         <Link to="/create-marketplace-product">
           <Button className="bg-agro-green-600 hover:bg-agro-green-700">
             <PlusCircle className="mr-2 h-4 w-4" />
@@ -98,8 +135,12 @@ const Marketplace = () => {
       </div>
       
       <LocationFilter 
-        currentLocation={locationFilter}
+        isLoading={locationLoading}
+        permissionDenied={permissionDenied}
+        locationData={locationData}
         onLocationChange={handleLocationChange}
+        onClearLocation={clearLocation}
+        onRequestGeolocation={requestGeolocation}
       />
       
       {loading || locationLoading ? (
@@ -109,28 +150,59 @@ const Marketplace = () => {
         </div>
       ) : (
         <>
-          {/* Local Products */}
-          {localProducts.length > 0 ? (
+          {/* City Filtered Products */}
+          {cityFilteredProducts.length > 0 ? (
             <div className="space-y-4">
               <h2 className="text-xl font-semibold flex items-center gap-2">
                 <MapPin className="h-5 w-5 text-agro-green-600" />
-                Produtos em {locationFilter}
+                Produtos em {locationData.city || ""}{locationData.state ? `/${locationData.state}` : ""}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {localProducts.map((product) => (
+                {cityFilteredProducts.map((product) => (
                   <MarketplaceItem key={product.id} product={product} />
                 ))}
               </div>
             </div>
-          ) : products.length > 0 ? (
-            <div className="text-center py-6 border rounded-lg bg-gray-50 mb-6">
-              <h3 className="text-lg font-medium text-gray-600">Nenhum produto encontrado em {locationFilter}</h3>
-              <p className="text-gray-500 mt-2">Veja produtos em outros locais!</p>
-            </div>
+          ) : products.length > 0 && (locationData.city || locationData.state) ? (
+            <Alert className="bg-amber-50 border-amber-200 mb-6">
+              <AlertCircle className="h-5 w-5 text-amber-600" />
+              <AlertTitle className="text-amber-800">Nenhum produto encontrado na sua localização</AlertTitle>
+              <AlertDescription className="text-amber-700">
+                {locationData.city && locationData.state
+                  ? `Não encontramos produtos em ${locationData.city}/${locationData.state}.`
+                  : locationData.city
+                  ? `Não encontramos produtos em ${locationData.city}.`
+                  : `Não encontramos produtos em ${locationData.state}.`
+                }
+                {" "}Veja produtos em outros locais!
+              </AlertDescription>
+            </Alert>
           ) : null}
           
-          {/* Other Products (only show if we have a location filter and there are other products) */}
-          {locationFilter && otherProducts.length > 0 && (
+          {/* Nearby State Products */}
+          {showNearbyStateProducts && (
+            <div className="space-y-4 mt-8">
+              <Alert className="bg-blue-50 border-blue-200">
+                <AlertCircle className="h-5 w-5 text-blue-600" />
+                <AlertTitle className="text-blue-800">Expandindo para cidades próximas</AlertTitle>
+                <AlertDescription className="text-blue-700">
+                  Encontramos mais produtos do estado {locationData.state} que podem te interessar.
+                </AlertDescription>
+              </Alert>
+              
+              <h2 className="text-xl font-semibold mt-4">
+                Produtos em {locationData.state}
+              </h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {nearbyStateProducts.map((product) => (
+                  <MarketplaceItem key={product.id} product={product} />
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {/* Other Products */}
+          {otherProducts.length > 0 && (locationData.city || locationData.state) && (
             <div className="space-y-4 mt-8">
               <h2 className="text-xl font-semibold">Outros produtos</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -141,6 +213,7 @@ const Marketplace = () => {
             </div>
           )}
           
+          {/* No Products */}
           {products.length === 0 && (
             <div className="text-center py-12 border rounded-lg bg-gray-50">
               <h3 className="text-xl font-medium text-gray-600">Nenhum produto disponível</h3>

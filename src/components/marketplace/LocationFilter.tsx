@@ -2,84 +2,152 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MapPin, Search, X } from "lucide-react";
+import { MapPin, Search, X, Loader2, Map } from "lucide-react";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { brazilianStates } from "@/data/brazilianStates";
 
 interface LocationFilterProps {
-  currentLocation: string | null;
-  onLocationChange: (location: string | null) => void;
+  isLoading: boolean;
+  permissionDenied: boolean;
+  locationData: {
+    city: string | null;
+    state: string | null;
+    fullLocation: string | null;
+  };
+  onLocationChange: (city: string, state: string) => void;
+  onClearLocation: () => void;
+  onRequestGeolocation: () => void;
 }
 
-export function LocationFilter({ currentLocation, onLocationChange }: LocationFilterProps) {
-  const [searchLocation, setSearchLocation] = useState("");
+export function LocationFilter({
+  isLoading,
+  permissionDenied,
+  locationData,
+  onLocationChange,
+  onClearLocation,
+  onRequestGeolocation,
+}: LocationFilterProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [selectedCity, setSelectedCity] = useState("");
+  const [selectedState, setSelectedState] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (searchLocation.trim()) {
-      onLocationChange(searchLocation.trim());
+    if (selectedCity && selectedState) {
+      onLocationChange(selectedCity, selectedState);
+      setIsOpen(false);
     }
-    
-    setIsOpen(false);
-  };
-  
-  const clearLocation = () => {
-    onLocationChange(null);
   };
 
   return (
     <div className="flex items-center justify-between flex-wrap gap-2">
       <div className="flex items-center gap-1 text-sm text-gray-600">
-        {currentLocation && (
+        {isLoading ? (
+          <div className="flex items-center gap-2 bg-gray-100 px-3 py-1 rounded-full">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span>Detectando localização...</span>
+          </div>
+        ) : locationData.fullLocation ? (
           <div className="flex items-center gap-2 bg-agro-green-50 text-agro-green-700 px-3 py-1 rounded-full">
             <MapPin className="h-4 w-4" />
-            <span>{currentLocation}</span>
+            <span>{locationData.fullLocation}</span>
             <button 
-              onClick={clearLocation}
+              onClick={onClearLocation}
               className="hover:bg-agro-green-100 rounded-full p-1"
               title="Limpar filtro de localização"
             >
               <X className="h-3 w-3" />
             </button>
           </div>
-        )}
+        ) : permissionDenied ? (
+          <div className="flex items-center gap-2 bg-amber-50 text-amber-700 px-3 py-1 rounded-full">
+            <Map className="h-4 w-4" />
+            <span>Localização não detectada</span>
+          </div>
+        ) : null}
       </div>
       
-      <Popover open={isOpen} onOpenChange={setIsOpen}>
-        <PopoverTrigger asChild>
+      <div className="flex gap-2">
+        {permissionDenied && (
           <Button 
             variant="outline" 
-            className="border-agro-green-300 text-agro-green-700 hover:bg-agro-green-50"
+            className="border-blue-300 text-blue-700 hover:bg-blue-50"
+            onClick={onRequestGeolocation}
           >
             <MapPin className="mr-2 h-4 w-4" />
-            {currentLocation ? "Trocar localização" : "Definir localização"}
+            Detectar Localização
           </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-80">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <h4 className="font-medium">Filtrar produtos por localização</h4>
-            <div className="flex gap-2">
-              <Input 
-                placeholder="Digite uma cidade..."
-                value={searchLocation}
-                onChange={(e) => setSearchLocation(e.target.value)}
-                className="flex-1"
-              />
-              <Button type="submit">
-                <Search className="h-4 w-4" />
+        )}
+        
+        <Popover open={isOpen} onOpenChange={setIsOpen}>
+          <PopoverTrigger asChild>
+            <Button 
+              variant="outline" 
+              className="border-agro-green-300 text-agro-green-700 hover:bg-agro-green-50"
+            >
+              <MapPin className="mr-2 h-4 w-4" />
+              {locationData.fullLocation ? "Trocar localização" : "Definir localização"}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-80">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <h4 className="font-medium">Filtrar produtos por localização</h4>
+              
+              <div className="space-y-3">
+                <div>
+                  <label htmlFor="state" className="text-sm font-medium mb-1 block">Estado</label>
+                  <Select 
+                    value={selectedState} 
+                    onValueChange={setSelectedState}
+                  >
+                    <SelectTrigger id="state">
+                      <SelectValue placeholder="Selecione um estado" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {brazilianStates.map((state) => (
+                        <SelectItem key={state.uf} value={state.uf}>
+                          {state.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <label htmlFor="city" className="text-sm font-medium mb-1 block">Cidade</label>
+                  <Input
+                    id="city"
+                    placeholder="Digite o nome da cidade"
+                    value={selectedCity}
+                    onChange={(e) => setSelectedCity(e.target.value)}
+                  />
+                </div>
+              </div>
+              
+              <Button type="submit" className="w-full" disabled={!selectedCity || !selectedState}>
+                <Search className="h-4 w-4 mr-2" />
+                Aplicar Filtro
               </Button>
-            </div>
-            <p className="text-xs text-gray-500">
-              Digite o nome de uma cidade para filtrar os produtos disponíveis nessa localidade.
-            </p>
-          </form>
-        </PopoverContent>
-      </Popover>
+              
+              <p className="text-xs text-gray-500">
+                Digite o estado e cidade para filtrar os produtos disponíveis nessa localidade.
+              </p>
+            </form>
+          </PopoverContent>
+        </Popover>
+      </div>
     </div>
   );
 }

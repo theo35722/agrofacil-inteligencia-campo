@@ -1,107 +1,153 @@
 
+import { useEffect } from "react";
+import { FormField } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { ProductImageUpload } from "./ProductImageUpload";
+import { useLocationManager } from "@/hooks/use-location-manager";
 import { Loader2, MapPin } from "lucide-react";
 
-interface ProductFormFieldsProps {
-  formData: {
-    title: string;
-    description: string;
-    price: string;
-    location: string;
-    contact_phone: string;
-  };
-  handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
-  locationLoading?: boolean;
-  locationError?: string | null;
-}
+export function ProductFormFields({ form, existingImageUrl = null }: { 
+  form: any;
+  existingImageUrl?: string | null;
+}) {
+  const { locationData, isLoading: locationLoading } = useLocationManager();
 
-export const ProductFormFields = ({ 
-  formData, 
-  handleChange,
-  locationLoading = false,
-  locationError = null
-}: ProductFormFieldsProps) => {
+  // Automatically fill location when available
+  useEffect(() => {
+    if (locationData.fullLocation && !form.getValues("location")) {
+      form.setValue("location", locationData.fullLocation);
+    }
+  }, [locationData.fullLocation, form]);
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div>
-        <Label htmlFor="title">Nome do Produto*</Label>
-        <Input
-          id="title"
+        <FormField
+          control={form.control}
           name="title"
-          value={formData.title}
-          onChange={handleChange}
-          required
-          placeholder="Ex: Milho orgânico"
-        />
-      </div>
-      
-      <div>
-        <Label htmlFor="description">Descrição do Produto*</Label>
-        <Textarea
-          id="description"
-          name="description"
-          value={formData.description}
-          onChange={handleChange}
-          required
-          placeholder="Descreva detalhes como qualidade, quantidade, etc."
-          className="min-h-[120px]"
-        />
-      </div>
-      
-      <div>
-        <Label htmlFor="price">Preço (R$)*</Label>
-        <Input
-          id="price"
-          name="price"
-          type="number"
-          step="0.01"
-          min="0"
-          value={formData.price}
-          onChange={handleChange}
-          required
-          placeholder="Ex: 29.90"
-        />
-      </div>
-      
-      <div>
-        <Label htmlFor="location">Localização*</Label>
-        <div className="relative">
-          <Input
-            id="location"
-            name="location"
-            value={formData.location}
-            onChange={handleChange}
-            required
-            placeholder="Ex: São Paulo, SP"
-            className="pr-8"
-          />
-          {locationLoading && (
-            <span className="absolute right-3 top-1/2 -translate-y-1/2">
-              <Loader2 size={16} className="animate-spin text-muted-foreground" />
-            </span>
+          render={({ field }) => (
+            <div className="space-y-2">
+              <Label htmlFor="title">Título do produto <span className="text-red-500">*</span></Label>
+              <Input 
+                id="title" 
+                placeholder="Ex: Trator John Deere 2020"
+                {...field} 
+              />
+            </div>
           )}
-        </div>
-        {locationError && !formData.location && (
-          <p className="text-sm mt-1 text-muted-foreground flex items-center gap-1">
-            <MapPin size={14} />
-            Não conseguimos detectar sua cidade. Preencha manualmente.
-          </p>
-        )}
+        />
       </div>
-      
+
       <div>
-        <Label htmlFor="contact_phone">WhatsApp para Contato*</Label>
-        <Input
-          id="contact_phone"
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <div className="space-y-2">
+              <Label htmlFor="description">Descrição <span className="text-red-500">*</span></Label>
+              <Textarea 
+                id="description" 
+                placeholder="Descreva o produto em detalhes..." 
+                rows={4}
+                {...field} 
+              />
+            </div>
+          )}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <FormField
+          control={form.control}
+          name="price"
+          render={({ field }) => (
+            <div className="space-y-2">
+              <Label htmlFor="price">Preço (R$) <span className="text-red-500">*</span></Label>
+              <Input 
+                id="price"
+                type="number" 
+                placeholder="0,00" 
+                min="0"
+                step="0.01"
+                {...field} 
+                value={field.value || ''}
+              />
+            </div>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="location"
+          render={({ field }) => (
+            <div className="space-y-2">
+              <Label htmlFor="location">Localização <span className="text-red-500">*</span></Label>
+              <div className="relative">
+                <Input 
+                  id="location" 
+                  placeholder="Ex: São Paulo/SP" 
+                  {...field} 
+                  className={locationLoading ? "pl-10" : ""}
+                />
+                {locationLoading && (
+                  <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+                    <Loader2 className="h-4 w-4 text-gray-400 animate-spin" />
+                  </div>
+                )}
+                {!locationLoading && locationData.fullLocation && (
+                  <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
+                    <MapPin className="h-4 w-4 text-agro-green-600" />
+                  </div>
+                )}
+              </div>
+              {locationLoading ? (
+                <p className="text-xs text-gray-500">Detectando sua localização...</p>
+              ) : !locationData.fullLocation ? (
+                <p className="text-xs text-gray-500">Não conseguimos detectar sua localização. Preencha manualmente.</p>
+              ) : null}
+            </div>
+          )}
+        />
+      </div>
+
+      <div>
+        <FormField
+          control={form.control}
           name="contact_phone"
-          value={formData.contact_phone}
-          onChange={handleChange}
-          required
-          placeholder="Ex: (11) 98765-4321"
+          render={({ field }) => (
+            <div className="space-y-2">
+              <Label htmlFor="contact_phone">WhatsApp para contato <span className="text-red-500">*</span></Label>
+              <Input 
+                id="contact_phone" 
+                placeholder="Ex: (11) 98765-4321"
+                {...field} 
+              />
+              <p className="text-xs text-gray-500">
+                Digite o número com DDD. Será usado para criar um link direto para o WhatsApp.
+              </p>
+            </div>
+          )}
+        />
+      </div>
+
+      <div>
+        <FormField
+          control={form.control}
+          name="image"
+          render={({ field }) => (
+            <div className="space-y-2">
+              <Label>Foto do produto</Label>
+              <ProductImageUpload 
+                onChange={field.onChange}
+                value={field.value}
+                existingImageUrl={existingImageUrl}
+              />
+            </div>
+          )}
         />
       </div>
     </div>
   );
-};
+}
