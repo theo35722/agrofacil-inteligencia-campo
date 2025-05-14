@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
 import { Loader2, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
@@ -28,14 +28,36 @@ export const DeleteSpecificListingsDialog = ({ onSuccess }: DeleteSpecificListin
 
   const handleDeleteSpecificListing = async () => {
     if (!productTitle.trim()) {
-      toast.error("Informe o título do anúncio que deseja excluir");
+      toast({
+        title: "Erro",
+        description: "Informe o título do anúncio que deseja excluir",
+        variant: "destructive"
+      });
       return;
     }
 
     try {
       setIsDeleting(true);
       
-      // Delete the specific marketplace product by title (ignoring user_id)
+      // First, try to find the listings that match the title
+      const { data: matchingProducts } = await supabase
+        .from('marketplace_products')
+        .select('*')
+        .ilike('title', `%${productTitle.trim()}%`);
+        
+      if (!matchingProducts || matchingProducts.length === 0) {
+        toast({
+          title: "Nenhum anúncio encontrado",
+          description: `Não foi possível encontrar anúncios com título similar a "${productTitle}"`,
+          variant: "destructive"
+        });
+        setIsDeleting(false);
+        return;
+      }
+      
+      console.log("Found matching products:", matchingProducts.length, matchingProducts.map(p => p.title));
+      
+      // Now delete the found listings
       const { data, error } = await supabase
         .from('marketplace_products')
         .delete()
@@ -47,16 +69,27 @@ export const DeleteSpecificListingsDialog = ({ onSuccess }: DeleteSpecificListin
       }
       
       if (data && data.length > 0) {
-        toast.success(`${data.length} anúncio(s) com título similar a "${productTitle}" foram excluídos!`);
+        toast({
+          title: "Anúncios excluídos",
+          description: `${data.length} anúncio(s) com título similar a "${productTitle}" foram excluídos!`
+        });
         setProductTitle("");
         setOpen(false);
         onSuccess();
       } else {
-        toast.error(`Nenhum anúncio encontrado com o título similar a "${productTitle}"`);
+        toast({
+          title: "Sem alterações",
+          description: `Nenhum anúncio excluído para "${productTitle}"`,
+          variant: "destructive"
+        });
       }
     } catch (error) {
       console.error("Erro ao excluir anúncio específico:", error);
-      toast.error(error instanceof Error ? error.message : "Erro ao excluir anúncio");
+      toast({
+        title: "Erro",
+        description: error instanceof Error ? error.message : "Erro ao excluir anúncio",
+        variant: "destructive"
+      });
     } finally {
       setIsDeleting(false);
     }
