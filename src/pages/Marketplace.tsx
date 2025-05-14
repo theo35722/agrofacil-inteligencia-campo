@@ -1,9 +1,7 @@
-
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Loader2, MapPin, PlusCircle, AlertCircle, Search } from "lucide-react";
-import { MarketplaceItem } from "@/components/marketplace/MarketplaceItem";
+import { Loader2, MapPin, PlusCircle, AlertCircle, Search, MessageCircle } from "lucide-react";
 import { MarketplaceHeader } from "@/components/marketplace/MarketplaceHeader";
 import { toast } from "@/components/ui/sonner";
 import { Link } from "react-router-dom";
@@ -11,6 +9,9 @@ import { LocationFilter } from "@/components/marketplace/LocationFilter";
 import { useLocationManager } from "@/hooks/use-location-manager";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Card, CardContent } from "@/components/ui/card";
+import { formatCurrency } from "@/lib/utils";
 
 export type MarketplaceProduct = {
   id: string;
@@ -146,8 +147,8 @@ const Marketplace = () => {
   const nearbyStateProducts = getNearbyStateProducts();
   const otherProducts = getOtherProducts();
   
-  // Show nearby state products only if there are few city products
-  const showNearbyStateProducts = cityFilteredProducts.length < 3 && nearbyStateProducts.length > 0;
+  // Always show nearby state products if no city products are found
+  const showNearbyStateProducts = locationData.city && cityFilteredProducts.length === 0;
 
   // Handle location change from the LocationFilter component
   const handleLocationChange = (city: string, state: string) => {
@@ -159,20 +160,46 @@ const Marketplace = () => {
     setSearchQuery(e.target.value);
   };
 
+  // Handle contact seller via WhatsApp
+  const handleContactSeller = (product: MarketplaceProduct) => {
+    const phoneNumber = product.contact_phone.replace(/\D/g, "");
+    const message = `Olá! Vi seu anúncio "${product.title}" no AgroFácil e tenho interesse.`;
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, "_blank");
+  };
+
   // Check if we have any results after all filters
   const noResults = searchQuery.trim() !== "" && 
                     cityFilteredProducts.length === 0 && 
                     nearbyStateProducts.length === 0 && 
                     otherProducts.length === 0;
 
+  // Location display component
+  const LocationDisplay = () => {
+    if (locationLoading) return null;
+    if (!locationData.city && !locationData.state) return null;
+    
+    return (
+      <div className="flex items-center gap-2 text-sm mb-4">
+        <MapPin className="h-4 w-4 text-agro-green-600" />
+        <span className="text-gray-700">
+          {locationData.fullLocation}
+        </span>
+        <Button 
+          variant="link" 
+          className="p-0 h-auto text-agro-green-600 text-sm"
+          onClick={() => document.getElementById('location-filter-button')?.click()}
+        >
+          Trocar localização
+        </Button>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex justify-between items-start">
-        <MarketplaceHeader 
-          city={locationData.city} 
-          state={locationData.state} 
-          isLoading={locationLoading}
-        />
+        <MarketplaceHeader isLoading={locationLoading} />
         <Link to="/create-marketplace-product">
           <Button className="bg-agro-green-600 hover:bg-agro-green-700">
             <PlusCircle className="mr-2 h-4 w-4" />
@@ -209,6 +236,8 @@ const Marketplace = () => {
         </div>
       ) : (
         <>
+          <LocationDisplay />
+          
           {/* No Results Message */}
           {noResults && (
             <Alert className="bg-amber-50 border-amber-200 mb-6">
@@ -224,61 +253,80 @@ const Marketplace = () => {
           {/* City Filtered Products */}
           {cityFilteredProducts.length > 0 ? (
             <div className="space-y-4">
-              <h2 className="text-xl font-semibold flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-agro-green-600" />
-                Produtos em {locationData.city || ""}{locationData.state ? `/${locationData.state}` : ""}
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {cityFilteredProducts.map((product) => (
-                  <MarketplaceItem key={product.id} product={product} />
+                  <ProductCard 
+                    key={product.id} 
+                    product={product} 
+                    onContact={() => handleContactSeller(product)}
+                  />
                 ))}
               </div>
             </div>
           ) : products.length > 0 && (locationData.city || locationData.state) && !noResults ? (
-            <Alert className="bg-amber-50 border-amber-200 mb-6">
-              <AlertCircle className="h-5 w-5 text-amber-600" />
-              <AlertTitle className="text-amber-800">Nenhum produto encontrado na sua localização</AlertTitle>
-              <AlertDescription className="text-amber-700">
-                {locationData.city && locationData.state
-                  ? `Não encontramos produtos em ${locationData.city}/${locationData.state}.`
-                  : locationData.city
-                  ? `Não encontramos produtos em ${locationData.city}.`
-                  : `Não encontramos produtos em ${locationData.state}.`
-                }
-                {" "}Veja produtos em outros locais!
-              </AlertDescription>
-            </Alert>
+            <Card className="bg-amber-50 border-amber-200 mb-6 p-4">
+              <div className="text-center">
+                <AlertCircle className="h-6 w-6 text-amber-600 mx-auto mb-2" />
+                <h3 className="text-lg font-medium text-amber-800">
+                  Nenhum produto encontrado em {locationData.fullLocation}
+                </h3>
+                <p className="text-amber-700 mt-1 mb-4">
+                  Confira produtos em cidades próximas!
+                </p>
+              </div>
+              
+              {/* Automatically show nearby products */}
+              {(nearbyStateProducts.length > 0 || otherProducts.length > 0) && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+                  {nearbyStateProducts.map((product) => (
+                    <ProductCard 
+                      key={product.id} 
+                      product={product} 
+                      onContact={() => handleContactSeller(product)}
+                    />
+                  ))}
+                  
+                  {otherProducts.map((product) => (
+                    <ProductCard 
+                      key={product.id} 
+                      product={product} 
+                      onContact={() => handleContactSeller(product)}
+                    />
+                  ))}
+                </div>
+              )}
+            </Card>
           ) : null}
           
-          {/* Nearby State Products */}
-          {showNearbyStateProducts && (
+          {/* Nearby State Products - only shown when explicitly required */}
+          {showNearbyStateProducts && nearbyStateProducts.length > 0 && (
             <div className="space-y-4 mt-8">
-              <Alert className="bg-blue-50 border-blue-200">
-                <AlertCircle className="h-5 w-5 text-blue-600" />
-                <AlertTitle className="text-blue-800">Expandindo para cidades próximas</AlertTitle>
-                <AlertDescription className="text-blue-700">
-                  Encontramos mais produtos do estado {locationData.state} que podem te interessar.
-                </AlertDescription>
-              </Alert>
-              
-              <h2 className="text-xl font-semibold mt-4">
-                Produtos em {locationData.state}
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {nearbyStateProducts.map((product) => (
-                  <MarketplaceItem key={product.id} product={product} />
+                  <ProductCard 
+                    key={product.id} 
+                    product={product} 
+                    onContact={() => handleContactSeller(product)}
+                  />
                 ))}
               </div>
             </div>
           )}
           
-          {/* Other Products */}
-          {otherProducts.length > 0 && (locationData.city || locationData.state) && (
-            <div className="space-y-4 mt-8">
-              <h2 className="text-xl font-semibold">Outros produtos</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {otherProducts.map((product) => (
-                  <MarketplaceItem key={product.id} product={product} />
+          {/* Other Products - when no location filter is active */}
+          {!locationData.city && !locationData.state && products.length > 0 && !noResults && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {products.filter(product => 
+                  !searchQuery.trim() || 
+                  product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  product.description.toLowerCase().includes(searchQuery.toLowerCase())
+                ).map((product) => (
+                  <ProductCard 
+                    key={product.id} 
+                    product={product} 
+                    onContact={() => handleContactSeller(product)}
+                  />
                 ))}
               </div>
             </div>
@@ -300,6 +348,62 @@ const Marketplace = () => {
         </>
       )}
     </div>
+  );
+};
+
+// Simple Product Card component
+const ProductCard = ({ 
+  product, 
+  onContact 
+}: { 
+  product: MarketplaceProduct; 
+  onContact: () => void;
+}) => {
+  const [imageError, setImageError] = useState(false);
+  
+  return (
+    <Card className="overflow-hidden hover:shadow-md transition-shadow">
+      <div className="grid grid-cols-3 gap-3 h-full">
+        <div className="col-span-1 bg-gray-100">
+          <AspectRatio ratio={1 / 1} className="h-full">
+            {product.image_url && !imageError ? (
+              <img
+                src={product.image_url}
+                alt={product.title}
+                className="w-full h-full object-cover"
+                onError={() => setImageError(true)}
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-50">
+                Sem imagem
+              </div>
+            )}
+          </AspectRatio>
+        </div>
+        
+        <div className="col-span-2 p-3 flex flex-col">
+          <h3 className="font-medium text-agro-green-800 mb-1 line-clamp-2">{product.title}</h3>
+          <p className="font-bold text-lg text-agro-green-700 mb-auto">
+            {formatCurrency(product.price)}
+          </p>
+          
+          <div className="mt-2">
+            <div className="flex items-center text-gray-500 text-xs mb-2">
+              <MapPin className="h-3 w-3 mr-1 flex-shrink-0" />
+              <span className="truncate">{product.location}</span>
+            </div>
+            
+            <Button 
+              onClick={onContact}
+              className="w-full gap-1 bg-green-600 hover:bg-green-700 text-sm h-8 mt-1"
+            >
+              <MessageCircle className="h-3.5 w-3.5" />
+              Falar com Vendedor
+            </Button>
+          </div>
+        </div>
+      </div>
+    </Card>
   );
 };
 
