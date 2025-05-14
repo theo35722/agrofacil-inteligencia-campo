@@ -24,35 +24,18 @@ import { toast } from "sonner";
 interface ProductCardProps {
   product: MarketplaceProduct;
   onContact: () => void;
-  userPhone?: string | null;
+  isOwner?: boolean;
   onProductDeleted?: () => void;
 }
 
 export const ProductCard = ({ 
   product, 
   onContact, 
-  userPhone,
+  isOwner = false,
   onProductDeleted 
 }: ProductCardProps) => {
   const [imageError, setImageError] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  
-  // Normalize phone numbers for comparison
-  const normalizePhone = (phone: string | null | undefined): string => {
-    if (!phone) return "";
-    return phone.replace(/\D/g, "");
-  };
-  
-  const productPhone = normalizePhone(product.contact_phone);
-  const currentUserPhone = normalizePhone(userPhone);
-  
-  // Check if the current user is the owner of this product
-  const isUserProduct = Boolean(
-    userPhone && 
-    productPhone && 
-    currentUserPhone && 
-    productPhone === currentUserPhone
-  );
   
   const handleDeleteProduct = async () => {
     try {
@@ -136,7 +119,7 @@ export const ProductCard = ({
             
             <div className="space-y-2">
               {/* Contact button for non-owners */}
-              {!isUserProduct && (
+              {!isOwner && (
                 <Button 
                   onClick={onContact}
                   className="w-full gap-1 bg-green-600 hover:bg-green-700 text-sm h-11 rounded-md"
@@ -147,7 +130,7 @@ export const ProductCard = ({
               )}
               
               {/* Edit and Delete buttons for product owners */}
-              {isUserProduct && (
+              {isOwner && (
                 <div className="grid grid-cols-2 gap-2">
                   <Link to={`/edit-marketplace-product/${product.id}`} className="w-full">
                     <Button 

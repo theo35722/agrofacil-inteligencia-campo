@@ -8,6 +8,7 @@ export type MarketplaceProduct = {
   image_url: string | null;
   contact_phone: string;
   created_at: string;
+  user_id: string | null;
 };
 
 export type LocationData = {

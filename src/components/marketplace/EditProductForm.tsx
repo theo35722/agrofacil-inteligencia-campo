@@ -8,11 +8,13 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
+import { Button } from "@/components/ui/button";
 import { uploadProductImage } from "./form/ProductImageService";
 import { ProductFormFields } from "./form/ProductFormFields";
 import { ProductFormActions } from "./form/ProductFormActions";
 import { MarketplaceProduct } from "@/types/marketplace";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useAuth } from "@/contexts/AuthContext";
 
 // Form schema for validation
 const productFormSchema = z.object({
@@ -28,11 +30,11 @@ type ProductFormValues = z.infer<typeof productFormSchema>;
 
 interface EditProductFormProps {
   productId: string;
-  userPhone: string;
 }
 
-export const EditProductForm = ({ productId, userPhone }: EditProductFormProps) => {
+export const EditProductForm = ({ productId }: EditProductFormProps) => {
   const navigate = useNavigate();
+  const { user } = useAuth(); // Get authenticated user
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -56,6 +58,12 @@ export const EditProductForm = ({ productId, userPhone }: EditProductFormProps) 
   useEffect(() => {
     async function fetchProduct() {
       try {
+        if (!user) {
+          setError("Você precisa estar logado para editar produtos");
+          setIsLoading(false);
+          return;
+        }
+
         setIsLoading(true);
         setError(null);
         
@@ -73,7 +81,7 @@ export const EditProductForm = ({ productId, userPhone }: EditProductFormProps) 
 
         if (data) {
           // Check if the current user is the owner of this product
-          if (data.contact_phone === userPhone) {
+          if (data.user_id === user.id) {
             setIsOwner(true);
             
             form.reset({
@@ -101,7 +109,7 @@ export const EditProductForm = ({ productId, userPhone }: EditProductFormProps) 
     }
 
     fetchProduct();
-  }, [productId, navigate, form, userPhone]);
+  }, [productId, navigate, form, user]);
 
   // Watch for image changes
   useEffect(() => {
@@ -118,6 +126,12 @@ export const EditProductForm = ({ productId, userPhone }: EditProductFormProps) 
   const onSubmit = async (data: ProductFormValues) => {
     if (!imagePreview && !imageChanged) {
       toast.error("Por favor, adicione uma imagem para o produto");
+      return;
+    }
+
+    if (!user) {
+      toast.error("Você precisa estar logado para editar produtos");
+      navigate('/auth');
       return;
     }
 
@@ -160,7 +174,7 @@ export const EditProductForm = ({ productId, userPhone }: EditProductFormProps) 
       }
       
       toast.success("Produto atualizado com sucesso!");
-      navigate('/marketplace');
+      navigate('/my-listings');
       
     } catch (error: any) {
       console.error("Erro ao atualizar produto:", error);
@@ -169,6 +183,25 @@ export const EditProductForm = ({ productId, userPhone }: EditProductFormProps) 
       setIsSubmitting(false);
     }
   };
+  
+  if (!user) {
+    return (
+      <Alert variant="destructive" className="mb-6">
+        <AlertTitle>Necessário fazer login</AlertTitle>
+        <AlertDescription>
+          Você precisa estar logado para editar produtos.
+          <div className="mt-4">
+            <Button 
+              className="bg-red-600 hover:bg-red-700"
+              onClick={() => navigate('/auth')}
+            >
+              Fazer Login
+            </Button>
+          </div>
+        </AlertDescription>
+      </Alert>
+    );
+  }
   
   if (isLoading) {
     return (

@@ -8,6 +8,7 @@ import { MarketplaceProduct } from "@/types/marketplace";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,16 +23,16 @@ import {
 
 interface MarketplaceItemProps {
   product: MarketplaceProduct;
+  onDeleted?: () => void;
 }
 
-export const MarketplaceItem: React.FC<MarketplaceItemProps> = ({ product }) => {
+export const MarketplaceItem: React.FC<MarketplaceItemProps> = ({ product, onDeleted }) => {
   const [imageError, setImageError] = useState(false);
-  const [isCurrentUser, setIsCurrentUser] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const { user } = useAuth(); // Get authenticated user
   
   // Check if the current user is the owner of this product
-  // Since we don't have user authentication tied to products currently,
-  // all products can be edited by any user
+  const isOwner = user && product.user_id === user.id;
   
   const handleContactSeller = () => {
     const phoneNumber = product.contact_phone.replace(/\D/g, "");
@@ -75,6 +76,11 @@ export const MarketplaceItem: React.FC<MarketplaceItemProps> = ({ product }) => 
       
       toast.success("Produto excluído com sucesso!");
       
+      // Call the callback to refresh products if provided
+      if (onDeleted) {
+        onDeleted();
+      }
+      
     } catch (error) {
       console.error("Erro ao excluir produto:", error);
       toast.error(error instanceof Error ? error.message : "Erro ao excluir produto");
@@ -111,53 +117,59 @@ export const MarketplaceItem: React.FC<MarketplaceItemProps> = ({ product }) => 
         </div>
       </CardContent>
       <CardFooter className="pt-0 pb-4 px-4 flex flex-col gap-2">
-        <Button 
-          onClick={handleContactSeller}
-          className="w-full gap-2 bg-green-600 hover:bg-green-700"
-        >
-          <MessageCircle className="h-4 w-4" />
-          Falar com Vendedor
-        </Button>
-        
-        <Link to={`/edit-marketplace-product/${product.id}`} className="w-full">
+        {!isOwner && (
           <Button 
-            variant="outline"
-            className="w-full gap-2 border-green-600 text-green-700 hover:bg-green-50"
+            onClick={handleContactSeller}
+            className="w-full gap-2 bg-green-600 hover:bg-green-700"
           >
-            <Edit className="h-4 w-4" />
-            Editar Produto
+            <MessageCircle className="h-4 w-4" />
+            Falar com Vendedor
           </Button>
-        </Link>
+        )}
         
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button 
-              variant="outline"
-              className="w-full gap-2 border-red-600 text-red-700 hover:bg-red-50"
-              disabled={isDeleting}
-            >
-              <Trash2 className="h-4 w-4" />
-              Excluir Produto
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Confirmação de exclusão</AlertDialogTitle>
-              <AlertDialogDescription>
-                Tem certeza que deseja excluir este produto? Esta ação não pode ser desfeita.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-              <AlertDialogAction 
-                onClick={handleDeleteProduct}
-                className="bg-red-600 hover:bg-red-700"
+        {isOwner && (
+          <>
+            <Link to={`/edit-marketplace-product/${product.id}`} className="w-full">
+              <Button 
+                variant="outline"
+                className="w-full gap-2 border-green-600 text-green-700 hover:bg-green-50"
               >
-                {isDeleting ? "Excluindo..." : "Sim, excluir"}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+                <Edit className="h-4 w-4" />
+                Editar Produto
+              </Button>
+            </Link>
+            
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button 
+                  variant="outline"
+                  className="w-full gap-2 border-red-600 text-red-700 hover:bg-red-50"
+                  disabled={isDeleting}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Excluir Produto
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Confirmação de exclusão</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    Tem certeza que deseja excluir este produto? Esta ação não pode ser desfeita.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction 
+                    onClick={handleDeleteProduct}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    {isDeleting ? "Excluindo..." : "Sim, excluir"}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </>
+        )}
       </CardFooter>
     </Card>
   );

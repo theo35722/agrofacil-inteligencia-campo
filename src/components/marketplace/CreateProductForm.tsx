@@ -12,6 +12,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
+import { useAuth } from "@/contexts/AuthContext";
 
 const productSchema = z.object({
   title: z.string().min(3, "Título deve ter pelo menos 3 caracteres"),
@@ -26,6 +27,7 @@ type ProductFormValues = z.infer<typeof productSchema>;
 
 export const CreateProductForm = () => {
   const navigate = useNavigate();
+  const { user } = useAuth(); // Get the authenticated user
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [userPhone, setUserPhone] = useState<string | null>(null);
@@ -77,6 +79,15 @@ export const CreateProductForm = () => {
       return;
     }
 
+    // Check if user is authenticated
+    if (!user) {
+      toast.error("Necessário fazer login", {
+        description: "Você precisa estar logado para criar anúncios"
+      });
+      navigate('/auth');
+      return;
+    }
+
     try {
       setIsSubmitting(true);
       
@@ -93,6 +104,7 @@ export const CreateProductForm = () => {
           location: data.location,
           contact_phone: data.contact_phone,
           image_url: publicUrl,
+          user_id: user.id, // Store the current user's ID
         });
         
       if (insertError) {

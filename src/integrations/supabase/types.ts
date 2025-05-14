@@ -49,6 +49,7 @@ export type Database = {
           location: string
           price: number
           title: string
+          user_id: string | null
         }
         Insert: {
           contact_phone: string
@@ -59,6 +60,7 @@ export type Database = {
           location: string
           price: number
           title: string
+          user_id?: string | null
         }
         Update: {
           contact_phone?: string
@@ -69,6 +71,7 @@ export type Database = {
           location?: string
           price?: number
           title?: string
+          user_id?: string | null
         }
         Relationships: []
       }
