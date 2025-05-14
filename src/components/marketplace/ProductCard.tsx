@@ -31,7 +31,12 @@ export const ProductCard = ({ product, onContact, userPhone }: ProductCardProps)
   const [imageError, setImageError] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   
-  const isUserProduct = userPhone && product.contact_phone === userPhone;
+  // Normalize phone numbers for comparison (remove any non-digit characters)
+  const normalizePhone = (phone: string) => phone.replace(/\D/g, "");
+  
+  // Check if the current user is the owner of this product
+  const isUserProduct = userPhone && 
+    normalizePhone(product.contact_phone) === normalizePhone(userPhone);
   
   const handleDeleteProduct = async () => {
     try {
@@ -109,57 +114,63 @@ export const ProductCard = ({ product, onContact, userPhone }: ProductCardProps)
               <span className="truncate">{product.location}</span>
             </div>
             
-            {isUserProduct ? (
-              <div className="space-y-2">
-                <Link to={`/edit-marketplace-product/${product.id}`} className="w-full">
-                  <Button 
-                    variant="outline"
-                    className="w-full gap-1 border-green-600 text-green-700 hover:bg-green-50 text-sm h-10"
-                  >
-                    <Edit className="h-3.5 w-3.5" />
-                    Editar
-                  </Button>
-                </Link>
-                
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
+            <div className="space-y-2">
+              {/* Always show the Contact Seller button for non-owner */}
+              {!isUserProduct && (
+                <Button 
+                  onClick={onContact}
+                  className="w-full gap-1 bg-green-600 hover:bg-green-700 text-sm h-12"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  Falar com Vendedor
+                </Button>
+              )}
+              
+              {/* Only show Edit and Delete buttons if user is the product owner */}
+              {isUserProduct && (
+                <>
+                  <Link to={`/edit-marketplace-product/${product.id}`} className="w-full">
                     <Button 
                       variant="outline"
-                      className="w-full gap-1 border-red-600 text-red-700 hover:bg-red-50 text-sm h-10"
-                      disabled={isDeleting}
+                      className="w-full gap-1 border-green-600 text-green-700 hover:bg-green-50 text-sm h-10"
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
-                      {isDeleting ? "Excluindo..." : "Excluir"}
+                      <Edit className="h-3.5 w-3.5" />
+                      Editar
                     </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Confirmação de exclusão</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Tem certeza que deseja excluir este produto? Esta ação não pode ser desfeita.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                      <AlertDialogAction 
-                        onClick={handleDeleteProduct}
-                        className="bg-red-600 hover:bg-red-700"
+                  </Link>
+                  
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button 
+                        variant="outline"
+                        className="w-full gap-1 border-red-600 text-red-700 hover:bg-red-50 text-sm h-10"
+                        disabled={isDeleting}
                       >
-                        {isDeleting ? "Excluindo..." : "Sim, excluir"}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
-            ) : (
-              <Button 
-                onClick={onContact}
-                className="w-full gap-1 bg-green-600 hover:bg-green-700 text-sm h-12"
-              >
-                <MessageCircle className="h-4 w-4" />
-                Falar com Vendedor
-              </Button>
-            )}
+                        <Trash2 className="h-3.5 w-3.5" />
+                        {isDeleting ? "Excluindo..." : "Excluir"}
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Confirmação de exclusão</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Tem certeza que deseja excluir este produto? Esta ação não pode ser desfeita.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction 
+                          onClick={handleDeleteProduct}
+                          className="bg-red-600 hover:bg-red-700"
+                        >
+                          {isDeleting ? "Excluindo..." : "Sim, excluir"}
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>

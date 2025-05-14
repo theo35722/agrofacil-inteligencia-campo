@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useState } from "react";
@@ -14,10 +13,14 @@ export const PhoneSettings = ({
   setUserPhone
 }: PhoneSettingsProps) => {
   const handleSetUserPhone = () => {
-    const phone = prompt("Entre com número de telefone (formato: +5500000000000):");
-    if (phone) {
-      localStorage.setItem('userPhone', phone);
-      setUserPhone(phone);
+    const phoneInput = prompt("Entre com número de telefone (formato: +5500000000000):");
+    if (phoneInput) {
+      // Normalize phone number (keep only digits)
+      const normalizedPhone = phoneInput.replace(/\D/g, "");
+      
+      // Store the normalized phone number
+      localStorage.setItem('userPhone', normalizedPhone);
+      setUserPhone(normalizedPhone);
       toast.success("Telefone configurado com sucesso!");
     }
   };

@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { toast } from "@/components/ui/sonner";
 import { MarketplaceProduct } from "@/types/marketplace";
@@ -53,7 +52,7 @@ const Marketplace = () => {
     }
     getProducts();
 
-    // Get user phone number from localStorage
+    // Get user phone number from localStorage - retrieve normalized phone
     setUserPhone(localStorage.getItem('userPhone') || null);
   }, []);
 
@@ -78,7 +77,10 @@ const Marketplace = () => {
       <div className="max-w-md mx-auto px-4">
         <MarketplaceActions />
         
-        <PhoneSettings userPhone={userPhone} setUserPhone={setUserPhone} />
+        {/* Keep PhoneSettings component but visually hidden - we need it for functionality */}
+        <div className="hidden">
+          <PhoneSettings userPhone={userPhone} setUserPhone={setUserPhone} />
+        </div>
         
         <div className="mb-6">
           <MarketplaceControls 
