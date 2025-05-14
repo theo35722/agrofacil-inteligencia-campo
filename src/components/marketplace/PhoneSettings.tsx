@@ -1,8 +1,8 @@
 
 import { Button } from "@/components/ui/button";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { useState } from "react";
-import { PhoneIcon } from "lucide-react";
+import { PhoneIcon, PhoneOffIcon } from "lucide-react";
 
 interface PhoneSettingsProps {
   userPhone: string | null;
@@ -14,24 +14,18 @@ export const PhoneSettings = ({
   setUserPhone
 }: PhoneSettingsProps) => {
   const handleSetUserPhone = () => {
-    const phone = prompt("Entre com número de telefone para edição (formato: +5500000000000):");
+    const phone = prompt("Entre com número de telefone (formato: +5500000000000):");
     if (phone) {
       localStorage.setItem('userPhone', phone);
       setUserPhone(phone);
-      toast({
-        title: "Telefone configurado",
-        description: "Telefone configurado para edição de anúncios",
-      });
+      toast.success("Telefone configurado com sucesso!");
     }
   };
 
   const handleClearUserPhone = () => {
     localStorage.removeItem('userPhone');
     setUserPhone(null);
-    toast({
-      title: "Telefone removido",
-      description: "Configuração de telefone removida",
-    });
+    toast.success("Configuração de telefone removida");
   };
 
   return (
@@ -40,7 +34,7 @@ export const PhoneSettings = ({
         <>
           <div className="flex items-center mr-2 text-sm text-gray-600">
             <PhoneIcon className="h-4 w-4 mr-1" />
-            <span>Telefone configurado: {userPhone}</span>
+            <span>Telefone: {userPhone}</span>
           </div>
           <Button 
             variant="outline"
@@ -55,10 +49,9 @@ export const PhoneSettings = ({
         <Button 
           variant="outline" 
           size="sm"
-          className="text-agro-green-600 border-agro-green-600"
           onClick={handleSetUserPhone}
         >
-          Configurar Telefone para Edições
+          Configurar Telefone
         </Button>
       )}
     </div>
