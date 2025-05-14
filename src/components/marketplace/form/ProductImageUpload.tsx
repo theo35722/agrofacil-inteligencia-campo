@@ -1,117 +1,144 @@
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Camera, Image, X } from "lucide-react";
-import { CameraCapture } from "../../plant-diagnosis/CameraCapture";
+import { Camera, Upload, X } from "lucide-react";
+import { CameraCapture } from "@/components/plant-diagnosis/CameraCapture";
+import { toast } from "sonner";
 
-export interface ProductImageUploadProps {
+interface ProductImageUploadProps {
   imagePreview?: string | null;
-  onImageCapture?: (imageDataUrl: string) => void;
-  onImageRemove?: () => void;
-  onChange?: (value: string | null) => void;
-  value?: string | null;
+  onImageCapture: (imageDataUrl: string) => void;
+  onImageRemove: () => void;
+  onChange?: (value: string) => void;
+  value?: string;
   existingImageUrl?: string | null;
 }
 
-export const ProductImageUpload = ({
-  imagePreview: propImagePreview,
-  onImageCapture,
+export function ProductImageUpload({ 
+  imagePreview, 
+  onImageCapture, 
   onImageRemove,
   onChange,
   value,
-  existingImageUrl,
-}: ProductImageUploadProps) => {
+  existingImageUrl
+}: ProductImageUploadProps) {
   const [showCamera, setShowCamera] = useState(false);
-  // Use the provided value or existingImageUrl as the image preview
-  const imagePreview = value || propImagePreview || existingImageUrl;
-  const fileInputRef = useRef<HTMLInputElement>(null);
   
-  const handleImageCapture = (imageDataUrl: string) => {
-    // Call both handlers if they exist
-    if (onChange) onChange(imageDataUrl);
-    if (onImageCapture) onImageCapture(imageDataUrl);
+  const displayedImage = imagePreview || existingImageUrl || value;
+  
+  const handleCameraCapture = (imageDataUrl: string) => {
+    onImageCapture(imageDataUrl);
+    if (onChange) {
+      onChange(imageDataUrl);
+    }
     setShowCamera(false);
   };
-
-  const handleRemove = () => {
-    // Call both handlers if they exist
-    if (onChange) onChange(null);
-    if (onImageRemove) onImageRemove();
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  };
-
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
+    
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error("Formato inválido", {
+        description: "Por favor, selecione uma imagem válida."
+      });
+      return;
+    }
+    
+    // Check file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Arquivo muito grande", {
+        description: "A imagem deve ter no máximo 5MB."
+      });
+      return;
+    }
+    
+    // Convert file to base64
     const reader = new FileReader();
-    reader.onload = (e) => {
-      const imageDataUrl = e.target?.result as string;
-      if (onChange) onChange(imageDataUrl);
-      if (onImageCapture) onImageCapture(imageDataUrl);
+    reader.onloadend = () => {
+      const base64String = reader.result as string;
+      onImageCapture(base64String);
+      if (onChange) {
+        onChange(base64String);
+      }
     };
     reader.readAsDataURL(file);
   };
-
-  if (showCamera) {
-    return <CameraCapture onCapture={handleImageCapture} onClose={() => setShowCamera(false)} />;
-  }
-
+  
+  const handleGalleryClick = () => {
+    // Trigger hidden file input
+    document.getElementById('product-image-upload')?.click();
+  };
+  
   return (
-    <div>
-      <Label className="block mb-2">Foto do Produto*</Label>
-      
-      {imagePreview ? (
-        <div className="relative rounded-lg overflow-hidden border border-gray-200">
-          <div className="flex items-center justify-center bg-gray-50">
-            <img 
-              src={imagePreview} 
-              alt="Prévia do produto" 
-              className="w-full h-auto max-h-64 object-contain"
-            />
-          </div>
-          <Button
-            type="button"
-            variant="destructive"
-            size="sm"
-            className="absolute top-2 right-2"
-            onClick={handleRemove}
-          >
-            <X className="w-4 h-4" />
-          </Button>
-        </div>
+    <div className="space-y-4">
+      {showCamera ? (
+        <CameraCapture
+          onCapture={handleCameraCapture}
+          onClose={() => setShowCamera(false)}
+        />
       ) : (
-        <div className="space-y-2">
-          <input
-            type="file"
-            accept="image/*"
-            className="hidden"
-            ref={fileInputRef}
-            onChange={handleFileSelect}
-          />
+        <>
+          {displayedImage ? (
+            <div className="relative">
+              <img 
+                src={displayedImage} 
+                alt="Prévia da imagem" 
+                className="w-full h-56 object-contain border rounded-lg"
+              />
+              <Button
+                type="button"
+                size="icon"
+                variant="destructive"
+                className="absolute top-2 right-2 rounded-full h-8 w-8"
+                onClick={() => {
+                  onImageRemove();
+                  if (onChange) {
+                    onChange('');
+                  }
+                }}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-4">
+              <Button
+                type="button"
+                variant="outline"
+                className="h-16 border-dashed border-2 flex flex-col items-center justify-center space-y-1 px-2 py-6"
+                onClick={() => setShowCamera(true)}
+              >
+                <Camera className="h-6 w-6 text-gray-500" />
+                <span className="text-xs text-gray-500">Tirar Foto</span>
+              </Button>
+              
+              <Button
+                type="button"
+                variant="outline"
+                className="h-16 border-dashed border-2 flex flex-col items-center justify-center space-y-1 px-2 py-6"
+                onClick={handleGalleryClick}
+              >
+                <Upload className="h-6 w-6 text-gray-500" />
+                <span className="text-xs text-gray-500">Galeria</span>
+              </Button>
+              
+              <input 
+                type="file" 
+                id="product-image-upload"
+                accept="image/*"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
+            </div>
+          )}
           
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full h-16 bg-gray-50 flex flex-col items-center justify-center"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <Image className="w-5 h-5 mb-1 text-agro-green-600" />
-            <span className="text-sm">Escolher da Galeria</span>
-          </Button>
-          
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full h-16 bg-gray-50 flex flex-col items-center justify-center"
-            onClick={() => setShowCamera(true)}
-          >
-            <Camera className="w-5 h-5 mb-1 text-agro-green-600" />
-            <span className="text-sm">Tirar Foto</span>
-          </Button>
-        </div>
+          <p className="text-xs text-gray-500 text-center">
+            Adicione uma foto clara do seu produto
+          </p>
+        </>
       )}
     </div>
   );
-};
+}

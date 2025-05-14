@@ -25,9 +25,15 @@ interface ProductCardProps {
   product: MarketplaceProduct;
   onContact: () => void;
   userPhone?: string | null;
+  onProductDeleted?: () => void;
 }
 
-export const ProductCard = ({ product, onContact, userPhone }: ProductCardProps) => {
+export const ProductCard = ({ 
+  product, 
+  onContact, 
+  userPhone,
+  onProductDeleted 
+}: ProductCardProps) => {
   const [imageError, setImageError] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   
@@ -81,8 +87,10 @@ export const ProductCard = ({ product, onContact, userPhone }: ProductCardProps)
       
       toast.success("Produto excluído com sucesso!");
       
-      // Refresh the page to show updated list
-      window.location.reload();
+      // Call the callback to refresh products if provided
+      if (onProductDeleted) {
+        onProductDeleted();
+      }
       
     } catch (error) {
       console.error("Erro ao excluir produto:", error);
@@ -140,7 +148,7 @@ export const ProductCard = ({ product, onContact, userPhone }: ProductCardProps)
               
               {/* Edit and Delete buttons for product owners */}
               {isUserProduct && (
-                <>
+                <div className="grid grid-cols-2 gap-2">
                   <Link to={`/edit-marketplace-product/${product.id}`} className="w-full">
                     <Button 
                       variant="outline"
@@ -159,7 +167,7 @@ export const ProductCard = ({ product, onContact, userPhone }: ProductCardProps)
                         disabled={isDeleting}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
-                        {isDeleting ? "Excluindo..." : "Excluir"}
+                        {isDeleting ? "..." : "Excluir"}
                       </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
@@ -180,7 +188,7 @@ export const ProductCard = ({ product, onContact, userPhone }: ProductCardProps)
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
-                </>
+                </div>
               )}
             </div>
           </div>

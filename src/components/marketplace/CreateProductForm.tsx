@@ -12,7 +12,6 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form } from "@/components/ui/form";
-import { PhoneSettings } from "./PhoneSettings";
 
 const productSchema = z.object({
   title: z.string().min(3, "Título deve ter pelo menos 3 caracteres"),
@@ -119,8 +118,6 @@ export const CreateProductForm = () => {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 animate-fade-in">
         <h1 className="text-2xl font-bold text-agro-green-800 mb-6">Cadastrar Novo Produto</h1>
-        
-        <PhoneSettings userPhone={userPhone} setUserPhone={setUserPhone} />
         
         <ProductFormFields 
           form={form}
