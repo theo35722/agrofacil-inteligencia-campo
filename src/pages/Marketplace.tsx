@@ -12,7 +12,6 @@ import { MarketplaceControls } from "@/components/marketplace/MarketplaceControl
 import { MarketplaceLoading } from "@/components/marketplace/MarketplaceLoading";
 import { MarketplaceContent } from "@/components/marketplace/MarketplaceContent";
 import { NoProductsMessage } from "@/components/marketplace/NoProductsMessage";
-import { PhoneSettings } from "@/components/marketplace/PhoneSettings";
 
 const Marketplace = () => {
   const [products, setProducts] = useState<MarketplaceProduct[]>([]);
@@ -79,9 +78,6 @@ const Marketplace = () => {
       
       <div className="max-w-md mx-auto px-4">
         <MarketplaceActions />
-        
-        {/* Make PhoneSettings visible to help users debug their phone setup */}
-        <PhoneSettings userPhone={userPhone} setUserPhone={setUserPhone} />
         
         <div className="mb-6">
           <MarketplaceControls 
