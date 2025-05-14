@@ -10,6 +10,7 @@ import { MyListingsHeader } from "@/components/marketplace/MyListingsHeader";
 import { ProductCard } from "@/components/marketplace/ProductCard";
 import { NoProductsMessage } from "@/components/marketplace/NoProductsMessage";
 import { useAuth } from "@/contexts/AuthContext";
+import { DeleteAllListingsDialog } from "@/components/marketplace/DeleteAllListingsDialog";
 
 const MyListings = () => {
   const [products, setProducts] = useState<MarketplaceProduct[]>([]);
@@ -124,7 +125,10 @@ const MyListings = () => {
         <>
           {products.length > 0 ? (
             <div className="max-w-md mx-auto px-3 space-y-4">
-              <h2 className="text-xl font-semibold text-agro-green-800 my-4">Meus Anúncios</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-xl font-semibold text-agro-green-800">Meus Anúncios</h2>
+                <DeleteAllListingsDialog userId={user.id} onSuccess={refreshProducts} />
+              </div>
               <div className="grid grid-cols-1 gap-4">
                 {products.map((product) => (
                   <ProductCard 
