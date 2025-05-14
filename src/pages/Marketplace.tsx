@@ -101,20 +101,22 @@ const Marketplace = () => {
                     nearbyStateProducts.length === 0 && 
                     otherProducts.length === 0;
 
-  // For simulating user phone for testing purposes
-  const handleTestUserPhone = () => {
-    const phone = prompt("Entre com número de telefone para testar edição (formato: +5500000000000):");
+  // For setting user phone for testing purposes
+  const handleSetUserPhone = () => {
+    const phone = prompt("Entre com número de telefone para edição (formato: +5500000000000):");
     if (phone) {
       localStorage.setItem('userPhone', phone);
       setUserPhone(phone);
-      toast.success("Telefone de teste configurado");
+      toast.success("Telefone configurado para edição de anúncios");
     }
   };
 
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex justify-between items-center">
-        <MarketplaceHeader isLoading={locationLoading} />
+        <div className="flex-1">
+          {/* Simplified header - no description text */}
+        </div>
         <div className="flex gap-2">
           <Link to="/create-marketplace-product">
             <Button className="bg-agro-green-600 hover:bg-agro-green-700">
@@ -133,14 +135,13 @@ const Marketplace = () => {
               onSearchChange={handleSearchChange} 
             />
           </div>
-          {/* Test button for simulation purposes - can be removed in production */}
           <Button 
             variant="outline" 
             size="sm" 
             className="text-xs" 
-            onClick={handleTestUserPhone}
+            onClick={handleSetUserPhone}
           >
-            Teste Edição
+            Definir Telefone
           </Button>
         </div>
         
@@ -184,11 +185,18 @@ const Marketplace = () => {
               userPhone={userPhone} 
             />
           ) : products.length > 0 && (locationData.city || locationData.state) && !noResults ? (
-            <NoLocalProductsMessage
-              locationData={locationData}
-              nearbyProducts={allNearbyProducts}
-              handleContactSeller={handleContactSeller}
-            />
+            <div className="space-y-4">
+              {/* Simplified notice that shows products from nearby cities */}
+              <div className="text-sm text-gray-500 px-1">
+                Não encontramos produtos em {locationData.fullLocation}. Mostrando produtos de outras cidades próximas.
+              </div>
+              
+              <ProductList 
+                products={allNearbyProducts} 
+                onContactSeller={handleContactSeller}
+                userPhone={userPhone}
+              />
+            </div>
           ) : null}
           
           {/* Other Products - when no location filter is active */}

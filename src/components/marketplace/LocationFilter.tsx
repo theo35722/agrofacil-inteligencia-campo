@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { MapPin, Search, X, Loader2, Map } from "lucide-react";
+import { Loader2, MapPin } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { brazilianStates } from "@/data/brazilianStates";
@@ -25,8 +25,7 @@ export function LocationFilter({
   permissionDenied,
   locationData,
   onLocationChange,
-  onClearLocation,
-  onRequestGeolocation
+  onRequestGeolocation,
 }: LocationFilterProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedCity, setSelectedCity] = useState("");
@@ -71,8 +70,8 @@ export function LocationFilter({
                 </SelectTrigger>
                 <SelectContent>
                   {brazilianStates.map((state) => (
-                    <SelectItem key={state.value} value={state.value}>
-                      {state.label}
+                    <SelectItem key={state.uf} value={state.uf}>
+                      {state.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
