@@ -5,9 +5,10 @@ import { ProductCard } from "./ProductCard";
 interface ProductListProps {
   products: MarketplaceProduct[];
   onContactSeller: (product: MarketplaceProduct) => void;
+  userPhone?: string | null;
 }
 
-export const ProductList = ({ products, onContactSeller }: ProductListProps) => {
+export const ProductList = ({ products, onContactSeller, userPhone }: ProductListProps) => {
   if (products.length === 0) return null;
   
   return (
@@ -18,6 +19,7 @@ export const ProductList = ({ products, onContactSeller }: ProductListProps) => 
             key={product.id} 
             product={product} 
             onContact={() => onContactSeller(product)}
+            userPhone={userPhone}
           />
         ))}
       </div>

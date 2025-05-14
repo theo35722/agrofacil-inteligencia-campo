@@ -25,6 +25,8 @@ const Marketplace = () => {
   const [products, setProducts] = useState<MarketplaceProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [userPhone, setUserPhone] = useState<string | null>(null);
+  
   const { 
     locationData, 
     isLoading: locationLoading, 
@@ -54,6 +56,10 @@ const Marketplace = () => {
     }
     
     getProducts();
+    
+    // Simulate user phone for demo purposes
+    // In a real app, you would get this from auth context or user settings
+    setUserPhone(localStorage.getItem('userPhone') || null);
   }, []);
   
   // Handle location change from the LocationFilter component
@@ -79,47 +85,80 @@ const Marketplace = () => {
 
   // Get filtered products based on search query and location
   const cityFilteredProducts = filterProductsBySearchAndLocation(products, searchQuery, locationData);
+  
+  // Get nearby state products (from the same state but different city)
   const nearbyStateProducts = getNearbyStateProducts(products, searchQuery, locationData);
+  
+  // Get products from other states
   const otherProducts = getOtherProducts(products, searchQuery, locationData);
   
-  // Always show nearby state products if no city products are found
-  const showNearbyStateProducts = locationData.city && cityFilteredProducts.length === 0;
-  
+  // Combine nearby and other products for no local products message
+  const allNearbyProducts = [...nearbyStateProducts, ...otherProducts];
+
   // Check if we have any results after all filters
   const noResults = searchQuery.trim() !== "" && 
                     cityFilteredProducts.length === 0 && 
                     nearbyStateProducts.length === 0 && 
                     otherProducts.length === 0;
-  
-  // Combine nearby and other products for no local products message
-  const nearbyProducts = [...nearbyStateProducts, ...otherProducts];
+
+  // For simulating user phone for testing purposes
+  const handleTestUserPhone = () => {
+    const phone = prompt("Entre com número de telefone para testar edição (formato: +5500000000000):");
+    if (phone) {
+      localStorage.setItem('userPhone', phone);
+      setUserPhone(phone);
+      toast.success("Telefone de teste configurado");
+    }
+  };
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex justify-between items-start">
+      <div className="flex justify-between items-center">
         <MarketplaceHeader isLoading={locationLoading} />
-        <Link to="/create-marketplace-product">
-          <Button className="bg-agro-green-600 hover:bg-agro-green-700">
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Anunciar Produto
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+          <Link to="/create-marketplace-product">
+            <Button className="bg-agro-green-600 hover:bg-agro-green-700">
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Anunciar Produto
+            </Button>
+          </Link>
+        </div>
       </div>
       
       <div className="flex flex-col gap-4">
-        <SearchInput 
-          searchQuery={searchQuery} 
-          onSearchChange={handleSearchChange} 
-        />
+        <div className="flex items-center gap-4">
+          <div className="flex-1">
+            <SearchInput 
+              searchQuery={searchQuery} 
+              onSearchChange={handleSearchChange} 
+            />
+          </div>
+          {/* Test button for simulation purposes - can be removed in production */}
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="text-xs" 
+            onClick={handleTestUserPhone}
+          >
+            Teste Edição
+          </Button>
+        </div>
         
-        <LocationFilter 
-          isLoading={locationLoading}
-          permissionDenied={permissionDenied}
-          locationData={locationData}
-          onLocationChange={handleLocationChange}
-          onClearLocation={clearLocation}
-          onRequestGeolocation={requestGeolocation}
-        />
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <LocationDisplay 
+            locationData={locationData}
+            onToggleLocationFilter={handleToggleLocationFilter}
+          />
+          
+          <LocationFilter 
+            isLoading={locationLoading}
+            permissionDenied={permissionDenied}
+            locationData={locationData}
+            onLocationChange={handleLocationChange}
+            onClearLocation={clearLocation}
+            onRequestGeolocation={requestGeolocation}
+          />
+        </div>
       </div>
       
       {loading || locationLoading ? (
@@ -129,11 +168,6 @@ const Marketplace = () => {
         </div>
       ) : (
         <>
-          <LocationDisplay 
-            locationData={locationData}
-            onToggleLocationFilter={handleToggleLocationFilter}
-          />
-          
           {/* No Results Message */}
           {noResults && (
             <NoResultsMessage
@@ -146,23 +180,16 @@ const Marketplace = () => {
           {cityFilteredProducts.length > 0 ? (
             <ProductList 
               products={cityFilteredProducts} 
-              onContactSeller={handleContactSeller} 
+              onContactSeller={handleContactSeller}
+              userPhone={userPhone} 
             />
           ) : products.length > 0 && (locationData.city || locationData.state) && !noResults ? (
             <NoLocalProductsMessage
               locationData={locationData}
-              nearbyProducts={nearbyProducts}
+              nearbyProducts={allNearbyProducts}
               handleContactSeller={handleContactSeller}
             />
           ) : null}
-          
-          {/* Nearby State Products - only shown when explicitly required */}
-          {showNearbyStateProducts && nearbyStateProducts.length > 0 && (
-            <ProductList 
-              products={nearbyStateProducts} 
-              onContactSeller={handleContactSeller}
-            />
-          )}
           
           {/* Other Products - when no location filter is active */}
           {!locationData.city && !locationData.state && products.length > 0 && !noResults && (
@@ -171,8 +198,9 @@ const Marketplace = () => {
                 !searchQuery.trim() || 
                 product.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 product.description.toLowerCase().includes(searchQuery.toLowerCase())
-              )} 
+              )}
               onContactSeller={handleContactSeller}
+              userPhone={userPhone}
             />
           )}
           
