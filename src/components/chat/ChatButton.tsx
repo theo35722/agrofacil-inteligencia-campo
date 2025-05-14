@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from "react";
-import { X } from "lucide-react";
+import { X, Bot } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface ChatButtonProps {
@@ -31,8 +31,12 @@ export const ChatButton: React.FC<ChatButtonProps> = ({ onClick, isOpen, classNa
     return () => clearTimeout(tipTimer);
   }, [isOpen]);
   
-  // Efeito de pulsar a cada 30 segundos
+  // Efeito de pulsar a cada 30 segundos e no carregamento da página
   useEffect(() => {
+    // Pulsar imediatamente no carregamento
+    setShowPulse(true);
+    setTimeout(() => setShowPulse(false), 2000);
+    
     const pulseInterval = setInterval(() => {
       if (!isOpen) {
         setShowPulse(true);
@@ -68,18 +72,23 @@ export const ChatButton: React.FC<ChatButtonProps> = ({ onClick, isOpen, classNa
       
       <button
         onClick={onClick}
-        className={`fixed bottom-16 right-4 z-50 flex items-center justify-center w-16 h-16 rounded-full shadow-lg hover:shadow-xl transition-all ${className} ${
-          showPulse ? "animate-bounce" : ""
+        className={`fixed bottom-20 md:bottom-16 right-4 z-50 flex items-center justify-center w-20 h-20 rounded-full shadow-lg hover:shadow-xl transition-all ${className} ${
+          showPulse ? "animate-pulse" : ""
         }`}
         aria-label="Abrir chat com Seu Calunga"
       >
         <div className="relative">
-          <div className="absolute inset-0 rounded-full bg-white opacity-20 animate-ping" />
-          <div className="relative z-10 w-16 h-16">
+          {showPulse && (
+            <div className="absolute inset-0 rounded-full bg-agro-green-300 opacity-30 animate-ping"></div>
+          )}
+          <div className="relative z-10 w-20 h-20 p-1">
+            <div className="absolute bottom-0 right-0 bg-agro-green-500 p-1.5 rounded-full z-20 border-2 border-white">
+              <Bot size={18} className="text-white" />
+            </div>
             <img 
               src="/lovable-uploads/8ac540a4-ed74-4c29-98a2-22f75a415068.png" 
               alt="Seu Calunga" 
-              className="w-full h-full object-cover rounded-full" 
+              className="w-full h-full object-cover rounded-full border-4 border-agro-green-200" 
             />
           </div>
         </div>

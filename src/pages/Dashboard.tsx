@@ -11,56 +11,65 @@ const Dashboard = () => {
   // State para controlar a exibição do chat
   const [showChat, setShowChat] = useState(false);
 
-  // Features for the dashboard
+  // Features reorganizadas para priorizar Diagnóstico e Marketplace
   const features = [
     {
       icon: Sprout,
       title: "Diagnóstico de Planta",
       description: "Identificação de doenças e pragas com IA",
       to: "/diagnostico",
-      bgColor: "bg-agro-green-100",
-    },
-    {
-      icon: CloudSun,
-      title: "Previsão do Tempo",
-      description: "Previsão climática detalhada",
-      to: "/clima",
-      bgColor: "bg-agro-blue-100",
-    },
-    {
-      icon: MapPin,
-      title: "Lavouras e Talhões",
-      description: "Gerenciamento de áreas de cultivo",
-      to: "/lavouras",
-      bgColor: "bg-agro-earth-100",
-    },
-    {
-      icon: CalendarCheck,
-      title: "Registro de Atividades",
-      description: "Controle de operações agrícolas",
-      to: "/atividades",
-      bgColor: "bg-amber-100",
-    },
-    {
-      icon: FileText,
-      title: "Boas Práticas",
-      description: "Dicas e conhecimentos agrícolas",
-      to: "/boas-praticas",
-      bgColor: "bg-indigo-100",
+      bgColor: "bg-agro-green-500",
+      textColor: "text-white",
+      priority: true,
     },
     {
       icon: ShoppingBag,
       title: "Marketplace",
       description: "Compra e venda de produtos agrícolas",
       to: "/marketplace",
-      bgColor: "bg-green-100",
+      bgColor: "bg-agro-green-500",
+      textColor: "text-white",
+      priority: true,
+    },
+    {
+      icon: CloudSun,
+      title: "Previsão do Tempo",
+      description: "Previsão climática detalhada",
+      to: "/clima",
+      bgColor: "bg-gray-100",
+      textColor: "text-gray-800",
+    },
+    {
+      icon: MapPin,
+      title: "Lavouras e Talhões",
+      description: "Gerenciamento de áreas de cultivo",
+      to: "/lavouras",
+      bgColor: "bg-gray-100",
+      textColor: "text-gray-800",
+    },
+    {
+      icon: CalendarCheck,
+      title: "Registro de Atividades",
+      description: "Controle de operações agrícolas",
+      to: "/atividades",
+      bgColor: "bg-gray-100",
+      textColor: "text-gray-800",
+    },
+    {
+      icon: FileText,
+      title: "Boas Práticas",
+      description: "Dicas e conhecimentos agrícolas",
+      to: "/boas-praticas",
+      bgColor: "bg-gray-100",
+      textColor: "text-gray-800",
     },
     {
       icon: Bell,
       title: "Notificações",
       description: "Alertas e lembretes importantes",
       to: "/notificacoes",
-      bgColor: "bg-rose-100",
+      bgColor: "bg-gray-100",
+      textColor: "text-gray-800",
     },
   ];
 
@@ -70,7 +79,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in bg-white">
       <section className="text-center mb-8">
         <h1 className="text-2xl font-bold text-agro-green-800 mb-2">
           Bem-vindo ao AgroFácil
@@ -80,7 +89,7 @@ const Dashboard = () => {
         </p>
       </section>
 
-      <section className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+      <section className="grid grid-cols-2 md:grid-cols-3 gap-5 mb-8">
         {features.map((feature, index) => (
           <FeatureCard 
             key={index}
@@ -88,6 +97,9 @@ const Dashboard = () => {
             title={feature.title}
             description={feature.description}
             to={feature.to}
+            className={feature.priority ? "col-span-2 md:col-span-1" : ""}
+            bgColor={feature.bgColor}
+            textColor={feature.textColor}
           />
         ))}
       </section>
@@ -97,8 +109,8 @@ const Dashboard = () => {
         <ActivityPreview />
       </section>
       
-      {/* Botão de chat flutuante */}
-      <ChatButton onClick={handleToggleChat} isOpen={showChat} />
+      {/* Botão de chat flutuante melhorado */}
+      <ChatButton onClick={handleToggleChat} isOpen={showChat} className="bg-white shadow-lg border-2 border-agro-green-300" />
       
       {/* Dialog do chat */}
       <ChatDialog open={showChat} onOpenChange={setShowChat} />
