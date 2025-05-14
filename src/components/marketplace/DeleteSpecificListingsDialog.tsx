@@ -21,6 +21,10 @@ interface DeleteSpecificListingsDialogProps {
   onSuccess: () => void;
 }
 
+// Hardcoded values from the Supabase client
+const SUPABASE_URL = "https://euzaloymjefsdravbmcd.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1emFsb3ltamVmc2RyYXZibWNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYzMTUxMDQsImV4cCI6MjA2MTg5MTEwNH0.1ARoxdC1JqqaFK7jz3YXllu8bmDqXKLJgEMAQjLNqQo";
+
 export const DeleteSpecificListingsDialog = ({ onSuccess }: DeleteSpecificListingsDialogProps) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [productTitle, setProductTitle] = useState("");
@@ -34,21 +38,23 @@ export const DeleteSpecificListingsDialog = ({ onSuccess }: DeleteSpecificListin
 
     try {
       setIsDeleting(true);
+      console.log("Attempting to delete listings with title:", productTitle);
       
-      // Call our Edge Function to delete listings by title
-      // This bypasses RLS and allows deletion of any listings matching the title
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/delete-marketplace-listings`, {
+      // Call our Edge Function using the hardcoded Supabase URL and key
+      const response = await fetch(`${SUPABASE_URL}/functions/v1/delete-marketplace-listings`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
         },
         body: JSON.stringify({
           searchQuery: productTitle.trim()
         })
       });
       
+      console.log("Response status:", response.status);
       const result = await response.json();
+      console.log("Response data:", result);
       
       if (!response.ok) {
         throw new Error(result.error || `Error: ${response.status}`);
