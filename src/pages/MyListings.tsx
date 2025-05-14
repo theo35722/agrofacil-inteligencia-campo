@@ -11,6 +11,7 @@ import { ProductCard } from "@/components/marketplace/ProductCard";
 import { NoProductsMessage } from "@/components/marketplace/NoProductsMessage";
 import { useAuth } from "@/contexts/AuthContext";
 import { DeleteAllListingsDialog } from "@/components/marketplace/DeleteAllListingsDialog";
+import { DeleteSpecificListingsDialog } from "@/components/marketplace/DeleteSpecificListingsDialog";
 
 const MyListings = () => {
   const [products, setProducts] = useState<MarketplaceProduct[]>([]);
@@ -127,7 +128,10 @@ const MyListings = () => {
             <div className="max-w-md mx-auto px-3 space-y-4">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold text-agro-green-800">Meus Anúncios</h2>
-                <DeleteAllListingsDialog userId={user.id} onSuccess={refreshProducts} />
+                <div className="flex gap-2">
+                  <DeleteSpecificListingsDialog onSuccess={refreshProducts} />
+                  <DeleteAllListingsDialog userId={user.id} onSuccess={refreshProducts} />
+                </div>
               </div>
               <div className="grid grid-cols-1 gap-4">
                 {products.map((product) => (
@@ -150,11 +154,14 @@ const MyListings = () => {
                 <p className="text-gray-500 mb-6">
                   Clique em "Anunciar Produto" para criar seu primeiro anúncio
                 </p>
-                <Link to="/create-marketplace-product">
-                  <Button className="bg-agro-green-600 hover:bg-agro-green-700">
-                    Criar meu primeiro anúncio
-                  </Button>
-                </Link>
+                <div className="flex flex-col space-y-4 items-center">
+                  <Link to="/create-marketplace-product">
+                    <Button className="bg-agro-green-600 hover:bg-agro-green-700">
+                      Criar meu primeiro anúncio
+                    </Button>
+                  </Link>
+                  <DeleteSpecificListingsDialog onSuccess={refreshProducts} />
+                </div>
               </div>
             </div>
           )}
