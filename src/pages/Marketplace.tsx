@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "sonner";
 import { MarketplaceProduct } from "@/types/marketplace";
 import { fetchMarketplaceProducts, contactSeller } from "@/services/marketplaceService";
 import { useMarketplaceFilters } from "@/hooks/use-marketplace-filters";
@@ -55,7 +55,6 @@ const Marketplace = () => {
     // Get user phone number from localStorage - retrieve normalized phone
     const storedPhone = localStorage.getItem('userPhone');
     setUserPhone(storedPhone);
-    console.log("Telefone carregado do localStorage:", storedPhone);
   }, []);
 
   // Handle contact seller via WhatsApp
@@ -76,10 +75,10 @@ const Marketplace = () => {
     <div className="animate-fade-in pb-6">
       <MarketplaceHeader isLoading={isLoading} />
       
-      <div className="max-w-md mx-auto px-4">
+      <div className="max-w-md mx-auto px-3">
         <MarketplaceActions />
         
-        <div className="mb-6">
+        <div className="mb-4">
           <MarketplaceControls 
             searchQuery={searchQuery}
             onSearchChange={handleSearchChange}
@@ -110,7 +109,7 @@ const Marketplace = () => {
               userPhone={userPhone}
             />
           ) : (
-            <div className="max-w-md mx-auto px-4">
+            <div className="max-w-md mx-auto px-3">
               <NoProductsMessage />
             </div>
           )}
