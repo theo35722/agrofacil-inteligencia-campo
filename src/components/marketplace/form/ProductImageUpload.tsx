@@ -5,7 +5,7 @@ import { Camera, Upload, X } from "lucide-react";
 import { CameraCapture } from "@/components/plant-diagnosis/CameraCapture";
 import { toast } from "sonner";
 
-interface ProductImageUploadProps {
+export interface ProductImageUploadProps {
   imagePreview?: string | null;
   onImageCapture: (imageDataUrl: string) => void;
   onImageRemove: () => void;

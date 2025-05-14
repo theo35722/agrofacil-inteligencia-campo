@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { FormField } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,6 +13,7 @@ export function ProductFormFields({ form, existingImageUrl = null }: {
   existingImageUrl?: string | null;
 }) {
   const { locationData, isLoading: locationLoading } = useLocationManager();
+  const [imagePreview, setImagePreview] = useState<string | null>(existingImageUrl);
 
   // Automatically fill location when available
   useEffect(() => {
@@ -20,6 +21,18 @@ export function ProductFormFields({ form, existingImageUrl = null }: {
       form.setValue("location", locationData.fullLocation);
     }
   }, [locationData.fullLocation, form]);
+
+  // Handle image capture from camera or file upload
+  const handleImageCapture = (imageDataUrl: string) => {
+    setImagePreview(imageDataUrl);
+    form.setValue("image", imageDataUrl);
+  };
+
+  // Handle image removal
+  const handleImageRemove = () => {
+    setImagePreview(null);
+    form.setValue("image", null);
+  };
 
   return (
     <div className="space-y-6">
@@ -143,6 +156,9 @@ export function ProductFormFields({ form, existingImageUrl = null }: {
                 onChange={field.onChange}
                 value={field.value}
                 existingImageUrl={existingImageUrl}
+                onImageCapture={handleImageCapture}
+                onImageRemove={handleImageRemove}
+                imagePreview={imagePreview}
               />
             </div>
           )}
