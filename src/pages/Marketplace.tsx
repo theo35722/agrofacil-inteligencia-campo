@@ -1,7 +1,8 @@
+
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Loader2, MapPin, PlusCircle, AlertCircle } from "lucide-react";
+import { Loader2, MapPin, PlusCircle, AlertCircle, Search } from "lucide-react";
 import { MarketplaceItem } from "@/components/marketplace/MarketplaceItem";
 import { MarketplaceHeader } from "@/components/marketplace/MarketplaceHeader";
 import { toast } from "@/components/ui/sonner";
@@ -9,6 +10,7 @@ import { Link } from "react-router-dom";
 import { LocationFilter } from "@/components/marketplace/LocationFilter";
 import { useLocationManager } from "@/hooks/use-location-manager";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Input } from "@/components/ui/input";
 
 export type MarketplaceProduct = {
   id: string;
@@ -24,6 +26,7 @@ export type MarketplaceProduct = {
 const Marketplace = () => {
   const [products, setProducts] = useState<MarketplaceProduct[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
   const { 
     locationData, 
     isLoading: locationLoading, 
@@ -61,13 +64,24 @@ const Marketplace = () => {
     }
   }
   
-  // Filter products by city, state or both
+  // Filter products by search query, city, state or both
   const getFilteredProducts = () => {
-    // If no location data is set, return all products
-    if (!locationData.city && !locationData.state) return products;
+    let filtered = products;
+    
+    // Apply search filter if there is a search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(product => 
+        product.title.toLowerCase().includes(query) || 
+        product.description.toLowerCase().includes(query)
+      );
+    }
+    
+    // If no location data is set, return search-filtered products
+    if (!locationData.city && !locationData.state) return filtered;
 
     // Filter products based on available location data
-    return products.filter(product => {
+    return filtered.filter(product => {
       if (locationData.city && locationData.state) {
         // Try to match both city and state
         return product.location.toLowerCase().includes(locationData.city.toLowerCase()) &&
@@ -87,7 +101,18 @@ const Marketplace = () => {
   const getNearbyStateProducts = () => {
     if (!locationData.state) return [];
     
-    return products.filter(product => {
+    let filtered = products;
+    
+    // Apply search filter if there is a search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(product => 
+        product.title.toLowerCase().includes(query) || 
+        product.description.toLowerCase().includes(query)
+      );
+    }
+    
+    return filtered.filter(product => {
       // Include products from the same state but not already in the city-filtered list
       return product.location.toLowerCase().includes(locationData.state!.toLowerCase()) &&
              (!locationData.city || !product.location.toLowerCase().includes(locationData.city.toLowerCase()));
@@ -98,7 +123,18 @@ const Marketplace = () => {
   const getOtherProducts = () => {
     if (!locationData.state && !locationData.city) return [];
     
-    return products.filter(product => {
+    let filtered = products;
+    
+    // Apply search filter if there is a search query
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(product => 
+        product.title.toLowerCase().includes(query) || 
+        product.description.toLowerCase().includes(query)
+      );
+    }
+    
+    return filtered.filter(product => {
       if (locationData.state) {
         return !product.location.toLowerCase().includes(locationData.state.toLowerCase());
       }
@@ -118,6 +154,17 @@ const Marketplace = () => {
     setManualLocation(city, state);
   };
 
+  // Handle search input change
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
+  // Check if we have any results after all filters
+  const noResults = searchQuery.trim() !== "" && 
+                    cityFilteredProducts.length === 0 && 
+                    nearbyStateProducts.length === 0 && 
+                    otherProducts.length === 0;
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex justify-between items-start">
@@ -134,14 +181,26 @@ const Marketplace = () => {
         </Link>
       </div>
       
-      <LocationFilter 
-        isLoading={locationLoading}
-        permissionDenied={permissionDenied}
-        locationData={locationData}
-        onLocationChange={handleLocationChange}
-        onClearLocation={clearLocation}
-        onRequestGeolocation={requestGeolocation}
-      />
+      <div className="flex flex-col gap-4">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <Input
+            placeholder="Buscar produtos..."
+            value={searchQuery}
+            onChange={handleSearchChange}
+            className="pl-10"
+          />
+        </div>
+        
+        <LocationFilter 
+          isLoading={locationLoading}
+          permissionDenied={permissionDenied}
+          locationData={locationData}
+          onLocationChange={handleLocationChange}
+          onClearLocation={clearLocation}
+          onRequestGeolocation={requestGeolocation}
+        />
+      </div>
       
       {loading || locationLoading ? (
         <div className="flex justify-center items-center py-12">
@@ -150,6 +209,18 @@ const Marketplace = () => {
         </div>
       ) : (
         <>
+          {/* No Results Message */}
+          {noResults && (
+            <Alert className="bg-amber-50 border-amber-200 mb-6">
+              <AlertCircle className="h-5 w-5 text-amber-600" />
+              <AlertTitle className="text-amber-800">Nenhum produto encontrado</AlertTitle>
+              <AlertDescription className="text-amber-700">
+                Não encontramos produtos correspondentes à sua busca{locationData.city || locationData.state ? " na localização selecionada" : ""}.
+                {" "}Tente outros termos ou {locationData.city || locationData.state ? "outra localização" : ""}.
+              </AlertDescription>
+            </Alert>
+          )}
+          
           {/* City Filtered Products */}
           {cityFilteredProducts.length > 0 ? (
             <div className="space-y-4">
@@ -163,7 +234,7 @@ const Marketplace = () => {
                 ))}
               </div>
             </div>
-          ) : products.length > 0 && (locationData.city || locationData.state) ? (
+          ) : products.length > 0 && (locationData.city || locationData.state) && !noResults ? (
             <Alert className="bg-amber-50 border-amber-200 mb-6">
               <AlertCircle className="h-5 w-5 text-amber-600" />
               <AlertTitle className="text-amber-800">Nenhum produto encontrado na sua localização</AlertTitle>
