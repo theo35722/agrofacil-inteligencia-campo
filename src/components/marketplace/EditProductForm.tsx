@@ -17,7 +17,7 @@ import { MarketplaceProduct } from "@/types/marketplace";
 const productFormSchema = z.object({
   title: z.string().min(3, "Título precisa ter pelo menos 3 caracteres"),
   description: z.string().min(10, "Descrição precisa ter pelo menos 10 caracteres"),
-  price: z.string().or(z.number()).transform(val => parseFloat(String(val))),
+  price: z.coerce.number().nonnegative("O preço não pode ser negativo"),
   location: z.string().min(3, "Localização é obrigatória"),
   contact_phone: z.string().min(10, "Telefone com DDD é obrigatório"),
   image: z.string().nullable(),
@@ -41,7 +41,7 @@ export const EditProductForm = ({ productId }: EditProductFormProps) => {
     defaultValues: {
       title: "",
       description: "",
-      price: "",
+      price: 0, // Default to number 0 instead of empty string
       location: "",
       contact_phone: "",
       image: null,
@@ -70,7 +70,7 @@ export const EditProductForm = ({ productId }: EditProductFormProps) => {
           form.reset({
             title: data.title,
             description: data.description,
-            price: data.price.toString(), // Convert to string for the form
+            price: data.price, // Use the numeric value directly
             location: data.location,
             contact_phone: data.contact_phone,
             image: null,
@@ -127,7 +127,7 @@ export const EditProductForm = ({ productId }: EditProductFormProps) => {
       const updateObject: Partial<MarketplaceProduct> = {
         title: data.title,
         description: data.description,
-        price: parseFloat(data.price.toString()),
+        price: data.price, // Use the numeric value directly
         location: data.location,
         contact_phone: data.contact_phone,
       };
