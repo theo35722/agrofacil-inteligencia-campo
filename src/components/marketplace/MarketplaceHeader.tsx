@@ -1,7 +1,11 @@
 
 import { ShoppingBag } from "lucide-react";
 
-export const MarketplaceHeader = () => {
+interface MarketplaceHeaderProps {
+  location: string | null;
+}
+
+export const MarketplaceHeader = ({ location }: MarketplaceHeaderProps) => {
   return (
     <section className="text-center mb-6">
       <div className="flex justify-center">
@@ -11,6 +15,7 @@ export const MarketplaceHeader = () => {
       </div>
       <h1 className="text-2xl font-bold text-agro-green-800 mb-2">
         Marketplace AgroFácil
+        {location && <span className="block text-xl mt-1">Produtos em {location}</span>}
       </h1>
       <p className="text-gray-600 max-w-lg mx-auto">
         Compre e venda produtos agrícolas diretamente de outros produtores rurais da sua região
