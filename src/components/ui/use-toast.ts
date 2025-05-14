@@ -1,6 +1,6 @@
 
-import { type ToastProps, toast } from "sonner";
+import { toast as sonnerToast, type ToasterProps } from "sonner";
 
-export { toast };
+export const toast = sonnerToast;
 
-export type { ToastProps };
+export type ToastProps = ToasterProps;
