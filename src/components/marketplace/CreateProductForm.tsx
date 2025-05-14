@@ -1,17 +1,19 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
 import { ProductFormFields } from "./form/ProductFormFields";
 import { ProductImageUpload } from "./form/ProductImageUpload";
 import { ProductFormActions } from "./form/ProductFormActions";
 import { uploadProductImage } from "./form/ProductImageService";
+import { useLocationName } from "@/hooks/use-location-name";
 
 export const CreateProductForm = () => {
   const navigate = useNavigate();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const { locationName, isLoading: locationLoading, error: locationError } = useLocationName();
   
   const [formData, setFormData] = useState({
     title: "",
@@ -20,6 +22,13 @@ export const CreateProductForm = () => {
     location: "",
     contact_phone: "",
   });
+
+  // Atualizar o campo de localização quando a localização do usuário for detectada
+  useEffect(() => {
+    if (locationName) {
+      setFormData(prev => ({ ...prev, location: locationName }));
+    }
+  }, [locationName]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -38,7 +47,11 @@ export const CreateProductForm = () => {
     e.preventDefault();
     
     if (!imagePreview) {
-      toast.error("Por favor, adicione uma imagem para o produto");
+      toast({
+        title: "Imagem necessária",
+        description: "Por favor, adicione uma imagem para o produto",
+        variant: "destructive"
+      });
       return;
     }
 
@@ -64,12 +77,19 @@ export const CreateProductForm = () => {
         throw new Error(`Erro ao cadastrar produto: ${insertError.message}`);
       }
       
-      toast.success("Produto cadastrado com sucesso!");
+      toast({
+        title: "Sucesso!",
+        description: "Produto cadastrado com sucesso!",
+      });
       navigate('/marketplace');
       
     } catch (error: any) {
       console.error("Erro ao cadastrar produto:", error);
-      toast.error(error.message || "Erro ao cadastrar produto");
+      toast({
+        title: "Erro",
+        description: error.message || "Erro ao cadastrar produto",
+        variant: "destructive"
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -82,6 +102,8 @@ export const CreateProductForm = () => {
       <ProductFormFields 
         formData={formData}
         handleChange={handleChange}
+        locationLoading={locationLoading}
+        locationError={locationError}
       />
       
       <ProductImageUpload

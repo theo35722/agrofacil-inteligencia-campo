@@ -2,6 +2,7 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Loader2, MapPin } from "lucide-react";
 
 interface ProductFormFieldsProps {
   formData: {
@@ -12,9 +13,16 @@ interface ProductFormFieldsProps {
     contact_phone: string;
   };
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+  locationLoading?: boolean;
+  locationError?: string | null;
 }
 
-export const ProductFormFields = ({ formData, handleChange }: ProductFormFieldsProps) => {
+export const ProductFormFields = ({ 
+  formData, 
+  handleChange,
+  locationLoading = false,
+  locationError = null
+}: ProductFormFieldsProps) => {
   return (
     <div className="space-y-4">
       <div>
@@ -59,14 +67,28 @@ export const ProductFormFields = ({ formData, handleChange }: ProductFormFieldsP
       
       <div>
         <Label htmlFor="location">Localização*</Label>
-        <Input
-          id="location"
-          name="location"
-          value={formData.location}
-          onChange={handleChange}
-          required
-          placeholder="Ex: São Paulo, SP"
-        />
+        <div className="relative">
+          <Input
+            id="location"
+            name="location"
+            value={formData.location}
+            onChange={handleChange}
+            required
+            placeholder="Ex: São Paulo, SP"
+            className="pr-8"
+          />
+          {locationLoading && (
+            <span className="absolute right-3 top-1/2 -translate-y-1/2">
+              <Loader2 size={16} className="animate-spin text-muted-foreground" />
+            </span>
+          )}
+        </div>
+        {locationError && !formData.location && (
+          <p className="text-sm mt-1 text-muted-foreground flex items-center gap-1">
+            <MapPin size={14} />
+            Não conseguimos detectar sua cidade. Preencha manualmente.
+          </p>
+        )}
       </div>
       
       <div>
