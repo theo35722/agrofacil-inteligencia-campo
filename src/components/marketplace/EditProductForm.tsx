@@ -70,7 +70,7 @@ export const EditProductForm = ({ productId }: EditProductFormProps) => {
           form.reset({
             title: data.title,
             description: data.description,
-            price: data.price.toString(),
+            price: data.price.toString(), // Convert to string for the form
             location: data.location,
             contact_phone: data.contact_phone,
             image: null,
