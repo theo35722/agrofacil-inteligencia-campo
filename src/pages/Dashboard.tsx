@@ -1,5 +1,5 @@
 
-import { Sprout, CloudSun, MapPin, CalendarCheck, FileText, Bell, ShoppingBag } from "lucide-react";
+import { Sprout, MapPin, FileText, ShoppingBag } from "lucide-react";
 import { FeatureCard } from "@/components/dashboard/FeatureCard";
 import { WeatherPreview } from "@/components/dashboard/WeatherPreview";
 import { ActivityPreview } from "@/components/dashboard/ActivityPreview";
@@ -12,6 +12,7 @@ const Dashboard = () => {
   const [showChat, setShowChat] = useState(false);
 
   // Features reorganizadas para priorizar Diagnóstico e Marketplace
+  // Removidos: Previsão do Tempo, Registro de Atividades e Notificações
   const features = [
     {
       icon: Sprout,
@@ -32,14 +33,6 @@ const Dashboard = () => {
       priority: true,
     },
     {
-      icon: CloudSun,
-      title: "Previsão do Tempo",
-      description: "Previsão climática detalhada",
-      to: "/clima",
-      bgColor: "bg-gray-100",
-      textColor: "text-gray-800",
-    },
-    {
       icon: MapPin,
       title: "Lavouras e Talhões",
       description: "Gerenciamento de áreas de cultivo",
@@ -48,26 +41,10 @@ const Dashboard = () => {
       textColor: "text-gray-800",
     },
     {
-      icon: CalendarCheck,
-      title: "Registro de Atividades",
-      description: "Controle de operações agrícolas",
-      to: "/atividades",
-      bgColor: "bg-gray-100",
-      textColor: "text-gray-800",
-    },
-    {
       icon: FileText,
       title: "Boas Práticas",
       description: "Dicas e conhecimentos agrícolas",
       to: "/boas-praticas",
-      bgColor: "bg-gray-100",
-      textColor: "text-gray-800",
-    },
-    {
-      icon: Bell,
-      title: "Notificações",
-      description: "Alertas e lembretes importantes",
-      to: "/notificacoes",
       bgColor: "bg-gray-100",
       textColor: "text-gray-800",
     },
@@ -89,7 +66,7 @@ const Dashboard = () => {
         </p>
       </section>
 
-      <section className="grid grid-cols-2 md:grid-cols-3 gap-5 mb-8">
+      <section className="grid grid-cols-2 gap-5 mb-8">
         {features.map((feature, index) => (
           <FeatureCard 
             key={index}
