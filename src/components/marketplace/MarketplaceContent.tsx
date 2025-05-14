@@ -1,4 +1,3 @@
-
 import { MarketplaceProduct } from "@/types/marketplace";
 import { ProductList } from "./ProductList";
 import { NoResultsMessage } from "./NoResultsMessage";
@@ -15,7 +14,6 @@ interface MarketplaceContentProps {
   searchQuery: string;
   noResults: boolean;
   onContactSeller: (product: MarketplaceProduct) => void;
-  userPhone: string | null;
 }
 
 export const MarketplaceContent = ({
@@ -26,7 +24,6 @@ export const MarketplaceContent = ({
   searchQuery,
   noResults,
   onContactSeller,
-  userPhone
 }: MarketplaceContentProps) => {
   if (noResults) {
     return <NoResultsMessage searchQuery={searchQuery} locationData={locationData} />;
@@ -36,7 +33,7 @@ export const MarketplaceContent = ({
   if (cityFilteredProducts.length > 0) {
     return (
       <div className="px-4">
-        <ProductList products={cityFilteredProducts} onContactSeller={onContactSeller} userPhone={userPhone} />
+        <ProductList products={cityFilteredProducts} onContactSeller={onContactSeller} />
       </div>
     );
   }
@@ -50,7 +47,7 @@ export const MarketplaceContent = ({
           Não encontramos produtos em {locationData.fullLocation}. Mostrando produtos de outras regiões.
         </div>
         
-        <ProductList products={allNearbyProducts} onContactSeller={onContactSeller} userPhone={userPhone} />
+        <ProductList products={allNearbyProducts} onContactSeller={onContactSeller} />
       </div>
     );
   }
@@ -66,7 +63,6 @@ export const MarketplaceContent = ({
             product.description.toLowerCase().includes(searchQuery.toLowerCase())
           )} 
           onContactSeller={onContactSeller}
-          userPhone={userPhone}
         />
       </div>
     );

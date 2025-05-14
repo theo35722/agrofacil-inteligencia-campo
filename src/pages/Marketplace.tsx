@@ -16,7 +16,6 @@ import { NoProductsMessage } from "@/components/marketplace/NoProductsMessage";
 const Marketplace = () => {
   const [products, setProducts] = useState<MarketplaceProduct[]>([]);
   const [loading, setLoading] = useState(true);
-  const [userPhone, setUserPhone] = useState<string | null>(null);
   
   const {
     searchQuery,
@@ -51,10 +50,6 @@ const Marketplace = () => {
       }
     }
     getProducts();
-
-    // Get user phone number from localStorage - retrieve normalized phone
-    const storedPhone = localStorage.getItem('userPhone');
-    setUserPhone(storedPhone);
   }, []);
 
   // Handle contact seller via WhatsApp
@@ -106,7 +101,6 @@ const Marketplace = () => {
               searchQuery={searchQuery}
               noResults={noResults}
               onContactSeller={handleContactSeller}
-              userPhone={userPhone}
             />
           ) : (
             <div className="max-w-md mx-auto px-3">
