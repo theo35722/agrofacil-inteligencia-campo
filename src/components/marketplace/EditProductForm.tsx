@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { CameraCapture } from "../plant-diagnosis/CameraCapture";
 import { Loader2, Camera, X } from "lucide-react";
-import { MarketplaceProduct } from "@/pages/Marketplace";
+import { MarketplaceProduct } from "@/types/marketplace";
 
 interface EditProductFormProps {
   productId: string;

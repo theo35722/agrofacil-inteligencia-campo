@@ -4,7 +4,7 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
 import { MapPin, MessageCircle, Edit, Trash2 } from "lucide-react";
-import { MarketplaceProduct } from "@/pages/Marketplace";
+import { MarketplaceProduct } from "@/types/marketplace";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
