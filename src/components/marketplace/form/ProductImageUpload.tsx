@@ -6,21 +6,38 @@ import { Camera, X } from "lucide-react";
 import { CameraCapture } from "../../plant-diagnosis/CameraCapture";
 
 export interface ProductImageUploadProps {
-  imagePreview: string | null;
-  onImageCapture: (imageDataUrl: string) => void;
-  onImageRemove: () => void;
+  imagePreview?: string | null;
+  onImageCapture?: (imageDataUrl: string) => void;
+  onImageRemove?: () => void;
+  // Add these props to match what's passed from the form
+  onChange?: (value: string | null) => void;
+  value?: string | null;
+  existingImageUrl?: string | null;
 }
 
-export const ProductImageUpload = ({ 
-  imagePreview, 
-  onImageCapture, 
-  onImageRemove 
+export const ProductImageUpload = ({
+  imagePreview: propImagePreview,
+  onImageCapture,
+  onImageRemove,
+  onChange,
+  value,
+  existingImageUrl,
 }: ProductImageUploadProps) => {
   const [showCamera, setShowCamera] = useState(false);
+  // Use the provided value or existingImageUrl as the image preview
+  const imagePreview = value || propImagePreview || existingImageUrl;
   
   const handleImageCapture = (imageDataUrl: string) => {
-    onImageCapture(imageDataUrl);
+    // Call both handlers if they exist
+    if (onChange) onChange(imageDataUrl);
+    if (onImageCapture) onImageCapture(imageDataUrl);
     setShowCamera(false);
+  };
+
+  const handleRemove = () => {
+    // Call both handlers if they exist
+    if (onChange) onChange(null);
+    if (onImageRemove) onImageRemove();
   };
 
   if (showCamera) {
@@ -43,7 +60,7 @@ export const ProductImageUpload = ({
             variant="destructive"
             size="sm"
             className="absolute top-2 right-2"
-            onClick={onImageRemove}
+            onClick={handleRemove}
           >
             <X className="w-4 h-4" />
           </Button>
