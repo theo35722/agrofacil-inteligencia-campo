@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { toast } from "@/components/ui/sonner";
 import { MarketplaceProduct } from "@/types/marketplace";
@@ -53,7 +54,9 @@ const Marketplace = () => {
     getProducts();
 
     // Get user phone number from localStorage - retrieve normalized phone
-    setUserPhone(localStorage.getItem('userPhone') || null);
+    const storedPhone = localStorage.getItem('userPhone');
+    setUserPhone(storedPhone);
+    console.log("Telefone carregado do localStorage:", storedPhone);
   }, []);
 
   // Handle contact seller via WhatsApp
@@ -77,10 +80,8 @@ const Marketplace = () => {
       <div className="max-w-md mx-auto px-4">
         <MarketplaceActions />
         
-        {/* Keep PhoneSettings component but visually hidden - we need it for functionality */}
-        <div className="hidden">
-          <PhoneSettings userPhone={userPhone} setUserPhone={setUserPhone} />
-        </div>
+        {/* Make PhoneSettings visible to help users debug their phone setup */}
+        <PhoneSettings userPhone={userPhone} setUserPhone={setUserPhone} />
         
         <div className="mb-6">
           <MarketplaceControls 

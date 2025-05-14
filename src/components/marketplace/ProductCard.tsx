@@ -31,8 +31,19 @@ export const ProductCard = ({ product, onContact, userPhone }: ProductCardProps)
   const [imageError, setImageError] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   
-  // Normalize phone numbers for comparison (remove any non-digit characters)
-  const normalizePhone = (phone: string) => phone.replace(/\D/g, "");
+  // Normalize phone numbers for comparison by removing any non-digit characters
+  const normalizePhone = (phone: string | null | undefined) => {
+    if (!phone) return "";
+    return phone.replace(/\D/g, "");
+  };
+  
+  // Add a console log to help debug phone number matching
+  const productPhone = normalizePhone(product.contact_phone);
+  const currentUserPhone = normalizePhone(userPhone);
+  
+  console.log("Product phone (normalized):", productPhone);
+  console.log("User phone (normalized):", currentUserPhone);
+  console.log("Is match:", productPhone === currentUserPhone);
   
   // Check if the current user is the owner of this product
   const isUserProduct = userPhone && 
