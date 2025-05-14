@@ -20,10 +20,12 @@ const MyListings = () => {
     // Get user phone from localStorage
     const storedPhone = localStorage.getItem('userPhone');
     setUserPhone(storedPhone);
+    console.log("User phone from localStorage:", storedPhone);
 
     async function fetchUserProducts() {
       try {
         if (!storedPhone) {
+          console.log("No phone number stored, can't fetch products");
           setLoading(false);
           return;
         }
@@ -32,11 +34,11 @@ const MyListings = () => {
         
         // Normalize the phone number to just digits for comparison
         const normalizedPhone = storedPhone.replace(/\D/g, "");
+        console.log("Normalized phone for query:", normalizedPhone);
         
         const { data, error } = await supabase
           .from("marketplace_products")
-          .select("*")
-          .order("created_at", { ascending: false });
+          .select("*");
           
         if (error) {
           console.error("Error fetching user products:", error);
@@ -44,14 +46,17 @@ const MyListings = () => {
           return;
         }
         
+        console.log("All products fetched:", data?.length);
+        
         // Filter products by user's phone after fetching
-        // This is needed because Supabase might store phone numbers in different formats
         if (data) {
           const userProducts = data.filter(product => {
             const productPhone = product.contact_phone.replace(/\D/g, "");
+            console.log(`Comparing product phone: ${productPhone} with user phone: ${normalizedPhone}`);
             return productPhone === normalizedPhone;
           });
           
+          console.log("Filtered user products:", userProducts.length);
           setProducts(userProducts);
         }
       } catch (err) {
@@ -80,15 +85,17 @@ const MyListings = () => {
     try {
       setLoading(true);
       const normalizedPhone = userPhone.replace(/\D/g, "");
+      console.log("Refreshing products for phone:", normalizedPhone);
       
       const { data, error } = await supabase
         .from("marketplace_products")
-        .select("*")
-        .order("created_at", { ascending: false });
+        .select("*");
         
       if (error) {
         throw error;
       }
+      
+      console.log("Refreshing - all products fetched:", data?.length);
       
       if (data) {
         const userProducts = data.filter(product => {
@@ -96,6 +103,7 @@ const MyListings = () => {
           return productPhone === normalizedPhone;
         });
         
+        console.log("Refreshing - filtered user products:", userProducts.length);
         setProducts(userProducts);
       }
     } catch (err) {
