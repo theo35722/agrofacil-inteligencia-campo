@@ -6,9 +6,16 @@ import { useNavigate } from "react-router-dom";
 interface ProductFormActionsProps {
   isSubmitting: boolean;
   onCancel?: () => void;
+  submitLabel?: string;
+  submittingLabel?: string;
 }
 
-export const ProductFormActions = ({ isSubmitting, onCancel }: ProductFormActionsProps) => {
+export const ProductFormActions = ({ 
+  isSubmitting, 
+  onCancel,
+  submitLabel = "Cadastrar Produto",
+  submittingLabel = "Enviando..."
+}: ProductFormActionsProps) => {
   const navigate = useNavigate();
   
   const handleCancel = () => {
@@ -29,10 +36,10 @@ export const ProductFormActions = ({ isSubmitting, onCancel }: ProductFormAction
         {isSubmitting ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Enviando...
+            {submittingLabel}
           </>
         ) : (
-          "Cadastrar Produto"
+          submitLabel
         )}
       </Button>
       
