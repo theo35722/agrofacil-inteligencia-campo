@@ -28,14 +28,10 @@ export const MarketplaceControls = ({
   onRequestGeolocation
 }: MarketplaceControlsProps) => {
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center gap-4">
-        <div className="flex-1">
-          <SearchInput searchQuery={searchQuery} onSearchChange={onSearchChange} />
-        </div>
-      </div>
+    <div className="flex flex-col gap-3 max-w-sm mx-auto w-full">
+      <SearchInput searchQuery={searchQuery} onSearchChange={onSearchChange} />
       
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className="flex items-center justify-between">
         <LocationDisplay 
           locationData={locationData} 
           onToggleLocationFilter={onToggleLocationFilter} 

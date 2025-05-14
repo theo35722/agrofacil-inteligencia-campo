@@ -99,7 +99,7 @@ export const ProductCard = ({ product, onContact, userPhone }: ProductCardProps)
         
         <div className="col-span-2 p-3 flex flex-col">
           <h3 className="font-medium text-agro-green-800 mb-1 line-clamp-2">{product.title}</h3>
-          <p className="font-bold text-lg text-agro-green-700 mb-auto">
+          <p className="font-bold text-xl text-agro-green-700 mb-auto">
             {formatCurrency(product.price)}
           </p>
           
@@ -114,7 +114,7 @@ export const ProductCard = ({ product, onContact, userPhone }: ProductCardProps)
                 <Link to={`/edit-marketplace-product/${product.id}`} className="w-full">
                   <Button 
                     variant="outline"
-                    className="w-full gap-1 border-green-600 text-green-700 hover:bg-green-50 text-sm h-8"
+                    className="w-full gap-1 border-green-600 text-green-700 hover:bg-green-50 text-sm h-10"
                   >
                     <Edit className="h-3.5 w-3.5" />
                     Editar
@@ -125,7 +125,7 @@ export const ProductCard = ({ product, onContact, userPhone }: ProductCardProps)
                   <AlertDialogTrigger asChild>
                     <Button 
                       variant="outline"
-                      className="w-full gap-1 border-red-600 text-red-700 hover:bg-red-50 text-sm h-8"
+                      className="w-full gap-1 border-red-600 text-red-700 hover:bg-red-50 text-sm h-10"
                       disabled={isDeleting}
                     >
                       <Trash2 className="h-3.5 w-3.5" />
@@ -154,9 +154,9 @@ export const ProductCard = ({ product, onContact, userPhone }: ProductCardProps)
             ) : (
               <Button 
                 onClick={onContact}
-                className="w-full gap-1 bg-green-600 hover:bg-green-700 text-sm h-8"
+                className="w-full gap-1 bg-green-600 hover:bg-green-700 text-sm h-12"
               >
-                <MessageCircle className="h-3.5 w-3.5" />
+                <MessageCircle className="h-4 w-4" />
                 Falar com Vendedor
               </Button>
             )}

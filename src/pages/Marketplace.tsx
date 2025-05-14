@@ -6,6 +6,7 @@ import { fetchMarketplaceProducts, contactSeller } from "@/services/marketplaceS
 import { useMarketplaceFilters } from "@/hooks/use-marketplace-filters";
 
 // Components
+import { MarketplaceHeader } from "@/components/marketplace/MarketplaceHeader";
 import { MarketplaceActions } from "@/components/marketplace/MarketplaceActions";
 import { MarketplaceControls } from "@/components/marketplace/MarketplaceControls";
 import { MarketplaceLoading } from "@/components/marketplace/MarketplaceLoading";
@@ -52,8 +53,7 @@ const Marketplace = () => {
     }
     getProducts();
 
-    // Simulate user phone for demo purposes
-    // In a real app, you would get this from auth context or user settings
+    // Get user phone number from localStorage
     setUserPhone(localStorage.getItem('userPhone') || null);
   }, []);
 
@@ -72,22 +72,28 @@ const Marketplace = () => {
   const isLoading = loading || locationLoading;
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <MarketplaceActions />
+    <div className="animate-fade-in pb-6">
+      <MarketplaceHeader isLoading={isLoading} />
       
-      <PhoneSettings userPhone={userPhone} setUserPhone={setUserPhone} />
-      
-      <MarketplaceControls 
-        searchQuery={searchQuery}
-        onSearchChange={handleSearchChange}
-        locationData={locationData}
-        locationLoading={locationLoading}
-        permissionDenied={permissionDenied}
-        onToggleLocationFilter={handleToggleLocationFilter}
-        onLocationChange={handleLocationChange}
-        onClearLocation={clearLocation}
-        onRequestGeolocation={requestGeolocation}
-      />
+      <div className="max-w-md mx-auto px-4">
+        <MarketplaceActions />
+        
+        <PhoneSettings userPhone={userPhone} setUserPhone={setUserPhone} />
+        
+        <div className="mb-6">
+          <MarketplaceControls 
+            searchQuery={searchQuery}
+            onSearchChange={handleSearchChange}
+            locationData={locationData}
+            locationLoading={locationLoading}
+            permissionDenied={permissionDenied}
+            onToggleLocationFilter={handleToggleLocationFilter}
+            onLocationChange={handleLocationChange}
+            onClearLocation={clearLocation}
+            onRequestGeolocation={requestGeolocation}
+          />
+        </div>
+      </div>
       
       {isLoading ? (
         <MarketplaceLoading />
@@ -105,7 +111,9 @@ const Marketplace = () => {
               userPhone={userPhone}
             />
           ) : (
-            <NoProductsMessage />
+            <div className="max-w-md mx-auto px-4">
+              <NoProductsMessage />
+            </div>
           )}
         </>
       )}
