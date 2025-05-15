@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { AlertTriangle, Sun, CloudRain, Leaf, MapPin } from "lucide-react";
+import { AlertTriangle, Sun, Leaf, MapPin } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useGeolocation } from "@/hooks/use-geolocation";
@@ -11,6 +11,7 @@ import { ChatDialog } from "@/components/chat/ChatDialog";
 import { toast } from "@/components/ui/use-toast";
 import { FeatureCard } from "@/components/dashboard/FeatureCard";
 import { ActivityPreview } from "@/components/dashboard/ActivityPreview";
+import { WeatherPreview } from "@/components/dashboard/WeatherPreview";
 
 type LavouraProps = {
   id: string;
@@ -25,9 +26,6 @@ const Dashboard: React.FC = () => {
   const { profile } = useAuth();
   const location = useGeolocation();
   const [showChat, setShowChat] = useState(false);
-  const [temperature, setTemperature] = useState("28");
-  const [weatherCondition, setWeatherCondition] = useState("Ensolarado");
-  const [tomorrowForecast, setTomorrowForecast] = useState({ high: "30", low: "21" });
   const [hasAlert, setHasAlert] = useState(true);
   const [alertMessage, setAlertMessage] = useState("lavouras de soja!");
   
@@ -63,28 +61,19 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="flex flex-col gap-4 bg-gray-50 pb-16">
-      {/* Top greeting card */}
-      <div className="bg-agro-green-600 text-white p-4 rounded-b-xl shadow-md">
-        <h1 className="text-xl font-bold text-center">{greeting}</h1>
+      {/* Top greeting text - without green background */}
+      <div className="py-4 px-4">
+        <h1 className="text-2xl font-bold text-center text-gray-800">{greeting}</h1>
       </div>
 
-      {/* Weather card */}
-      <Card className="mx-4 p-4 flex flex-col items-center bg-white">
-        <div className="flex w-full justify-between items-center">
-          <Sun className="w-16 h-16 text-yellow-400" />
-          <div className="text-center">
-            <div className="text-4xl font-bold">{temperature}°C</div>
-            <div className="text-xl">{weatherCondition}</div>
-            <div className="text-sm text-gray-600">
-              Amanhã: {tomorrowForecast.high} • {tomorrowForecast.low}°
-            </div>
-          </div>
-        </div>
-      </Card>
+      {/* Weather card - using the improved component */}
+      <div className="mx-4">
+        <WeatherPreview />
+      </div>
 
       {/* Alert card - only shows if there's an alert */}
       {hasAlert && (
-        <div className="mx-4 p-4 bg-yellow-100 border border-yellow-200 rounded-lg">
+        <div className="mx-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg shadow-sm animate-fade-in">
           <div className="flex items-start gap-2">
             <AlertTriangle className="w-6 h-6 text-orange-500 flex-shrink-0 mt-0.5" />
             <div>
@@ -97,10 +86,10 @@ const Dashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Diagnóstico button */}
+      {/* Improved Diagnóstico button */}
       <Link to="/diagnostico" className="mx-4">
         <Button 
-          className="w-full py-6 bg-agro-green-600 hover:bg-agro-green-700 text-white rounded-lg shadow-md flex items-center justify-center gap-3"
+          className="w-full py-6 bg-gradient-to-r from-agro-green-500 to-agro-green-600 hover:from-agro-green-600 hover:to-agro-green-700 text-white rounded-xl shadow-md flex items-center justify-center gap-3 transition-all hover:-translate-y-0.5 hover:shadow-lg"
         >
           <Leaf className="w-8 h-8" />
           <div className="text-left">
@@ -110,37 +99,55 @@ const Dashboard: React.FC = () => {
         </Button>
       </Link>
 
-      {/* Lavouras section */}
+      {/* Lavouras section - improved layout */}
       <div className="mx-4 mt-2">
         <h2 className="text-2xl font-bold mb-3">Suas Lavouras</h2>
-        <div className="grid grid-cols-2 gap-4">
-          {lavouras.map((lavoura) => (
-            <Link key={lavoura.id} to={`/lavouras/${lavoura.id}`}>
-              <Card className="p-4 h-full">
-                <h3 className="font-semibold">{lavoura.name}</h3>
-                <div className="text-agro-green-600 font-medium">{lavoura.crop}</div>
-                <div className="text-sm mt-1">Fase: {lavoura.phase}</div>
-                {lavoura.activity && (
-                  <div className="mt-2 py-1 px-2 rounded text-sm text-center bg-orange-100 text-orange-800">
-                    {lavoura.activity} Pendentes
-                  </div>
-                )}
-              </Card>
+        {lavouras.length > 0 ? (
+          <>
+            <div className="grid grid-cols-2 gap-4">
+              {lavouras.map((lavoura) => (
+                <Link key={lavoura.id} to={`/lavouras/${lavoura.id}`}>
+                  <Card className="p-4 h-full border border-gray-100 shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5">
+                    <h3 className="font-semibold">{lavoura.name}</h3>
+                    <div className="text-agro-green-600 font-medium">{lavoura.crop}</div>
+                    <div className="text-sm mt-1">
+                      Fase: <span className={`px-2 py-0.5 rounded-full text-xs ${
+                        lavoura.phase === "Crescimento" 
+                          ? "bg-green-100 text-green-800" 
+                          : "bg-yellow-100 text-yellow-800"
+                      }`}>{lavoura.phase}</span>
+                    </div>
+                    {lavoura.activity && (
+                      <div className="mt-2 py-1 px-2 rounded text-sm text-center bg-orange-100 text-orange-800">
+                        {lavoura.activity} Pendente
+                      </div>
+                    )}
+                  </Card>
+                </Link>
+              ))}
+            </div>
+            <div className="mt-4 text-right">
+              <Link 
+                to="/lavouras" 
+                className="text-sm text-agro-green-600 hover:text-agro-green-700 font-medium"
+              >
+                Ver todas &rarr;
+              </Link>
+            </div>
+          </>
+        ) : (
+          <Card className="p-6 text-center border border-dashed border-gray-300 bg-white">
+            <p className="text-gray-600 mb-4">Nenhuma lavoura cadastrada. Adicione sua primeira lavoura!</p>
+            <Link to="/lavouras/nova">
+              <Button className="bg-agro-green-500 hover:bg-agro-green-600">
+                Adicionar Lavoura
+              </Button>
             </Link>
-          ))}
-        </div>
-        
-        <div className="mt-4 text-right">
-          <Link 
-            to="/lavouras" 
-            className="text-sm text-agro-green-600 hover:text-agro-green-700 font-medium"
-          >
-            Ver todas &rarr;
-          </Link>
-        </div>
+          </Card>
+        )}
       </div>
 
-      {/* Activities section */}
+      {/* Activities section - with improved component */}
       <div className="mx-4 mt-2">
         <ActivityPreview />
       </div>

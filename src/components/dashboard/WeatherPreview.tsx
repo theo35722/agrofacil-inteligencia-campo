@@ -3,7 +3,7 @@ import { Cloud, CloudRain, CloudSun, Sun, MapPin } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useGeolocation } from "@/hooks/use-geolocation";
 import { useEffect, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
 
 type WeatherDay = {
   day: string;
