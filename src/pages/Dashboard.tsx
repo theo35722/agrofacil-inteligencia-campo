@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { AlertTriangle, Sun, Leaf } from "lucide-react";
@@ -13,7 +12,6 @@ import { FeatureCard } from "@/components/dashboard/FeatureCard";
 import { ActivityPreview } from "@/components/dashboard/ActivityPreview";
 import { SimplifiedWeatherCard } from "@/components/dashboard/SimplifiedWeatherCard";
 import { Badge } from "@/components/ui/badge";
-
 type LavouraProps = {
   id: string;
   name: string;
@@ -22,33 +20,31 @@ type LavouraProps = {
   status?: string;
   activity?: string;
 };
-
 const Dashboard: React.FC = () => {
-  const { profile } = useAuth();
+  const {
+    profile
+  } = useAuth();
   const location = useGeolocation();
   const [showChat, setShowChat] = useState(false);
   const [hasAlert, setHasAlert] = useState(true);
   const [alertMessage, setAlertMessage] = useState("lavouras de soja!");
-  
+
   // Mock data - in a real app, this would come from Supabase
-  const lavouras: LavouraProps[] = [
-    {
-      id: "1",
-      name: "Talhão 3",
-      crop: "Milho",
-      phase: "Crescimento",
-      status: "pendente",
-      activity: "Adubação",
-    },
-    {
-      id: "2",
-      name: "Talhão 1",
-      crop: "Soja",
-      phase: "Emergência",
-      status: "planejada",
-      activity: "Pulverização",
-    },
-  ];
+  const lavouras: LavouraProps[] = [{
+    id: "1",
+    name: "Talhão 3",
+    crop: "Milho",
+    phase: "Crescimento",
+    status: "pendente",
+    activity: "Adubação"
+  }, {
+    id: "2",
+    name: "Talhão 1",
+    crop: "Soja",
+    phase: "Emergência",
+    status: "planejada",
+    activity: "Pulverização"
+  }];
 
   // Get time of day for greeting
   const getGreeting = () => {
@@ -57,7 +53,6 @@ const Dashboard: React.FC = () => {
     if (hour < 18) return "Boa tarde";
     return "Boa noite";
   };
-
   const greeting = `${getGreeting()}, ${profile?.nome?.split(' ')[0] || 'Produtor'}!`;
 
   // Função para determinar a cor da badge baseada na fase
@@ -75,9 +70,7 @@ const Dashboard: React.FC = () => {
         return "bg-gray-100 text-gray-800 border-gray-200";
     }
   };
-
-  return (
-    <div className="flex flex-col gap-3 bg-gray-50 pb-16">
+  return <div className="flex flex-col gap-3 bg-gray-50 pb-16">
       {/* Top greeting text - without green background */}
       <div className="py-4 px-4">
         <h1 className="text-2xl font-bold text-center text-gray-800">{greeting}</h1>
@@ -89,8 +82,7 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* Alert card - only shows if there's an alert */}
-      {hasAlert && (
-        <div className="mx-4 p-3 bg-amber-50 border-none rounded-lg">
+      {hasAlert && <div className="mx-4 p-3 bg-amber-50 border-none rounded-lg">
           <div className="flex items-center gap-3">
             <AlertTriangle className="w-5 h-5 text-orange-500 flex-shrink-0" />
             <div>
@@ -100,14 +92,11 @@ const Dashboard: React.FC = () => {
               </p>
             </div>
           </div>
-        </div>
-      )}
+        </div>}
 
       {/* Simplified Diagnóstico button */}
       <Link to="/diagnostico" className="mx-4">
-        <Button 
-          className="w-full py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl shadow-sm flex items-center justify-center gap-2"
-        >
+        <Button className="w-full py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl shadow-sm flex items-center justify-center gap-2">
           <Leaf className="w-5 h-5" />
           <div className="text-base font-medium">Fazer Diagnóstico de Planta</div>
         </Button>
@@ -120,11 +109,9 @@ const Dashboard: React.FC = () => {
             Suas Lavouras
           </Link>
         </h2>
-        {lavouras.length > 0 ? (
-          <>
+        {lavouras.length > 0 ? <>
             <div className="grid grid-cols-2 gap-3">
-              {lavouras.map((lavoura) => (
-                <Link key={lavoura.id} to="/lavouras">
+              {lavouras.map(lavoura => <Link key={lavoura.id} to="/lavouras">
                   <Card className="p-3 h-full border border-gray-100 shadow-none bg-green-50 rounded-lg hover:shadow-sm transition-all">
                     <h3 className="font-semibold">{lavoura.name}</h3>
                     <div className="text-green-600 font-medium">{lavoura.crop}</div>
@@ -134,28 +121,19 @@ const Dashboard: React.FC = () => {
                       </Badge>
                     </div>
                   </Card>
-                </Link>
-              ))}
+                </Link>)}
             </div>
             <div className="mt-3 text-right">
-              <Link 
-                to="/lavouras" 
-                className="text-sm text-green-600 hover:text-green-700 font-medium"
-              >
-                Ver todas &rarr;
-              </Link>
+              
             </div>
-          </>
-        ) : (
-          <Card className="p-6 text-center border border-dashed border-gray-300 bg-white">
+          </> : <Card className="p-6 text-center border border-dashed border-gray-300 bg-white">
             <p className="text-gray-600 mb-4">Nenhuma lavoura cadastrada. Adicione sua primeira lavoura!</p>
             <Link to="/lavouras/nova">
               <Button className="bg-green-500 hover:bg-green-600">
                 Adicionar Lavoura
               </Button>
             </Link>
-          </Card>
-        )}
+          </Card>}
       </div>
 
       {/* Activities section - will replace with simplified version */}
@@ -168,8 +146,6 @@ const Dashboard: React.FC = () => {
         <ChatButton onClick={() => setShowChat(true)} isOpen={showChat} className="w-12 h-12 bg-white shadow-lg border-2 border-green-300" />
       </div>
       <ChatDialog open={showChat} onOpenChange={setShowChat} />
-    </div>
-  );
+    </div>;
 };
-
 export default Dashboard;
