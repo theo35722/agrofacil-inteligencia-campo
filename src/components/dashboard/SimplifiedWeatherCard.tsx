@@ -5,13 +5,16 @@ import { useReverseGeocoding } from "@/hooks/use-reverse-geocoding";
 import { useGeolocation } from "@/hooks/use-geolocation";
 import { Cloud, CloudRain, CloudSun, Sun, MapPin } from "lucide-react";
 import { WeatherIcon } from "@/components/weather/WeatherIcon";
+import { WeatherLoading } from "@/components/weather/WeatherLoading";
+import { Link } from "react-router-dom";
 
 export const SimplifiedWeatherCard = () => {
   const location = useGeolocation();
   const { 
     data, 
     isLoading, 
-    isError 
+    isError,
+    locationError
   } = useWeatherData();
   
   const { locationName } = useReverseGeocoding(
@@ -43,8 +46,25 @@ export const SimplifiedWeatherCard = () => {
     }
   };
 
-  // Verificação de carregamento ou erro
-  if (isLoading || !data || !data.forecast || data.forecast.length === 0) {
+  // Verificação de carregamento
+  if (isLoading || location.loading) {
+    return (
+      <Card className="agro-card">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-agro-green-800 flex justify-between items-center">
+            <span>Previsão do Tempo</span>
+            <CloudSun className="h-5 w-5 text-agro-blue-500" />
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <WeatherLoading simplified />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Verificação de erro ou dados ausentes
+  if (isError || !data || !data.forecast || data.forecast.length === 0) {
     return (
       <Card className="agro-card">
         <CardHeader className="pb-2">
@@ -67,7 +87,8 @@ export const SimplifiedWeatherCard = () => {
     );
   }
 
-  if (isError) {
+  // Verificar erro de localização
+  if (locationError || location.error) {
     return (
       <Card className="agro-card">
         <CardHeader className="pb-2">
@@ -77,7 +98,10 @@ export const SimplifiedWeatherCard = () => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-red-500">Erro ao carregar dados</div>
+          <div className="text-amber-600">
+            <p>Erro ao obter localização</p>
+            <p className="text-sm mt-1">Verifique as permissões de localização</p>
+          </div>
         </CardContent>
       </Card>
     );
@@ -86,50 +110,52 @@ export const SimplifiedWeatherCard = () => {
   // Extrair dados do clima do primeiro dia (hoje)
   const today = data.forecast[0];
   const agriculturalAlert = getAgriculturalAlert();
-
+  
   return (
-    <Card className="agro-card">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-agro-green-800 flex justify-between items-center">
-          <div className="flex items-center">
-            <span>Previsão do Tempo</span>
-          </div>
-          <CloudSun className="h-5 w-5 text-agro-blue-500" />
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex justify-between items-start">
-          <div>
-            <div className="flex items-center mb-2">
-              <span className="text-2xl font-bold">{today.temperature.max}°C</span>
-              <span className="text-sm text-gray-500 ml-2">
-                {today.temperature.min}°C / {today.temperature.max}°C
-              </span>
+    <Link to="/clima">
+      <Card className="agro-card hover:shadow-md transition-shadow">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-agro-green-800 flex justify-between items-center">
+            <div className="flex items-center">
+              <span>Previsão do Tempo</span>
+            </div>
+            <CloudSun className="h-5 w-5 text-agro-blue-500" />
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex justify-between items-start">
+            <div>
+              <div className="flex items-center mb-2">
+                <span className="text-2xl font-bold">{today.temperature.max}°C</span>
+                <span className="text-sm text-gray-500 ml-2">
+                  {today.temperature.min}°C / {today.temperature.max}°C
+                </span>
+              </div>
+              
+              {locationName && (
+                <div className="flex items-center text-sm text-gray-600 mb-1">
+                  <MapPin className="h-3.5 w-3.5 mr-1" />
+                  <span>{locationName}</span>
+                </div>
+              )}
+              
+              <p className="text-sm mb-2">{data.current?.description || "Condições atuais"}</p>
             </div>
             
-            {locationName && (
-              <div className="flex items-center text-sm text-gray-600 mb-1">
-                <MapPin className="h-3.5 w-3.5 mr-1" />
-                <span>{locationName}</span>
-              </div>
-            )}
-            
-            <p className="text-sm mb-2">{data.current?.description || "Condições atuais"}</p>
+            <WeatherIcon icon={today.icon} className="h-16 w-16" />
           </div>
           
-          <WeatherIcon icon={today.icon} className="h-16 w-16" />
-        </div>
-        
-        <div className={`mt-2 p-2 rounded-md ${
-          agriculturalAlert.includes("Alerta")
-            ? "bg-amber-50 text-amber-800"
-            : "bg-green-50 text-green-800"
-        }`}>
-          <p className="text-sm font-medium">
-            {agriculturalAlert}
-          </p>
-        </div>
-      </CardContent>
-    </Card>
+          <div className={`mt-2 p-2 rounded-md ${
+            agriculturalAlert.includes("Alerta")
+              ? "bg-amber-50 text-amber-800"
+              : "bg-green-50 text-green-800"
+          }`}>
+            <p className="text-sm font-medium">
+              {agriculturalAlert}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
   );
 };
