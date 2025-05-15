@@ -8,15 +8,33 @@ import { WeatherDay } from "../../types/weather";
 interface TodayForecastProps {
   forecast: WeatherDay;
   location: string;
+  lastUpdated?: Date;
 }
 
-export const TodayForecast: React.FC<TodayForecastProps> = ({ forecast, location }) => {
+export const TodayForecast: React.FC<TodayForecastProps> = ({ forecast, location, lastUpdated }) => {
+  // Format last updated time
+  const formatLastUpdated = () => {
+    if (!lastUpdated) return '';
+    
+    return lastUpdated.toLocaleTimeString('pt-BR', {
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+  
   return (
     <Card className="agro-card mb-6">
       <CardHeader className="pb-2">
         <CardTitle className="flex justify-between">
           <span>Hoje em {location}</span>
-          <span className="text-gray-500 text-base font-normal">{forecast.date}</span>
+          <div className="flex flex-col items-end">
+            <span className="text-gray-500 text-base font-normal">{forecast.date}</span>
+            {lastUpdated && (
+              <span className="text-xs text-gray-400">
+                Atualizado às {formatLastUpdated()}
+              </span>
+            )}
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent>

@@ -12,7 +12,18 @@ import { useReverseGeocoding } from "@/hooks/use-reverse-geocoding";
 const Weather = () => {
   const location = useGeolocation();
   const [view, setView] = useState<string>("forecast");
-  const { data, isLoading, isError, refetch } = useWeatherData();
+  const [lastUpdated, setLastUpdated] = useState<Date | undefined>(undefined);
+  const [isAutoRefreshing, setIsAutoRefreshing] = useState(false);
+  
+  const { 
+    data, 
+    isLoading, 
+    isError, 
+    refetch, 
+    dataUpdatedAt,
+    isFetching 
+  } = useWeatherData();
+  
   const { 
     locationName: selectedLocation, 
     error: locationFetchError, 
@@ -57,6 +68,27 @@ const Weather = () => {
     }
   }, [location.error]);
 
+  // Efeito para atualizar a última data de atualização
+  useEffect(() => {
+    if (dataUpdatedAt) {
+      setLastUpdated(new Date(dataUpdatedAt));
+    }
+  }, [dataUpdatedAt]);
+
+  // Efeito para detectar atualizações automáticas
+  useEffect(() => {
+    if (isFetching && lastUpdated && !isLoading) {
+      setIsAutoRefreshing(true);
+      
+      // Notificar usuário sobre atualização automática
+      toast.info("Atualizando dados meteorológicos...", {
+        description: "Os dados são atualizados automaticamente a cada hora"
+      });
+    } else {
+      setIsAutoRefreshing(false);
+    }
+  }, [isFetching, lastUpdated, isLoading]);
+
   const handleRetryLocation = () => {
     toast.info("Tentando obter localização novamente...");
     location.retryGeolocation();
@@ -82,7 +114,7 @@ const Weather = () => {
           view={view}
           setView={setView}
           onRefreshWeather={handleRefreshWeather}
-          isLoading={isLoading}
+          isLoading={isLoading || isFetching}
         />
       </div>
       
@@ -98,6 +130,8 @@ const Weather = () => {
         activityRecommendations={activityRecommendations}
         onRetryLocation={handleRetryLocation}
         onRefreshWeather={handleRefreshWeather}
+        lastUpdated={lastUpdated}
+        isAutoRefreshing={isAutoRefreshing}
       />
     </div>
   );

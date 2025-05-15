@@ -22,6 +22,8 @@ interface WeatherContentManagerProps {
   activityRecommendations: ActivityRecommendation[];
   onRetryLocation: () => void;
   onRefreshWeather: () => void;
+  lastUpdated?: Date;
+  isAutoRefreshing?: boolean;
 }
 
 export const WeatherContentManager = ({
@@ -35,7 +37,9 @@ export const WeatherContentManager = ({
   data,
   activityRecommendations,
   onRetryLocation,
-  onRefreshWeather
+  onRefreshWeather,
+  lastUpdated,
+  isAutoRefreshing
 }: WeatherContentManagerProps) => {
   // Display location errors if any
   if (locationError) {
@@ -62,7 +66,7 @@ export const WeatherContentManager = ({
   
   // Display loading state
   if (isLoading) {
-    return <WeatherLoading />;
+    return <WeatherLoading isAutoRefreshing={isAutoRefreshing} />;
   }
   
   // Display error state
@@ -73,7 +77,11 @@ export const WeatherContentManager = ({
   // Display weather content
   return (
     <>
-      <TodayForecast forecast={data.forecast[0]} location={selectedLocation} />
+      <TodayForecast 
+        forecast={data.forecast[0]} 
+        location={selectedLocation} 
+        lastUpdated={lastUpdated}
+      />
       
       {view === "forecast" && (
         <ForecastView forecast={data.forecast} />

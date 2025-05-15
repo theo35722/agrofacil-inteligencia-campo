@@ -22,6 +22,7 @@ export const useWeatherData = () => {
     enabled: ready,
     staleTime: 30 * 60 * 1000, // 30 minutos
     refetchOnWindowFocus: false,
+    refetchInterval: 60 * 60 * 1000, // Atualização automática a cada 1 hora (60 * 60 * 1000 ms)
   });
 
   return {
