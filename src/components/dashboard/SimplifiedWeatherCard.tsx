@@ -1,92 +1,135 @@
 
-import { Sun, CloudRain } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { useGeolocation } from "@/hooks/use-geolocation";
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { Skeleton } from "@/components/ui/skeleton";
-import { WeatherIcon } from "@/components/weather/WeatherIcon";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useWeatherData } from "@/hooks/use-weather-data";
+import { useReverseGeocoding } from "@/hooks/use-reverse-geocoding";
+import { useGeolocation } from "@/hooks/use-geolocation";
+import { Cloud, CloudRain, CloudSun, Sun, MapPin } from "lucide-react";
+import { WeatherIcon } from "@/components/weather/WeatherIcon";
 
 export const SimplifiedWeatherCard = () => {
   const location = useGeolocation();
-  const [locationName, setLocationName] = useState<string>("Obtendo localização...");
-  const { data: weatherData, isLoading, isError } = useWeatherData();
+  const { 
+    data, 
+    isLoading, 
+    isError 
+  } = useWeatherData();
+  
+  const { locationName } = useReverseGeocoding(
+    location.latitude, 
+    location.longitude
+  );
 
-  // Efeito para obter o nome da localização quando as coordenadas são carregadas
-  useEffect(() => {
-    if (location.latitude && location.longitude) {
-      fetch(`https://nominatim.openstreetmap.org/reverse?lat=${location.latitude}&lon=${location.longitude}&format=json`)
-        .then(response => response.json())
-        .then(data => {
-          const city = data.address?.city || data.address?.town || data.address?.village || "Local não identificado";
-          setLocationName(city);
-        })
-        .catch(() => {
-          setLocationName("Localização não disponível");
-        });
+  // Função para determinar a mensagem de alerta agrícola
+  const getAgriculturalAlert = () => {
+    if (!data || !data.forecast || data.forecast.length < 2) return "";
+    
+    const todayIcon = data.forecast[0].icon;
+    const tomorrowIcon = data.forecast[1].icon;
+    const todayRainChance = data.forecast[0].rainChance;
+    const tomorrowRainChance = data.forecast[1].rainChance;
+    
+    // Verificar se hoje ou amanhã tem previsão de chuva
+    if (
+      todayIcon === "cloud-rain" || 
+      todayIcon === "cloud-drizzle" || 
+      tomorrowIcon === "cloud-rain" || 
+      tomorrowIcon === "cloud-drizzle" ||
+      todayRainChance > 50 ||
+      tomorrowRainChance > 50
+    ) {
+      return "Alerta: Não recomendado pulverizar hoje.";
+    } else {
+      return "Bom dia para atividades agrícolas.";
     }
-  }, [location.latitude, location.longitude]);
+  };
 
-  // Componente de carregamento
-  if (isLoading || location.loading) {
+  // Verificação de carregamento ou erro
+  if (isLoading || !data || !data.forecast || data.forecast.length === 0) {
     return (
-      <Link to="/clima" className="block">
-        <Card className="border border-gray-100 shadow-sm bg-white">
-          <CardContent className="p-4">
-            <div className="flex justify-between items-center">
-              <Skeleton className="h-14 w-14 rounded-full" />
-              <div className="text-right">
-                <Skeleton className="h-8 w-24 mb-2" />
-                <Skeleton className="h-5 w-32 mb-2" />
-                <Skeleton className="h-4 w-40" />
-              </div>
+      <Card className="agro-card">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-agro-green-800 flex justify-between items-center">
+            <span>Previsão do Tempo</span>
+            <CloudSun className="h-5 w-5 text-agro-blue-500" />
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="w-full flex justify-between items-center">
+            <div>
+              <p className="text-lg font-semibold">N/A</p>
+              <p className="text-sm text-gray-500">Dados indisponíveis</p>
+              <p className="text-sm text-gray-500">Amanhã: -- / --</p>
             </div>
-          </CardContent>
-        </Card>
-      </Link>
-    );
-  }
-
-  // Componente de erro
-  if (isError || !weatherData) {
-    return (
-      <Link to="/clima" className="block">
-        <Card className="border border-gray-100 shadow-sm bg-white">
-          <CardContent className="p-4">
-            <div className="flex justify-between items-center">
-              <CloudRain className="h-14 w-14 text-gray-400" />
-              <div className="text-right">
-                <div className="text-xl font-bold text-gray-500">Dados indisponíveis</div>
-                <div className="text-sm text-gray-400">Toque para tentar novamente</div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </Link>
-    );
-  }
-
-  // Obter o ícone do tempo atual do primeiro dia de previsão (hoje)
-  const currentWeatherIcon = weatherData.forecast.length > 0 ? weatherData.forecast[0].icon : "sun";
-
-  return (
-    <Link to="/clima" className="block">
-      <Card className="border border-gray-100 shadow-sm bg-white transition-all hover:shadow-md">
-        <CardContent className="p-4">
-          <div className="flex justify-between items-center">
-            <WeatherIcon icon={currentWeatherIcon} className="h-14 w-14" />
-            
-            <div className="text-right">
-              <div className="text-3xl font-bold">{weatherData.current.temperature}</div>
-              <div className="text-gray-600">{weatherData.current.description}</div>
-              <div className="text-sm text-gray-500 mt-1">
-                Amanhã: {weatherData.tomorrow.high} • {weatherData.tomorrow.low}
-              </div>
-            </div>
+            <Sun className="h-12 w-12 text-gray-300" />
           </div>
         </CardContent>
       </Card>
-    </Link>
+    );
+  }
+
+  if (isError) {
+    return (
+      <Card className="agro-card">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-agro-green-800 flex justify-between items-center">
+            <span>Previsão do Tempo</span>
+            <CloudSun className="h-5 w-5 text-agro-blue-500" />
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-red-500">Erro ao carregar dados</div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Extrair dados do clima do primeiro dia (hoje)
+  const today = data.forecast[0];
+  const agriculturalAlert = getAgriculturalAlert();
+
+  return (
+    <Card className="agro-card">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-agro-green-800 flex justify-between items-center">
+          <div className="flex items-center">
+            <span>Previsão do Tempo</span>
+          </div>
+          <CloudSun className="h-5 w-5 text-agro-blue-500" />
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="flex justify-between items-start">
+          <div>
+            <div className="flex items-center mb-2">
+              <span className="text-2xl font-bold">{today.temperature.max}°C</span>
+              <span className="text-sm text-gray-500 ml-2">
+                {today.temperature.min}°C / {today.temperature.max}°C
+              </span>
+            </div>
+            
+            {locationName && (
+              <div className="flex items-center text-sm text-gray-600 mb-1">
+                <MapPin className="h-3.5 w-3.5 mr-1" />
+                <span>{locationName}</span>
+              </div>
+            )}
+            
+            <p className="text-sm mb-2">{data.current?.description || "Condições atuais"}</p>
+          </div>
+          
+          <WeatherIcon icon={today.icon} className="h-16 w-16" />
+        </div>
+        
+        <div className={`mt-2 p-2 rounded-md ${
+          agriculturalAlert.includes("Alerta")
+            ? "bg-amber-50 text-amber-800"
+            : "bg-green-50 text-green-800"
+        }`}>
+          <p className="text-sm font-medium">
+            {agriculturalAlert}
+          </p>
+        </div>
+      </CardContent>
+    </Card>
   );
 };
