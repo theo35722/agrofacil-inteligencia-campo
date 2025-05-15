@@ -8,9 +8,9 @@ import { useGeolocation } from "@/hooks/use-geolocation";
 import { useAuth } from "@/contexts/AuthContext";
 import { ChatButton } from "@/components/chat/ChatButton";
 import { ChatDialog } from "@/components/chat/ChatDialog";
-import SeuZeIcon from "@/components/icons/SeuZeIcon";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
 import { FeatureCard } from "@/components/dashboard/FeatureCard";
+import { ActivityPreview } from "@/components/dashboard/ActivityPreview";
 
 type LavouraProps = {
   id: string;
@@ -19,15 +19,6 @@ type LavouraProps = {
   phase: string;
   status?: string;
   activity?: string;
-};
-
-type ActivityProps = {
-  id: string;
-  date: string;
-  day: number;
-  month: string;
-  type: string;
-  lavoura: string;
 };
 
 const Dashboard: React.FC = () => {
@@ -58,25 +49,6 @@ const Dashboard: React.FC = () => {
       status: "planejada",
       activity: "Pulverização",
     },
-  ];
-  
-  const activities: ActivityProps[] = [
-    {
-      id: "1",
-      date: "2025-05-23",
-      day: 23,
-      month: "mai",
-      type: "Adubação",
-      lavoura: "Talhão 3 - Milho"
-    },
-    {
-      id: "2",
-      date: "2025-05-25",
-      day: 25,
-      month: "mai",
-      type: "Pulverização",
-      lavoura: "Talhão 1 - Soja"
-    }
   ];
 
   // Get time of day for greeting
@@ -157,27 +129,20 @@ const Dashboard: React.FC = () => {
             </Link>
           ))}
         </div>
+        
+        <div className="mt-4 text-right">
+          <Link 
+            to="/lavouras" 
+            className="text-sm text-agro-green-600 hover:text-agro-green-700 font-medium"
+          >
+            Ver todas &rarr;
+          </Link>
+        </div>
       </div>
 
       {/* Activities section */}
       <div className="mx-4 mt-2">
-        <h2 className="text-2xl font-bold mb-3">Próximas Atividades</h2>
-        <Card className="divide-y divide-gray-100">
-          {activities.map((activity) => (
-            <div key={activity.id} className="p-3 flex justify-between items-center">
-              <div className="flex gap-4 items-center">
-                <div className="text-center">
-                  <div className="text-lg font-bold">{activity.day}</div>
-                  <div className="text-xs">{activity.month}</div>
-                </div>
-                <div>
-                  <div className="font-medium">{activity.type}</div>
-                </div>
-              </div>
-              <div className="text-sm text-right">{activity.day} {activity.month}</div>
-            </div>
-          ))}
-        </Card>
+        <ActivityPreview />
       </div>
 
       {/* Chat button */}
