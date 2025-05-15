@@ -1,31 +1,15 @@
-import { Cloud, CloudDrizzle, CloudRain, CloudSun, Sun, Wind, Droplet, Thermometer, CalendarDays, MapPin, RefreshCw } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
+import { MapPin, RefreshCw, CalendarDays, Sun } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { useGeolocation } from "@/hooks/use-geolocation";
 import { toast } from "sonner";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-
-interface WeatherDay {
-  date: string;
-  dayOfWeek: string;
-  icon: "sun" | "cloud" | "cloud-sun" | "cloud-rain" | "cloud-drizzle";
-  temperature: { min: number; max: number };
-  humidity: number;
-  wind: number;
-  rainChance: number;
-  recommendation?: string;
-  soilMoisture?: number;
-  uvIndex?: number;
-}
-
-interface ActivityRecommendation {
-  activity: string;
-  status: "ideal" | "caution" | "avoid";
-  reason: string;
-}
+import { TodayForecast } from "@/components/weather/TodayForecast";
+import { DailyForecast } from "@/components/weather/DailyForecast";
+import { ActivityRecommendations } from "@/components/weather/ActivityRecommendations";
+import { LocationErrorAlert } from "@/components/weather/LocationErrorAlert";
+import { WeatherFetchAlert } from "@/components/weather/WeatherFetchAlert";
+import { WeatherDay, ActivityRecommendation } from "@/types/weather";
 
 const Weather = () => {
   const location = useGeolocation();
@@ -122,14 +106,6 @@ const Weather = () => {
     },
   ];
 
-  const weatherIcons = {
-    "sun": Sun,
-    "cloud": Cloud,
-    "cloud-sun": CloudSun,
-    "cloud-rain": CloudRain,
-    "cloud-drizzle": CloudDrizzle,
-  };
-
   // Efeito para obter o nome da localização quando as coordenadas são carregadas
   useEffect(() => {
     if (location.latitude && location.longitude) {
@@ -166,30 +142,6 @@ const Weather = () => {
       setSelectedLocation("Localização não disponível");
     }
   }, [location.error]);
-
-  const getColorByRainChance = (chance: number) => {
-    if (chance >= 70) return "text-agro-blue-600";
-    if (chance >= 30) return "text-agro-blue-400";
-    return "text-gray-400";
-  };
-  
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "ideal": return "bg-green-100 text-green-800 border-green-200";
-      case "caution": return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "avoid": return "bg-red-100 text-red-800 border-red-200";
-      default: return "bg-gray-100 text-gray-800 border-gray-200";
-    }
-  };
-  
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case "ideal": return "Ideal";
-      case "caution": return "Cautela";
-      case "avoid": return "Evitar";
-      default: return "Desconhecido";
-    }
-  };
 
   const handleRetryLocation = () => {
     toast.info("Tentando obter localização novamente...");
@@ -247,197 +199,31 @@ const Weather = () => {
       </div>
       
       {location.error && (
-        <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-800">
-          <AlertDescription>
-            {location.error}
-            {location.permissionDenied && (
-              <div className="mt-2">
-                <p>Para obter previsões mais precisas, precisamos da sua localização.</p>
-                <p className="mt-1 text-sm">Para habilitar:</p>
-                <ul className="list-disc pl-5 text-sm mt-1">
-                  <li>Clique no ícone de cadeado na barra de endereço</li>
-                  <li>Selecione "Permissões do site"</li>
-                  <li>Ative a permissão de "Localização"</li>
-                </ul>
-                <Button 
-                  onClick={handleRetryLocation}
-                  size="sm"
-                  className="mt-2 bg-red-600 hover:bg-red-700"
-                >
-                  <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
-                  Tentar novamente
-                </Button>
-              </div>
-            )}
-          </AlertDescription>
-        </Alert>
+        <LocationErrorAlert 
+          error={location.error}
+          permissionDenied={location.permissionDenied}
+          onRetry={handleRetryLocation}
+        />
       )}
 
       {locationFetchError && !location.error && (
-        <Alert variant="default" className="bg-yellow-50 border-yellow-200 text-yellow-800">
-          <AlertDescription>
-            {locationFetchError}
-            <p className="mt-1">Estamos usando suas coordenadas para gerar a previsão.</p>
-          </AlertDescription>
-        </Alert>
+        <WeatherFetchAlert error={locationFetchError} />
       )}
       
-      <Card className="agro-card mb-6">
-        <CardHeader className="pb-2">
-          <CardTitle className="flex justify-between">
-            <span>Hoje em {selectedLocation}</span>
-            <span className="text-gray-500 text-base font-normal">{forecast[0].date}</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col sm:flex-row justify-between">
-            <div className="flex items-center mb-4 sm:mb-0">
-              {(() => {
-                const WeatherIcon = weatherIcons[forecast[0].icon];
-                let iconColorClass = "text-agro-blue-500"; // Default
-                
-                if (forecast[0].icon === "sun") iconColorClass = "text-yellow-500";
-                if (forecast[0].icon === "cloud-rain" || forecast[0].icon === "cloud-drizzle") {
-                  iconColorClass = "text-agro-blue-600";
-                }
-                
-                return <WeatherIcon className={`h-20 w-20 mr-6 ${iconColorClass}`} />;
-              })()}
-              <div>
-                <div className="text-3xl font-bold">{forecast[0].temperature.max}°C</div>
-                <div className="text-gray-500">Min: {forecast[0].temperature.min}°C</div>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="flex flex-col items-center">
-                <CloudRain className={`h-6 w-6 mb-1 ${getColorByRainChance(forecast[0].rainChance)}`} />
-                <span className="text-sm text-gray-500">Chuva</span>
-                <span className="font-medium">{forecast[0].rainChance}%</span>
-              </div>
-              <div className="flex flex-col items-center">
-                <Wind className="h-6 w-6 mb-1 text-gray-400" />
-                <span className="text-sm text-gray-500">Vento</span>
-                <span className="font-medium">{forecast[0].wind} km/h</span>
-              </div>
-              <div className="flex flex-col items-center">
-                <Droplet className="h-6 w-6 mb-1 text-agro-blue-300" />
-                <span className="text-sm text-gray-500">Umidade</span>
-                <span className="font-medium">{forecast[0].humidity}%</span>
-              </div>
-              <div className="flex flex-col items-center">
-                <Thermometer className="h-6 w-6 mb-1 text-red-400" />
-                <span className="text-sm text-gray-500">UV</span>
-                <span className="font-medium">{forecast[0].uvIndex}</span>
-              </div>
-            </div>
-          </div>
-          
-          {forecast[0].recommendation && (
-            <>
-              <Separator className="my-4" />
-              <div className={`p-3 rounded-md ${forecast[0].rainChance >= 50 ? "bg-agro-blue-50 border border-agro-blue-100" : "bg-agro-green-50 border border-agro-green-100"}`}>
-                <p className={`text-sm ${forecast[0].rainChance >= 50 ? "text-agro-blue-800" : "text-agro-green-800"}`}>
-                  <strong>Recomendação:</strong> {forecast[0].recommendation}
-                </p>
-              </div>
-            </>
-          )}
-        </CardContent>
-      </Card>
+      <TodayForecast forecast={forecast[0]} location={selectedLocation} />
       
       {view === "forecast" && (
         <div className="space-y-4">
           <h2 className="text-lg font-semibold text-agro-green-800">Próximos dias</h2>
           
-          {forecast.slice(1).map((day, index) => {
-            const WeatherIcon = weatherIcons[day.icon];
-            let iconColorClass = "text-agro-blue-500"; // Default
-            
-            if (day.icon === "sun") iconColorClass = "text-yellow-500";
-            if (day.icon === "cloud-rain" || day.icon === "cloud-drizzle") {
-              iconColorClass = "text-agro-blue-600";
-            }
-            
-            return (
-              <Card key={index} className="agro-card">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-agro-green-800 flex justify-between">
-                    <span>{day.dayOfWeek}</span>
-                    <span className="text-gray-500 text-base font-normal">{day.date}</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex flex-col sm:flex-row justify-between">
-                    <div className="flex items-center mb-4 sm:mb-0">
-                      <WeatherIcon className={`h-16 w-16 mr-4 ${iconColorClass}`} />
-                      <div>
-                        <div className="text-2xl font-bold">{day.temperature.max}°C</div>
-                        <div className="text-gray-500">Min: {day.temperature.min}°C</div>
-                      </div>
-                    </div>
-                    
-                    <div className="flex flex-wrap gap-x-6 gap-y-3">
-                      <div className="flex items-center">
-                        <CloudRain className={`h-5 w-5 mr-2 ${getColorByRainChance(day.rainChance)}`} />
-                        <span>{day.rainChance}% chuva</span>
-                      </div>
-                      <div className="flex items-center">
-                        <Wind className="h-5 w-5 mr-2 text-gray-400" />
-                        <span>{day.wind} km/h</span>
-                      </div>
-                      <div className="flex items-center">
-                        <Droplet className="h-5 w-5 mr-2 text-agro-blue-300" />
-                        <span>{day.humidity}% umidade</span>
-                      </div>
-                      <div className="flex items-center">
-                        <Thermometer className="h-5 w-5 mr-2 text-red-400" />
-                        <span>UV {day.uvIndex}</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {day.recommendation && (
-                    <>
-                      <Separator className="my-4" />
-                      <div className={`p-2 rounded-md ${day.rainChance >= 50 ? "bg-agro-blue-50 border border-agro-blue-100" : "bg-agro-green-50 border border-agro-green-100"}`}>
-                        <p className={`text-sm ${day.rainChance >= 50 ? "text-agro-blue-800" : "text-agro-green-800"}`}>
-                          <strong>Recomendação:</strong> {day.recommendation}
-                        </p>
-                      </div>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
+          {forecast.slice(1).map((day, index) => (
+            <DailyForecast key={index} day={day} />
+          ))}
         </div>
       )}
       
       {view === "activities" && (
-        <Card className="agro-card">
-          <CardHeader>
-            <CardTitle>Recomendações para Atividades</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {activityRecommendations.map((activity, index) => (
-                <div 
-                  key={index}
-                  className={`p-4 rounded-md border ${getStatusColor(activity.status)}`}
-                >
-                  <div className="flex justify-between items-start">
-                    <h3 className="font-medium text-lg">{activity.activity}</h3>
-                    <span className={`px-2 py-1 text-sm rounded-full ${getStatusColor(activity.status)}`}>
-                      {getStatusText(activity.status)}
-                    </span>
-                  </div>
-                  <p className="text-sm mt-2">{activity.reason}</p>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <ActivityRecommendations recommendations={activityRecommendations} />
       )}
     </div>
   );
