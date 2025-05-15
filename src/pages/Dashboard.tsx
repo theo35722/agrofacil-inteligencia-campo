@@ -10,6 +10,7 @@ import { ChatButton } from "@/components/chat/ChatButton";
 import { ChatDialog } from "@/components/chat/ChatDialog";
 import SeuZeIcon from "@/components/icons/SeuZeIcon";
 import { toast } from "sonner";
+import { FeatureCard } from "@/components/dashboard/FeatureCard";
 
 type LavouraProps = {
   id: string;

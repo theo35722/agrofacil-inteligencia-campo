@@ -30,26 +30,19 @@ export const Header = () => {
     }
   };
 
-  // For dashboard, we show a simplified header
-  if (isDashboard && isMobile) {
-    return null; // Don't render header on dashboard for mobile
-  }
-
   return (
     <header className="sticky top-0 z-30 w-full border-b bg-agro-green-700 shadow-md backdrop-blur supports-[backdrop-filter]:bg-agro-green-700/90">
       <div className="container flex h-14 items-center justify-between">
         <div className="flex items-center gap-2 md:gap-4">
-          {!isDashboard && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden text-white hover:bg-agro-green-600"
-              onClick={() => setIsNavOpen(!isNavOpen)}
-            >
-              <MenuIcon className="h-5 w-5" />
-              <span className="sr-only">Abrir menu</span>
-            </Button>
-          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden text-white hover:bg-agro-green-600"
+            onClick={() => setIsNavOpen(!isNavOpen)}
+          >
+            <MenuIcon className="h-5 w-5" />
+            <span className="sr-only">Abrir menu</span>
+          </Button>
           <Link to="/" className="flex items-center space-x-2">
             <Sprout className="h-6 w-6 text-white" />
             <span className="font-bold text-xl text-white">
