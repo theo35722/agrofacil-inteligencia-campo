@@ -12,6 +12,7 @@ import { toast } from "@/components/ui/use-toast";
 import { FeatureCard } from "@/components/dashboard/FeatureCard";
 import { ActivityPreview } from "@/components/dashboard/ActivityPreview";
 import { SimplifiedWeatherCard } from "@/components/dashboard/SimplifiedWeatherCard";
+import { Badge } from "@/components/ui/badge";
 
 type LavouraProps = {
   id: string;
@@ -59,6 +60,22 @@ const Dashboard: React.FC = () => {
 
   const greeting = `${getGreeting()}, ${profile?.nome?.split(' ')[0] || 'Produtor'}!`;
 
+  // Função para determinar a cor da badge baseada na fase
+  const getPhaseColor = (phase: string) => {
+    switch (phase) {
+      case "Crescimento":
+        return "bg-green-100 text-green-800 border-green-200";
+      case "Emergência":
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+      case "Florescimento":
+        return "bg-purple-100 text-purple-800 border-purple-200";
+      case "Colheita":
+        return "bg-blue-100 text-blue-800 border-blue-200";
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200";
+    }
+  };
+
   return (
     <div className="flex flex-col gap-3 bg-gray-50 pb-16">
       {/* Top greeting text - without green background */}
@@ -104,15 +121,13 @@ const Dashboard: React.FC = () => {
             <div className="grid grid-cols-2 gap-3">
               {lavouras.map((lavoura) => (
                 <Link key={lavoura.id} to={`/lavouras/${lavoura.id}`}>
-                  <Card className="p-3 h-full border border-gray-100 shadow-none">
+                  <Card className="p-3 h-full border border-gray-100 shadow-none bg-green-50 rounded-lg hover:shadow-sm transition-all">
                     <h3 className="font-semibold">{lavoura.name}</h3>
                     <div className="text-green-600 font-medium">{lavoura.crop}</div>
                     <div className="text-sm mt-1">
-                      Fase: <span className={`px-2 py-0.5 rounded-full text-xs ${
-                        lavoura.phase === "Crescimento" 
-                          ? "bg-green-100 text-green-800" 
-                          : "bg-yellow-100 text-yellow-800"
-                      }`}>{lavoura.phase}</span>
+                      Fase: <Badge variant="outline" className={`ml-1 border ${getPhaseColor(lavoura.phase)}`}>
+                        {lavoura.phase}
+                      </Badge>
                     </div>
                   </Card>
                 </Link>

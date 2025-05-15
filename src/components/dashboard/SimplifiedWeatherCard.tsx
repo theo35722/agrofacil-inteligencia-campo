@@ -3,6 +3,7 @@ import { Sun } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useGeolocation } from "@/hooks/use-geolocation";
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 
 export const SimplifiedWeatherCard = () => {
   const location = useGeolocation();
@@ -36,20 +37,22 @@ export const SimplifiedWeatherCard = () => {
   }, [location.latitude, location.longitude]);
 
   return (
-    <Card className="border border-gray-100 shadow-sm bg-white">
-      <CardContent className="p-4">
-        <div className="flex justify-between items-center">
-          <Sun className="h-14 w-14 text-yellow-500" />
-          
-          <div className="text-right">
-            <div className="text-3xl font-bold">{weatherData.current.temperature}</div>
-            <div className="text-gray-600">{weatherData.current.description}</div>
-            <div className="text-sm text-gray-500 mt-1">
-              Amanhã: {weatherData.tomorrow.high} • {weatherData.tomorrow.low}
+    <Link to="/clima" className="block">
+      <Card className="border border-gray-100 shadow-sm bg-white transition-all hover:shadow-md">
+        <CardContent className="p-4">
+          <div className="flex justify-between items-center">
+            <Sun className="h-14 w-14 text-yellow-500" />
+            
+            <div className="text-right">
+              <div className="text-3xl font-bold">{weatherData.current.temperature}</div>
+              <div className="text-gray-600">{weatherData.current.description}</div>
+              <div className="text-sm text-gray-500 mt-1">
+                Amanhã: {weatherData.tomorrow.high} • {weatherData.tomorrow.low}
+              </div>
             </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </Link>
   );
 };
