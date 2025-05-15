@@ -9,75 +9,17 @@ import { DailyForecast } from "@/components/weather/DailyForecast";
 import { ActivityRecommendations } from "@/components/weather/ActivityRecommendations";
 import { LocationErrorAlert } from "@/components/weather/LocationErrorAlert";
 import { WeatherFetchAlert } from "@/components/weather/WeatherFetchAlert";
-import { WeatherDay, ActivityRecommendation } from "@/types/weather";
+import { ActivityRecommendation } from "@/types/weather";
+import { useWeatherData } from "@/hooks/use-weather-data";
 
 const Weather = () => {
   const location = useGeolocation();
   const [selectedLocation, setSelectedLocation] = useState<string>("Carregando localização...");
   const [locationFetchError, setLocationFetchError] = useState<string | null>(null);
   const [view, setView] = useState<string>("forecast");
+  const { data, isLoading, isError, refetch } = useWeatherData();
   
-  // Mock data for demo
-  const forecast: WeatherDay[] = [
-    {
-      date: "14/05/2025",
-      dayOfWeek: "Hoje",
-      icon: "sun",
-      temperature: { min: 22, max: 28 },
-      humidity: 45,
-      wind: 10,
-      rainChance: 0,
-      soilMoisture: 62,
-      uvIndex: 7,
-      recommendation: "Dia ideal para aplicação de defensivos. Baixa umidade e vento moderado."
-    },
-    {
-      date: "15/05/2025",
-      dayOfWeek: "Amanhã",
-      icon: "cloud-rain",
-      temperature: { min: 19, max: 24 },
-      humidity: 85,
-      wind: 15,
-      rainChance: 80,
-      soilMoisture: 78,
-      uvIndex: 3,
-      recommendation: "Evite pulverizar - alta chance de chuva que pode lavar os produtos aplicados."
-    },
-    {
-      date: "16/05/2025",
-      dayOfWeek: "Terça",
-      icon: "cloud-drizzle",
-      temperature: { min: 18, max: 23 },
-      humidity: 75,
-      wind: 12,
-      rainChance: 60,
-      soilMoisture: 75,
-      uvIndex: 4,
-    },
-    {
-      date: "17/05/2025",
-      dayOfWeek: "Quarta",
-      icon: "cloud-sun",
-      temperature: { min: 20, max: 26 },
-      humidity: 65,
-      wind: 8,
-      rainChance: 20,
-      soilMoisture: 70,
-      uvIndex: 6,
-    },
-    {
-      date: "18/05/2025",
-      dayOfWeek: "Quinta",
-      icon: "sun",
-      temperature: { min: 21, max: 29 },
-      humidity: 50,
-      wind: 5,
-      rainChance: 0,
-      soilMoisture: 65,
-      uvIndex: 8,
-    },
-  ];
-  
+  // Dados de atividades recomendadas (mantidos como mock por enquanto)
   const activityRecommendations: ActivityRecommendation[] = [
     {
       activity: "Aplicação de defensivos",
@@ -149,6 +91,11 @@ const Weather = () => {
     location.retryGeolocation();
   };
 
+  const handleRefreshWeather = () => {
+    toast.info("Atualizando dados meteorológicos...");
+    refetch();
+  };
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex justify-between items-start flex-wrap gap-4">
@@ -195,6 +142,15 @@ const Weather = () => {
             <Sun className="h-4 w-4 mr-2" />
             Atividades
           </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleRefreshWeather}
+            className="ml-2"
+            disabled={isLoading}
+          >
+            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+          </Button>
         </div>
       </div>
       
@@ -210,20 +166,43 @@ const Weather = () => {
         <WeatherFetchAlert error={locationFetchError} />
       )}
       
-      <TodayForecast forecast={forecast[0]} location={selectedLocation} />
-      
-      {view === "forecast" && (
+      {isLoading ? (
         <div className="space-y-4">
-          <h2 className="text-lg font-semibold text-agro-green-800">Próximos dias</h2>
-          
-          {forecast.slice(1).map((day, index) => (
-            <DailyForecast key={index} day={day} />
-          ))}
+          <div className="w-full h-48 bg-gray-100 animate-pulse rounded-lg"></div>
+          <div className="w-full h-24 bg-gray-100 animate-pulse rounded-lg"></div>
+          <div className="w-full h-24 bg-gray-100 animate-pulse rounded-lg"></div>
         </div>
-      )}
-      
-      {view === "activities" && (
-        <ActivityRecommendations recommendations={activityRecommendations} />
+      ) : isError || !data || !data.forecast || data.forecast.length === 0 ? (
+        <div className="p-8 text-center border rounded-lg bg-red-50 border-red-200">
+          <h3 className="text-lg font-medium text-red-800">Erro ao carregar dados meteorológicos</h3>
+          <p className="mt-2 text-red-600">Não foi possível obter a previsão do tempo. Tente novamente mais tarde.</p>
+          <Button 
+            variant="outline" 
+            className="mt-4 border-red-300 text-red-700 hover:bg-red-100"
+            onClick={handleRefreshWeather}
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Tentar novamente
+          </Button>
+        </div>
+      ) : (
+        <>
+          <TodayForecast forecast={data.forecast[0]} location={selectedLocation} />
+          
+          {view === "forecast" && (
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold text-agro-green-800">Próximos dias</h2>
+              
+              {data.forecast.slice(1).map((day, index) => (
+                <DailyForecast key={index} day={day} />
+              ))}
+            </div>
+          )}
+          
+          {view === "activities" && (
+            <ActivityRecommendations recommendations={activityRecommendations} />
+          )}
+        </>
       )}
     </div>
   );

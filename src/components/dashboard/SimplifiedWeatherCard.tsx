@@ -1,25 +1,17 @@
 
-import { Sun } from "lucide-react";
+import { Sun, CloudRain } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useGeolocation } from "@/hooks/use-geolocation";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { Skeleton } from "@/components/ui/skeleton";
+import { WeatherIcon } from "@/components/weather/WeatherIcon";
+import { useWeatherData } from "@/hooks/use-weather-data";
 
 export const SimplifiedWeatherCard = () => {
   const location = useGeolocation();
   const [locationName, setLocationName] = useState<string>("Obtendo localização...");
-  
-  // Dados simplificados de clima
-  const weatherData = {
-    current: {
-      temperature: "28°C",
-      description: "Ensolarado"
-    },
-    tomorrow: {
-      high: "30°",
-      low: "21°"
-    }
-  };
+  const { data: weatherData, isLoading, isError } = useWeatherData();
 
   // Efeito para obter o nome da localização quando as coordenadas são carregadas
   useEffect(() => {
@@ -36,12 +28,54 @@ export const SimplifiedWeatherCard = () => {
     }
   }, [location.latitude, location.longitude]);
 
+  // Componente de carregamento
+  if (isLoading || location.loading) {
+    return (
+      <Link to="/clima" className="block">
+        <Card className="border border-gray-100 shadow-sm bg-white">
+          <CardContent className="p-4">
+            <div className="flex justify-between items-center">
+              <Skeleton className="h-14 w-14 rounded-full" />
+              <div className="text-right">
+                <Skeleton className="h-8 w-24 mb-2" />
+                <Skeleton className="h-5 w-32 mb-2" />
+                <Skeleton className="h-4 w-40" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </Link>
+    );
+  }
+
+  // Componente de erro
+  if (isError || !weatherData) {
+    return (
+      <Link to="/clima" className="block">
+        <Card className="border border-gray-100 shadow-sm bg-white">
+          <CardContent className="p-4">
+            <div className="flex justify-between items-center">
+              <CloudRain className="h-14 w-14 text-gray-400" />
+              <div className="text-right">
+                <div className="text-xl font-bold text-gray-500">Dados indisponíveis</div>
+                <div className="text-sm text-gray-400">Toque para tentar novamente</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </Link>
+    );
+  }
+
+  // Obter o ícone do tempo atual do primeiro dia de previsão (hoje)
+  const currentWeatherIcon = weatherData.forecast.length > 0 ? weatherData.forecast[0].icon : "sun";
+
   return (
     <Link to="/clima" className="block">
       <Card className="border border-gray-100 shadow-sm bg-white transition-all hover:shadow-md">
         <CardContent className="p-4">
           <div className="flex justify-between items-center">
-            <Sun className="h-14 w-14 text-yellow-500" />
+            <WeatherIcon icon={currentWeatherIcon} className="h-14 w-14" />
             
             <div className="text-right">
               <div className="text-3xl font-bold">{weatherData.current.temperature}</div>
