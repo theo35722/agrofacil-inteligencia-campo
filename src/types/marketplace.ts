@@ -1,19 +1,18 @@
-
-export type MarketplaceProduct = {
+export interface MarketplaceProduct {
   id: string;
+  created_at: string;
   title: string;
   description: string;
   price: number;
   location: string;
-  image_url: string | null;
   contact_phone: string;
-  created_at: string;
-  user_id: string | null;
-};
+  image_url: string | null;
+  user_id: string;
+}
 
-export type LocationData = {
+// Location data type
+export interface LocationData {
   city: string | null;
   state: string | null;
   fullLocation: string | null;
-  isCustomSet?: boolean;
-};
+}
