@@ -115,12 +115,16 @@ const Dashboard: React.FC = () => {
 
       {/* Lavouras section - simplified layout */}
       <div className="mx-4 mt-2">
-        <h2 className="text-xl font-bold mb-2">Suas Lavouras</h2>
+        <h2 className="text-xl font-bold mb-2">
+          <Link to="/lavouras" className="text-inherit hover:text-green-700">
+            Suas Lavouras
+          </Link>
+        </h2>
         {lavouras.length > 0 ? (
           <>
             <div className="grid grid-cols-2 gap-3">
               {lavouras.map((lavoura) => (
-                <Link key={lavoura.id} to={`/lavouras/${lavoura.id}`}>
+                <Link key={lavoura.id} to="/lavouras">
                   <Card className="p-3 h-full border border-gray-100 shadow-none bg-green-50 rounded-lg hover:shadow-sm transition-all">
                     <h3 className="font-semibold">{lavoura.name}</h3>
                     <div className="text-green-600 font-medium">{lavoura.crop}</div>
