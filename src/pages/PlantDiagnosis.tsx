@@ -3,5 +3,5 @@ import React from "react";
 import { DiagnosisContainer } from "@/components/plant-diagnosis/DiagnosisContainer";
 
 export default function PlantDiagnosis() {
-  return <DiagnosisContainer locale="en" />;
+  return <DiagnosisContainer locale="pt" />;
 }
