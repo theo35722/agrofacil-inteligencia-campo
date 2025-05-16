@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { AlertTriangle, Sun, Leaf } from "lucide-react";
@@ -110,8 +111,7 @@ const Dashboard: React.FC = () => {
   const handlePlagueAlertClick = () => {
     // Futuramente, pode-se implementar uma navegação para detalhes 
     toast({
-      title: "Detalhes de alerta",
-      description: "Funcionalidade em desenvolvimento",
+      description: "Funcionalidade em desenvolvimento"
     });
   };
 
@@ -197,3 +197,4 @@ const Dashboard: React.FC = () => {
 };
 
 export default Dashboard;
+
