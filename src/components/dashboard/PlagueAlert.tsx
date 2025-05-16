@@ -1,15 +1,17 @@
 
 import React from "react";
-import { AlertTriangle, CheckCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle, AlertCircle } from "lucide-react";
+import { PlagueAlertData } from "@/types/agro";
 
 interface PlagueAlertProps {
-  hasAlert: boolean;
-  message: string;
+  alertData: PlagueAlertData;
   onClick?: () => void;
 }
 
-export const PlagueAlert: React.FC<PlagueAlertProps> = ({ hasAlert, message, onClick }) => {
-  if (!hasAlert && message === "Nenhum alerta de pragas no momento") {
+export const PlagueAlert: React.FC<PlagueAlertProps> = ({ alertData, onClick }) => {
+  const { hasAlert, message, severity = "low" } = alertData;
+
+  if (!hasAlert) {
     return (
       <div 
         className="mx-4 p-3 bg-green-50 border-none rounded-lg cursor-pointer"
@@ -28,19 +30,41 @@ export const PlagueAlert: React.FC<PlagueAlertProps> = ({ hasAlert, message, onC
     );
   }
   
-  if (!hasAlert) return null;
+  // Definir estilos com base na severidade
+  const severityStyles = {
+    low: {
+      bg: "bg-amber-50",
+      text: "text-amber-700",
+      desc: "text-amber-800",
+      icon: <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0" />
+    },
+    medium: {
+      bg: "bg-orange-50",
+      text: "text-orange-700",
+      desc: "text-orange-800",
+      icon: <AlertTriangle className="w-5 h-5 text-orange-500 flex-shrink-0" />
+    },
+    high: {
+      bg: "bg-red-50",
+      text: "text-red-700",
+      desc: "text-red-800",
+      icon: <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0" />
+    }
+  };
+  
+  const style = severityStyles[severity];
   
   return (
     <div 
-      className="mx-4 p-3 bg-amber-50 border-none rounded-lg cursor-pointer"
+      className={`mx-4 p-3 ${style.bg} border-none rounded-lg cursor-pointer`}
       onClick={onClick}
     >
       <div className="flex items-center gap-3">
-        <AlertTriangle className="w-5 h-5 text-orange-500 flex-shrink-0" />
+        {style.icon}
         <div>
-          <h3 className="text-orange-700 font-medium">Praga Alerta</h3>
-          <p className="text-orange-800 text-sm">
-            Atenção em <span className="font-medium">{message}</span>
+          <h3 className={`${style.text} font-medium`}>Alerta de Pragas</h3>
+          <p className={`${style.desc} text-sm`}>
+            {message}
           </p>
         </div>
       </div>

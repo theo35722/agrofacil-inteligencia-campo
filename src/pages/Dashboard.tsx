@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { AlertTriangle, Sun, Leaf } from "lucide-react";
@@ -13,65 +14,57 @@ import { ActivityPreview } from "@/components/dashboard/ActivityPreview";
 import { SimplifiedWeatherCard } from "@/components/dashboard/SimplifiedWeatherCard";
 import { Badge } from "@/components/ui/badge";
 import { PlagueAlert } from "@/components/dashboard/PlagueAlert";
-import { determinePlaguePotential } from "@/services/openWeatherService";
-
-type LavouraProps = {
-  id: string;
-  name: string;
-  crop: string;
-  phase: string;
-  status?: string;
-  activity?: string;
-};
+import { Talhao, PlagueAlertData } from "@/types/agro";
+import { getTalhoes, determinePlagueAlerts } from "@/services/agroService";
 
 const Dashboard: React.FC = () => {
-  const {
-    profile
-  } = useAuth();
+  const { profile } = useAuth();
   const location = useGeolocation();
   const [showChat, setShowChat] = useState(false);
   const [weatherData, setWeatherData] = useState<{
     description: string;
     humidity: number;
   } | null>(null);
-  const [plagueAlertData, setPlagueAlertData] = useState({
+  const [plagueAlertData, setPlagueAlertData] = useState<PlagueAlertData>({
     hasAlert: false,
     message: "Nenhum alerta de pragas no momento"
   });
+  const [talhoes, setTalhoes] = useState<Talhao[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock data - in a real app, this would come from Supabase
-  const lavouras: LavouraProps[] = [{
-    id: "1",
-    name: "Talhão 3",
-    crop: "Milho",
-    phase: "Crescimento",
-    status: "pendente",
-    activity: "Adubação"
-  }, {
-    id: "2",
-    name: "Talhão 1",
-    crop: "Soja",
-    phase: "Emergência",
-    status: "planejada",
-    activity: "Pulverização"
-  }];
+  // Buscar talhões do usuário
+  useEffect(() => {
+    const fetchTalhoes = async () => {
+      try {
+        setLoading(true);
+        const data = await getTalhoes();
+        setTalhoes(data);
+      } catch (error) {
+        console.error("Erro ao buscar talhões:", error);
+        toast.error("Não foi possível carregar os dados das lavouras");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTalhoes();
+  }, []);
 
   // Determinar alerta de pragas com base nas culturas e condições climáticas
   useEffect(() => {
-    if (weatherData && lavouras.length > 0) {
-      // Pegar a primeira cultura como exemplo (poderia ser mais sofisticado)
-      // Em uma implementação real, você poderia verificar todas as culturas
-      const primaryCrop = lavouras[0].crop;
-      
-      const alertData = determinePlaguePotential(
-        primaryCrop,
-        weatherData.description,
-        weatherData.humidity
-      );
-      
-      setPlagueAlertData(alertData);
-    }
-  }, [weatherData, lavouras]);
+    const loadPlagueAlerts = async () => {
+      if (weatherData) {
+        try {
+          const alertData = await determinePlagueAlerts(weatherData);
+          setPlagueAlertData(alertData);
+        } catch (error) {
+          console.error("Erro ao determinar alertas de pragas:", error);
+        }
+      }
+    };
+    
+    loadPlagueAlerts();
+  }, [weatherData, talhoes]);
 
   // Manipular alteração nos dados climáticos
   const handleWeatherDataChange = (data: {
@@ -92,14 +85,15 @@ const Dashboard: React.FC = () => {
 
   // Função para determinar a cor da badge baseada na fase
   const getPhaseColor = (phase: string) => {
-    switch (phase) {
-      case "Crescimento":
+    switch (phase.toLowerCase()) {
+      case "crescimento":
         return "bg-green-100 text-green-800 border-green-200";
-      case "Emergência":
+      case "emergência":
+      case "emergencia":
         return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "Florescimento":
+      case "florescimento":
         return "bg-purple-100 text-purple-800 border-purple-200";
-      case "Colheita":
+      case "colheita":
         return "bg-blue-100 text-blue-800 border-blue-200";
       default:
         return "bg-gray-100 text-gray-800 border-gray-200";
@@ -108,26 +102,29 @@ const Dashboard: React.FC = () => {
   
   // Função para navegar para a página de detalhes do alerta (futuro)
   const handlePlagueAlertClick = () => {
-    // Futuramente, pode-se implementar uma navegação para detalhes 
-    toast("Funcionalidade em desenvolvimento");
+    if (plagueAlertData.hasAlert) {
+      // Futuramente, pode-se implementar uma navegação para detalhes 
+      toast("Navegando para detalhes do alerta...");
+    } else {
+      toast("Nenhum alerta de pragas no momento");
+    }
   };
 
   return (
     <div className="flex flex-col gap-3 bg-gray-50 pb-16">
-      {/* Top greeting text - without green background */}
+      {/* Top greeting text */}
       <div className="py-4 px-4">
         <h1 className="text-2xl font-bold text-center text-gray-800">{greeting}</h1>
       </div>
 
-      {/* Weather card - using the simplified component */}
+      {/* Weather card */}
       <div className="mx-4">
         <SimplifiedWeatherCard onWeatherDataChange={handleWeatherDataChange} />
       </div>
 
       {/* Alert card - só aparece conforme lógica de pragas */}
       <PlagueAlert 
-        hasAlert={plagueAlertData.hasAlert} 
-        message={plagueAlertData.message}
+        alertData={plagueAlertData}
         onClick={handlePlagueAlertClick}
       />
 
@@ -139,33 +136,49 @@ const Dashboard: React.FC = () => {
         </Button>
       </Link>
 
-      {/* Lavouras section - simplified layout */}
+      {/* Lavouras section - real data */}
       <div className="mx-4 mt-2">
         <h2 className="text-xl font-bold mb-2">
           <Link to="/lavouras" className="text-inherit hover:text-green-700">
             Suas Lavouras
           </Link>
         </h2>
-        {lavouras.length > 0 ? (
+        {loading ? (
+          <div className="p-4 text-center text-gray-500">
+            Carregando lavouras...
+          </div>
+        ) : talhoes.length > 0 ? (
           <>
             <div className="grid grid-cols-2 gap-3">
-              {lavouras.map(lavoura => (
-                <Link key={lavoura.id} to="/lavouras">
+              {talhoes.slice(0, 4).map(talhao => (
+                <Link key={talhao.id} to="/lavouras">
                   <Card className="p-3 h-full border border-gray-100 shadow-none bg-green-50 rounded-lg hover:shadow-sm transition-all">
-                    <h3 className="font-semibold">{lavoura.name}</h3>
-                    <div className="text-green-600 font-medium">{lavoura.crop}</div>
+                    <h3 className="font-semibold">{talhao.nome}</h3>
+                    <div className="text-green-600 font-medium">{talhao.cultura}</div>
                     <div className="text-sm mt-1">
-                      Fase: <Badge variant="outline" className={`ml-1 border ${getPhaseColor(lavoura.phase)}`}>
-                        {lavoura.phase}
+                      Fase: <Badge variant="outline" className={`ml-1 border ${getPhaseColor(talhao.fase)}`}>
+                        {talhao.fase}
                       </Badge>
                     </div>
+                    {talhao.status && (
+                      <div className="text-xs text-gray-500 mt-1">
+                        {talhao.status}
+                      </div>
+                    )}
                   </Card>
                 </Link>
               ))}
             </div>
-            <div className="mt-3 text-right">
-              
-            </div>
+            {talhoes.length > 4 && (
+              <div className="mt-3 text-right">
+                <Link 
+                  to="/lavouras"
+                  className="text-sm text-green-600 hover:text-green-700 font-medium"
+                >
+                  Ver todas ({talhoes.length}) &rarr;
+                </Link>
+              </div>
+            )}
           </>
         ) : (
           <Card className="p-6 text-center border border-dashed border-gray-300 bg-white">
@@ -179,7 +192,7 @@ const Dashboard: React.FC = () => {
         )}
       </div>
 
-      {/* Activities section - will replace with simplified version */}
+      {/* Activities section - real data */}
       <div className="mx-4 mt-1">
         <ActivityPreview />
       </div>

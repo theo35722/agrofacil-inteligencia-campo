@@ -39,6 +39,130 @@ export type Database = {
         }
         Relationships: []
       }
+      atividades: {
+        Row: {
+          atualizado_em: string
+          criado_em: string
+          data_programada: string
+          data_realizacao: string | null
+          descricao: string | null
+          id: string
+          status: string
+          talhao_id: string
+          tipo: string
+          user_id: string
+        }
+        Insert: {
+          atualizado_em?: string
+          criado_em?: string
+          data_programada: string
+          data_realizacao?: string | null
+          descricao?: string | null
+          id?: string
+          status?: string
+          talhao_id: string
+          tipo: string
+          user_id: string
+        }
+        Update: {
+          atualizado_em?: string
+          criado_em?: string
+          data_programada?: string
+          data_realizacao?: string | null
+          descricao?: string | null
+          id?: string
+          status?: string
+          talhao_id?: string
+          tipo?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "atividades_talhao_id_fkey"
+            columns: ["talhao_id"]
+            isOneToOne: false
+            referencedRelation: "talhoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      diagnosticos_pragas: {
+        Row: {
+          atualizado_em: string
+          criado_em: string
+          data_diagnostico: string
+          id: string
+          nivel_infestacao: string
+          observacoes: string | null
+          praga: string
+          talhao_id: string
+          user_id: string
+        }
+        Insert: {
+          atualizado_em?: string
+          criado_em?: string
+          data_diagnostico?: string
+          id?: string
+          nivel_infestacao: string
+          observacoes?: string | null
+          praga: string
+          talhao_id: string
+          user_id: string
+        }
+        Update: {
+          atualizado_em?: string
+          criado_em?: string
+          data_diagnostico?: string
+          id?: string
+          nivel_infestacao?: string
+          observacoes?: string | null
+          praga?: string
+          talhao_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "diagnosticos_pragas_talhao_id_fkey"
+            columns: ["talhao_id"]
+            isOneToOne: false
+            referencedRelation: "talhoes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lavouras: {
+        Row: {
+          area_total: number | null
+          atualizado_em: string
+          criado_em: string
+          id: string
+          localizacao: string | null
+          nome: string
+          unidade_area: string | null
+          user_id: string
+        }
+        Insert: {
+          area_total?: number | null
+          atualizado_em?: string
+          criado_em?: string
+          id?: string
+          localizacao?: string | null
+          nome: string
+          unidade_area?: string | null
+          user_id: string
+        }
+        Update: {
+          area_total?: number | null
+          atualizado_em?: string
+          criado_em?: string
+          id?: string
+          localizacao?: string | null
+          nome?: string
+          unidade_area?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       marketplace_products: {
         Row: {
           contact_phone: string
@@ -134,6 +258,59 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      talhoes: {
+        Row: {
+          area: number | null
+          atualizado_em: string
+          criado_em: string
+          cultura: string
+          data_colheita_estimada: string | null
+          data_plantio: string | null
+          fase: string
+          id: string
+          lavoura_id: string
+          nome: string
+          status: string | null
+          unidade_area: string | null
+        }
+        Insert: {
+          area?: number | null
+          atualizado_em?: string
+          criado_em?: string
+          cultura: string
+          data_colheita_estimada?: string | null
+          data_plantio?: string | null
+          fase: string
+          id?: string
+          lavoura_id: string
+          nome: string
+          status?: string | null
+          unidade_area?: string | null
+        }
+        Update: {
+          area?: number | null
+          atualizado_em?: string
+          criado_em?: string
+          cultura?: string
+          data_colheita_estimada?: string | null
+          data_plantio?: string | null
+          fase?: string
+          id?: string
+          lavoura_id?: string
+          nome?: string
+          status?: string | null
+          unidade_area?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "talhoes_lavoura_id_fkey"
+            columns: ["lavoura_id"]
+            isOneToOne: false
+            referencedRelation: "lavouras"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
