@@ -9,6 +9,7 @@ interface OpenWeatherResponse {
     temperature: string;
     description: string;
     cityName: string;
+    humidity: number;
     icon: "sun" | "cloud" | "cloud-sun" | "cloud-rain" | "cloud-drizzle";
   };
   tomorrow: {
@@ -24,6 +25,7 @@ export const fetchWeatherData = async (latitude: number, longitude: number): Pro
     temperature: string;
     description: string;
     cityName: string;
+    humidity: number;
   };
   tomorrow: {
     high: string;
@@ -59,6 +61,7 @@ export const fetchWeatherData = async (latitude: number, longitude: number): Pro
         temperature: data.current.temperature,
         description: data.current.description,
         cityName: data.current.cityName || "Local desconhecido",
+        humidity: data.current.humidity || 0,
       },
       tomorrow: {
         high: data.tomorrow.high,
@@ -78,6 +81,7 @@ export const fetchWeatherData = async (latitude: number, longitude: number): Pro
         temperature: "N/A",
         description: "Dados indisponíveis",
         cityName: "Local desconhecido",
+        humidity: 0,
       },
       tomorrow: {
         high: "--",
@@ -86,4 +90,45 @@ export const fetchWeatherData = async (latitude: number, longitude: number): Pro
       forecast: []
     };
   }
+};
+
+// Função para determinar se existe risco de praga com base na cultura e condições climáticas
+export const determinePlaguePotential = (
+  culture: string | undefined, 
+  weatherDescription: string, 
+  humidity: number
+): { hasAlert: boolean; message: string } => {
+  // Default values
+  let hasAlert = false;
+  let message = "Nenhum alerta de pragas no momento";
+
+  // Caso não tenha cultura cadastrada
+  if (!culture) {
+    return { hasAlert: false, message };
+  }
+
+  const lowerCaseWeather = weatherDescription.toLowerCase();
+  const hasContinuousRain = lowerCaseWeather.includes('chuva') && 
+    (lowerCaseWeather.includes('forte') || lowerCaseWeather.includes('contínua'));
+  const hasRain = lowerCaseWeather.includes('chuva');
+  const isHighHumidity = humidity > 75;
+  const isRainyOrHumid = hasRain || isHighHumidity;
+
+  // Verificar cada cultura
+  const cultureLower = culture.toLowerCase();
+  if (cultureLower.includes('milho') && isRainyOrHumid) {
+    hasAlert = true;
+    message = "Risco de lagarta-do-cartucho no milho";
+  } else if (cultureLower.includes('soja') && hasContinuousRain) {
+    hasAlert = true;
+    message = "Risco de ferrugem asiática na soja";
+  } else if (cultureLower.includes('feijão') && isRainyOrHumid) {
+    hasAlert = true;
+    message = "Risco de mosca-branca no feijão";
+  } else if ((cultureLower.includes('pasto') || cultureLower.includes('capim')) && hasRain) {
+    hasAlert = true;
+    message = "Risco de cigarrinha no pasto";
+  }
+
+  return { hasAlert, message };
 };

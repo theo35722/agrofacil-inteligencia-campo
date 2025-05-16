@@ -13,6 +13,9 @@ import { FeatureCard } from "@/components/dashboard/FeatureCard";
 import { ActivityPreview } from "@/components/dashboard/ActivityPreview";
 import { SimplifiedWeatherCard } from "@/components/dashboard/SimplifiedWeatherCard";
 import { Badge } from "@/components/ui/badge";
+import { PlagueAlert } from "@/components/dashboard/PlagueAlert";
+import { determinePlaguePotential } from "@/services/openWeatherService";
+
 type LavouraProps = {
   id: string;
   name: string;
@@ -21,14 +24,21 @@ type LavouraProps = {
   status?: string;
   activity?: string;
 };
+
 const Dashboard: React.FC = () => {
   const {
     profile
   } = useAuth();
   const location = useGeolocation();
   const [showChat, setShowChat] = useState(false);
-  const [hasAlert, setHasAlert] = useState(true);
-  const [alertMessage, setAlertMessage] = useState("lavouras de soja!");
+  const [weatherData, setWeatherData] = useState<{
+    description: string;
+    humidity: number;
+  } | null>(null);
+  const [plagueAlertData, setPlagueAlertData] = useState({
+    hasAlert: false,
+    message: "Nenhum alerta de pragas no momento"
+  });
 
   // Mock data - in a real app, this would come from Supabase
   const lavouras: LavouraProps[] = [{
@@ -46,6 +56,31 @@ const Dashboard: React.FC = () => {
     status: "planejada",
     activity: "Pulverização"
   }];
+
+  // Determinar alerta de pragas com base nas culturas e condições climáticas
+  useEffect(() => {
+    if (weatherData && lavouras.length > 0) {
+      // Pegar a primeira cultura como exemplo (poderia ser mais sofisticado)
+      // Em uma implementação real, você poderia verificar todas as culturas
+      const primaryCrop = lavouras[0].crop;
+      
+      const alertData = determinePlaguePotential(
+        primaryCrop,
+        weatherData.description,
+        weatherData.humidity
+      );
+      
+      setPlagueAlertData(alertData);
+    }
+  }, [weatherData, lavouras]);
+
+  // Manipular alteração nos dados climáticos
+  const handleWeatherDataChange = (data: {
+    description: string;
+    humidity: number;
+  } | null) => {
+    setWeatherData(data);
+  };
 
   // Get time of day for greeting
   const getGreeting = () => {
@@ -71,6 +106,16 @@ const Dashboard: React.FC = () => {
         return "bg-gray-100 text-gray-800 border-gray-200";
     }
   };
+  
+  // Função para navegar para a página de detalhes do alerta (futuro)
+  const handlePlagueAlertClick = () => {
+    // Futuramente, pode-se implementar uma navegação para detalhes 
+    toast({
+      title: "Detalhes de alerta",
+      description: "Funcionalidade em desenvolvimento",
+    });
+  };
+
   return <div className="flex flex-col gap-3 bg-gray-50 pb-16">
       {/* Top greeting text - without green background */}
       <div className="py-4 px-4">
@@ -79,21 +124,15 @@ const Dashboard: React.FC = () => {
 
       {/* Weather card - using the simplified component */}
       <div className="mx-4">
-        <SimplifiedWeatherCard />
+        <SimplifiedWeatherCard onWeatherDataChange={handleWeatherDataChange} />
       </div>
 
-      {/* Alert card - only shows if there's an alert */}
-      {hasAlert && <div className="mx-4 p-3 bg-amber-50 border-none rounded-lg">
-          <div className="flex items-center gap-3">
-            <AlertTriangle className="w-5 h-5 text-orange-500 flex-shrink-0" />
-            <div>
-              <h3 className="text-orange-700 font-medium">Praga Alerta</h3>
-              <p className="text-orange-800 text-sm">
-                Atenção em <span className="font-medium">{alertMessage}</span>
-              </p>
-            </div>
-          </div>
-        </div>}
+      {/* Alert card - só aparece conforme lógica de pragas */}
+      <PlagueAlert 
+        hasAlert={plagueAlertData.hasAlert} 
+        message={plagueAlertData.message}
+        onClick={handlePlagueAlertClick}
+      />
 
       {/* Simplified Diagnóstico button */}
       <Link to="/diagnostico" className="mx-4">

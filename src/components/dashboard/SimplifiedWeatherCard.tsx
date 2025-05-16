@@ -3,12 +3,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useWeatherData } from "@/hooks/use-weather-data";
 import { useReverseGeocoding } from "@/hooks/use-reverse-geocoding";
 import { useGeolocation } from "@/hooks/use-geolocation";
-import { Cloud, CloudRain, CloudSun, Sun, MapPin } from "lucide-react";
+import { CloudSun, MapPin } from "lucide-react";
 import { WeatherIcon } from "@/components/weather/WeatherIcon";
 import { WeatherLoading } from "@/components/weather/WeatherLoading";
 import { Link } from "react-router-dom";
 
-export const SimplifiedWeatherCard = () => {
+export const SimplifiedWeatherCard = ({ onWeatherDataChange }: { 
+  onWeatherDataChange?: (data: {
+    description: string;
+    humidity: number;
+  } | null) => void 
+}) => {
   const location = useGeolocation();
   const { 
     data, 
@@ -21,6 +26,18 @@ export const SimplifiedWeatherCard = () => {
     location.latitude, 
     location.longitude
   );
+
+  // Efeito para notificar o componente pai sobre alterações nos dados do tempo
+  React.useEffect(() => {
+    if (data?.current?.description && onWeatherDataChange) {
+      onWeatherDataChange({
+        description: data.current.description,
+        humidity: data.current.humidity || 0
+      });
+    } else if (onWeatherDataChange) {
+      onWeatherDataChange(null);
+    }
+  }, [data, onWeatherDataChange]);
 
   // Função para determinar a mensagem de alerta agrícola
   const getAgriculturalAlert = () => {
@@ -80,7 +97,9 @@ export const SimplifiedWeatherCard = () => {
               <p className="text-sm text-gray-500">Dados indisponíveis</p>
               <p className="text-sm text-gray-500">Amanhã: -- / --</p>
             </div>
-            <Sun className="h-12 w-12 text-gray-300" />
+            <div className="h-12 w-12 text-gray-300">
+              <WeatherIcon icon="cloud" className="h-12 w-12" />
+            </div>
           </div>
         </CardContent>
       </Card>

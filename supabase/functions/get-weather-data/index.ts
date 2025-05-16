@@ -161,7 +161,8 @@ function processWeatherData(currentData: any, forecastData: any) {
       temperature: `${current.temperature}°C`,
       description: current.description,
       cityName: current.cityName,
-      icon: current.icon
+      icon: current.icon,
+      humidity: current.humidity
     },
     tomorrow: {
       high: `${forecast[1] ? forecast[1].temperature.max : "N/A"}°`,
