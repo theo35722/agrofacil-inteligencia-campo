@@ -1,4 +1,5 @@
 
+import React, { useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useWeatherData } from "@/hooks/use-weather-data";
 import { useReverseGeocoding } from "@/hooks/use-reverse-geocoding";
@@ -28,7 +29,7 @@ export const SimplifiedWeatherCard = ({ onWeatherDataChange }: {
   );
 
   // Efeito para notificar o componente pai sobre alterações nos dados do tempo
-  React.useEffect(() => {
+  useEffect(() => {
     if (data?.current?.description && onWeatherDataChange) {
       onWeatherDataChange({
         description: data.current.description,

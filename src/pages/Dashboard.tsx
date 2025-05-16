@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { AlertTriangle, Sun, Leaf } from "lucide-react";
@@ -116,7 +115,8 @@ const Dashboard: React.FC = () => {
     });
   };
 
-  return <div className="flex flex-col gap-3 bg-gray-50 pb-16">
+  return (
+    <div className="flex flex-col gap-3 bg-gray-50 pb-16">
       {/* Top greeting text - without green background */}
       <div className="py-4 px-4">
         <h1 className="text-2xl font-bold text-center text-gray-800">{greeting}</h1>
@@ -149,9 +149,11 @@ const Dashboard: React.FC = () => {
             Suas Lavouras
           </Link>
         </h2>
-        {lavouras.length > 0 ? <>
+        {lavouras.length > 0 ? (
+          <>
             <div className="grid grid-cols-2 gap-3">
-              {lavouras.map(lavoura => <Link key={lavoura.id} to="/lavouras">
+              {lavouras.map(lavoura => (
+                <Link key={lavoura.id} to="/lavouras">
                   <Card className="p-3 h-full border border-gray-100 shadow-none bg-green-50 rounded-lg hover:shadow-sm transition-all">
                     <h3 className="font-semibold">{lavoura.name}</h3>
                     <div className="text-green-600 font-medium">{lavoura.crop}</div>
@@ -161,19 +163,23 @@ const Dashboard: React.FC = () => {
                       </Badge>
                     </div>
                   </Card>
-                </Link>)}
+                </Link>
+              ))}
             </div>
             <div className="mt-3 text-right">
               
             </div>
-          </> : <Card className="p-6 text-center border border-dashed border-gray-300 bg-white">
+          </>
+        ) : (
+          <Card className="p-6 text-center border border-dashed border-gray-300 bg-white">
             <p className="text-gray-600 mb-4">Nenhuma lavoura cadastrada. Adicione sua primeira lavoura!</p>
             <Link to="/lavouras/nova">
               <Button className="bg-green-500 hover:bg-green-600">
                 Adicionar Lavoura
               </Button>
             </Link>
-          </Card>}
+          </Card>
+        )}
       </div>
 
       {/* Activities section - will replace with simplified version */}
@@ -186,6 +192,8 @@ const Dashboard: React.FC = () => {
         <ChatButton onClick={() => setShowChat(true)} isOpen={showChat} className="w-12 h-12 bg-white shadow-lg border-2 border-green-300" />
       </div>
       <ChatDialog open={showChat} onOpenChange={setShowChat} />
-    </div>;
+    </div>
+  );
 };
+
 export default Dashboard;
