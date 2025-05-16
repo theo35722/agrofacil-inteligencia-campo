@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { AlertTriangle, Sun, Leaf } from "lucide-react";
+import { Leaf } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useGeolocation } from "@/hooks/use-geolocation";
@@ -9,7 +9,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { ChatButton } from "@/components/chat/ChatButton";
 import { ChatDialog } from "@/components/chat/ChatDialog";
 import { toast } from "sonner";
-import { FeatureCard } from "@/components/dashboard/FeatureCard";
 import { ActivityPreview } from "@/components/dashboard/ActivityPreview";
 import { SimplifiedWeatherCard } from "@/components/dashboard/SimplifiedWeatherCard";
 import { Badge } from "@/components/ui/badge";
@@ -39,6 +38,7 @@ const Dashboard: React.FC = () => {
         setLoading(true);
         const data = await getTalhoes();
         setTalhoes(data);
+        console.log("Talhões carregados:", data);
       } catch (error) {
         console.error("Erro ao buscar talhões:", error);
         toast.error("Não foi possível carregar os dados das lavouras");
@@ -57,6 +57,7 @@ const Dashboard: React.FC = () => {
         try {
           const alertData = await determinePlagueAlerts(weatherData);
           setPlagueAlertData(alertData);
+          console.log("Dados de alerta:", alertData);
         } catch (error) {
           console.error("Erro ao determinar alertas de pragas:", error);
         }
@@ -72,6 +73,7 @@ const Dashboard: React.FC = () => {
     humidity: number;
   } | null) => {
     setWeatherData(data);
+    console.log("Dados climáticos atualizados:", data);
   };
 
   // Get time of day for greeting
