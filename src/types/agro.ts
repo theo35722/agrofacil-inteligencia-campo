@@ -25,6 +25,14 @@ export interface Talhao {
   atualizado_em: string;
 }
 
+// Define a partial talhao type for joined queries
+export interface TalhaoBasic {
+  id: string;
+  nome: string;
+  cultura: string;
+  fase: string;
+}
+
 export interface Atividade {
   id: string;
   user_id: string;
@@ -36,7 +44,7 @@ export interface Atividade {
   data_realizacao?: string;
   criado_em: string;
   atualizado_em: string;
-  talhao?: Talhao; // Para relacionamento com join
+  talhao?: TalhaoBasic; // Changed to use partial talhao type for joins
 }
 
 export interface DiagnosticoPraga {
@@ -49,7 +57,7 @@ export interface DiagnosticoPraga {
   data_diagnostico: string;
   criado_em: string;
   atualizado_em: string;
-  talhao?: Talhao; // Para relacionamento com join
+  talhao?: TalhaoBasic; // Changed to use partial talhao type for joins
 }
 
 // Tipos para o alerta de pragas
