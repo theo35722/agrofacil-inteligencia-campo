@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { AlertTriangle, Sun, Leaf } from "lucide-react";
@@ -8,7 +7,7 @@ import { useGeolocation } from "@/hooks/use-geolocation";
 import { useAuth } from "@/contexts/AuthContext";
 import { ChatButton } from "@/components/chat/ChatButton";
 import { ChatDialog } from "@/components/chat/ChatDialog";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { FeatureCard } from "@/components/dashboard/FeatureCard";
 import { ActivityPreview } from "@/components/dashboard/ActivityPreview";
 import { SimplifiedWeatherCard } from "@/components/dashboard/SimplifiedWeatherCard";
@@ -110,9 +109,7 @@ const Dashboard: React.FC = () => {
   // Função para navegar para a página de detalhes do alerta (futuro)
   const handlePlagueAlertClick = () => {
     // Futuramente, pode-se implementar uma navegação para detalhes 
-    toast({
-      description: "Funcionalidade em desenvolvimento"
-    });
+    toast("Funcionalidade em desenvolvimento");
   };
 
   return (
@@ -197,4 +194,3 @@ const Dashboard: React.FC = () => {
 };
 
 export default Dashboard;
-
