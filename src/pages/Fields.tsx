@@ -81,7 +81,7 @@ const Fields = () => {
     try {
       setIsSubmitting(true);
       
-      // Create the new farm using the service function
+      // Create the new farm using the service function with the correct type
       await createLavoura({
         nome: newFarmName,
         area_total: parseFloat(newFarmArea),

@@ -48,7 +48,7 @@ export const getLavouraById = async (id: string): Promise<Lavoura | null> => {
 };
 
 // Criar nova lavoura
-export const createLavoura = async (lavouraData: Omit<Lavoura, 'id' | 'criado_em' | 'atualizado_em'>): Promise<Lavoura> => {
+export const createLavoura = async (lavouraData: Omit<Lavoura, 'id' | 'criado_em' | 'atualizado_em' | 'user_id'>): Promise<Lavoura> => {
   try {
     console.log("Criando lavoura:", lavouraData);
     
