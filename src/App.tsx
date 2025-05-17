@@ -23,7 +23,19 @@ import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import Home from "./pages/Home";
 
-const queryClient = new QueryClient();
+// Configure React Query with better cache management
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      cacheTime: 10 * 60 * 1000, // 10 minutes
+      refetchOnWindowFocus: true,
+      refetchOnMount: true,
+      refetchOnReconnect: true,
+      retry: 2,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>

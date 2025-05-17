@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
 import { ChatButton } from "@/components/chat/ChatButton";
@@ -15,9 +15,11 @@ import { Lavoura, Talhao, PlagueAlertData } from "@/types/agro";
 import { getLavouras } from "@/services/lavouraService";
 import { getTalhoes } from "@/services/talhaoService";
 import { determinePlagueAlerts } from "@/services/diagnosticoService";
+import { useQueryClient } from "@tanstack/react-query";
 
 const Dashboard: React.FC = () => {
   const { profile } = useAuth();
+  const queryClient = useQueryClient();
   const [showChat, setShowChat] = useState(false);
   const [weatherData, setWeatherData] = useState<{
     description: string;
@@ -31,71 +33,115 @@ const Dashboard: React.FC = () => {
   const [talhoes, setTalhoes] = useState<Talhao[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [dataKey, setDataKey] = useState(Date.now());
 
-  // Buscar lavouras e talhões juntos
+  // Fetch data function using useCallback to prevent unnecessary rerenders
+  const fetchDashboardData = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      console.log("Buscando dados para o dashboard...");
+      
+      // Carregar dados em paralelo para melhor performance
+      const [lavourasData, talhoesData] = await Promise.all([
+        getLavouras(),
+        getTalhoes()
+      ]);
+      
+      console.log("Lavouras carregadas:", lavourasData);
+      setLavouras(lavourasData);
+      
+      console.log("Talhões carregados:", talhoesData);
+      setTalhoes(talhoesData);
+
+      // Also update the React Query cache for other components
+      queryClient.setQueryData(['lavouras'], lavourasData);
+      queryClient.setQueryData(['talhoes'], talhoesData);
+      
+    } catch (error) {
+      console.error("Erro ao buscar dados do dashboard:", error);
+      setError("Não foi possível carregar os dados");
+      toast.error("Não foi possível carregar os dados do dashboard");
+    } finally {
+      setLoading(false);
+    }
+  }, [queryClient]);
+
+  // Effect to manage plague alerts with weatherData dependency
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        console.log("Buscando dados para o dashboard...");
-        
-        // Carregar dados em paralelo para melhor performance
-        const [lavourasData, talhoesData] = await Promise.all([
-          getLavouras(),
-          getTalhoes()
-        ]);
-        
-        console.log("Lavouras carregadas:", lavourasData);
-        setLavouras(lavourasData);
-        
-        console.log("Talhões carregados:", talhoesData);
-        setTalhoes(talhoesData);
-        
-      } catch (error) {
-        console.error("Erro ao buscar dados do dashboard:", error);
-        setError("Não foi possível carregar os dados");
-        toast.error("Não foi possível carregar os dados do dashboard");
-      } finally {
-        // Definir loading como false ao concluir, mesmo em caso de erro
-        setLoading(false);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  // Determinar alerta de pragas com base nas culturas e condições climáticas
-  useEffect(() => {
+    let isMounted = true;
+    
     const loadPlagueAlerts = async () => {
-      if (weatherData) {
-        try {
-          console.log("Determinando alertas de pragas com base no clima:", weatherData);
-          const alertData = await determinePlagueAlerts(weatherData);
+      if (!weatherData) return;
+      
+      try {
+        console.log("Determinando alertas de pragas com base no clima:", weatherData);
+        const alertData = await determinePlagueAlerts(weatherData);
+        
+        // Only update state if component is still mounted
+        if (isMounted) {
           setPlagueAlertData(alertData);
           console.log("Dados de alerta de praga:", alertData);
-        } catch (error) {
-          console.error("Erro ao determinar alertas de pragas:", error);
+        }
+      } catch (error) {
+        console.error("Erro ao determinar alertas de pragas:", error);
+        if (isMounted) {
           setPlagueAlertData({
             hasAlert: false,
             message: "Monitoramento de pragas ativo. Erro ao verificar alertas."
           });
         }
-      } else {
-        // Garantir que temos uma mensagem adequada quando não há dados climáticos
-        setPlagueAlertData({
-          hasAlert: false,
-          message: "Monitoramento de pragas aguardando dados climáticos..."
-        });
       }
     };
     
     loadPlagueAlerts();
+    
+    // Cleanup function to prevent state updates after unmount
+    return () => {
+      isMounted = false;
+    };
   }, [weatherData]);
 
-  // Manipular alteração nos dados climáticos
-  const handleWeatherDataChange = (data: {
+  // Initial data load and refresh on navigation back
+  useEffect(() => {
+    let isMounted = true;
+    
+    console.log("Dashboard montado ou atualizado, carregando dados...");
+    fetchDashboardData();
+    
+    // When user returns to this screen, refresh data
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        console.log("Usuário retornou ao dashboard, atualizando dados...");
+        // Force a refresh by updating the key
+        if (isMounted) {
+          setDataKey(Date.now());
+          fetchDashboardData();
+        }
+      }
+    };
+    
+    // Listen for visibility changes
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    
+    return () => {
+      isMounted = false;
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [fetchDashboardData]);
+
+  // Trigger refresh when dataKey changes
+  useEffect(() => {
+    if (dataKey) {
+      // This effect runs when dataKey changes, triggering data reload without full remount
+      console.log("Dashboard key changed, refreshing data...");
+      fetchDashboardData();
+    }
+  }, [dataKey, fetchDashboardData]);
+
+  // Handle weather data changes
+  const handleWeatherDataChange = useCallback((data: {
     description: string;
     humidity: number;
   } | null) => {
@@ -103,9 +149,9 @@ const Dashboard: React.FC = () => {
     if (data && data.description) {
       setWeatherData(data);
     }
-  };
+  }, []);
   
-  // Função para navegar para a página de detalhes do alerta (futuro)
+  // Handle plague alert click
   const handlePlagueAlertClick = () => {
     if (plagueAlertData.hasAlert) {
       toast.info("Detalhes do alerta", {
@@ -120,15 +166,6 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  // Verificar se o usuário está autenticado
-  useEffect(() => {
-    if (!profile) {
-      console.log("Usuário não autenticado. Alguns dados podem não ser exibidos corretamente.");
-    } else {
-      console.log("Usuário autenticado:", profile.id);
-    }
-  }, [profile]);
-
   return (
     <div className="flex flex-col gap-3 bg-gray-50 pb-16">
       {/* Top greeting text */}
@@ -139,7 +176,7 @@ const Dashboard: React.FC = () => {
         <SimplifiedWeatherCard onWeatherDataChange={handleWeatherDataChange} />
       </div>
 
-      {/* Alert card - só aparece conforme lógica de pragas */}
+      {/* Alert card */}
       <PlagueAlert 
         alertData={plagueAlertData}
         onClick={handlePlagueAlertClick}
@@ -148,7 +185,7 @@ const Dashboard: React.FC = () => {
       {/* Simplified Diagnóstico button */}
       <DiagnosticButton />
 
-      {/* Lavouras section - real data */}
+      {/* Lavouras section */}
       <div className="mx-4 mt-2">
         <h2 className="text-xl font-bold mb-2 flex items-center justify-between">
           <Link to="/lavouras" className="text-inherit hover:text-green-700">
@@ -163,12 +200,13 @@ const Dashboard: React.FC = () => {
           error={error}
           talhoes={talhoes}
           lavouras={lavouras}
+          key={`lavouras-${dataKey}`} // Force re-render on data change
         />
       </div>
 
-      {/* Activities section - real data */}
+      {/* Activities section */}
       <div className="mx-4 mt-1">
-        <ActivityPreview />
+        <ActivityPreview key={`activities-${dataKey}`} /> {/* Force re-render on data change */}
       </div>
 
       {/* Chat button */}

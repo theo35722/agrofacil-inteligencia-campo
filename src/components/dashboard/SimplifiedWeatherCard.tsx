@@ -20,7 +20,8 @@ export const SimplifiedWeatherCard = ({ onWeatherDataChange }: {
     data, 
     isLoading, 
     isError,
-    locationError
+    locationError,
+    refetch
   } = useWeatherData();
   
   const { locationName } = useReverseGeocoding(
@@ -28,18 +29,27 @@ export const SimplifiedWeatherCard = ({ onWeatherDataChange }: {
     location.longitude
   );
   
+  // Refetch data when component mounts
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (!isLoading) {
+        refetch();
+      }
+    }, 500);
+    
+    return () => clearTimeout(timeoutId);
+  }, [refetch, isLoading]);
+
   // Efeito para notificar o componente pai sobre alterações nos dados do tempo
   useEffect(() => {
     if (data?.current?.description && onWeatherDataChange) {
-      console.log("Sending weather data to dashboard:", {
+      const weatherInfo = {
         description: data.current.description,
         humidity: data.current.humidity || 0
-      });
+      };
       
-      onWeatherDataChange({
-        description: data.current.description,
-        humidity: data.current.humidity || 0
-      });
+      console.log("Sending weather data to dashboard:", weatherInfo);
+      onWeatherDataChange(weatherInfo);
     } else if (!data && onWeatherDataChange) {
       onWeatherDataChange(null);
     }
@@ -106,6 +116,16 @@ export const SimplifiedWeatherCard = ({ onWeatherDataChange }: {
             <div className="h-12 w-12 text-gray-300">
               <WeatherIcon icon="cloud" className="h-12 w-12" />
             </div>
+          </div>
+          <div className="mt-2">
+            <Button 
+              onClick={() => refetch()} 
+              variant="outline" 
+              size="sm" 
+              className="w-full text-xs"
+            >
+              Tentar novamente
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -184,3 +204,6 @@ export const SimplifiedWeatherCard = ({ onWeatherDataChange }: {
     </Link>
   );
 };
+
+// Add the Button import
+import { Button } from "@/components/ui/button";

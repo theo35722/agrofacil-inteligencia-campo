@@ -13,7 +13,7 @@ export const useWeatherData = () => {
     if (location.latitude && location.longitude && !location.loading && !location.error) {
       setReady(true);
     }
-  }, [location]);
+  }, [location.latitude, location.longitude, location.loading, location.error]);
 
   // Usar React Query para buscar e gerenciar os dados do clima
   const weatherQuery = useQuery({
@@ -23,6 +23,8 @@ export const useWeatherData = () => {
     staleTime: 30 * 60 * 1000, // 30 minutos
     refetchOnWindowFocus: false,
     refetchInterval: 60 * 60 * 1000, // Atualização automática a cada 1 hora
+    retry: 2,
+    refetchOnMount: 'always', // Always fetch fresh data when component mounts
   });
 
   return {
