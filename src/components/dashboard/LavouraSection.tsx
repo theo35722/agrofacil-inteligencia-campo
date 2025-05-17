@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Talhao, Lavoura } from "@/types/agro";
 import { Loader2, AlertCircle } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface LavourasSectionProps {
@@ -16,44 +15,13 @@ interface LavourasSectionProps {
   lavouras: Lavoura[];
 }
 
-// Mock data for when real data is not available
-const mockTalhoes = [
-  {
-    id: "mock-1-1",
-    nome: "Talhão 1",
-    cultura: "Soja",
-    fase: "Crescimento",
-    area: 45,
-    status: "Soja variedade Brasmax Desafio",
-    lavoura_id: "mock-1"
-  },
-  {
-    id: "mock-1-2",
-    nome: "Talhão 2",
-    cultura: "Soja",
-    fase: "Crescimento",
-    area: 50,
-    status: "Soja variedade Monsoy 6410",
-    lavoura_id: "mock-1"
-  },
-  {
-    id: "mock-1-3",
-    nome: "Talhão 3",
-    cultura: "Milho",
-    fase: "Emergência",
-    area: 55,
-    status: "Milho 2ª safra",
-    lavoura_id: "mock-1"
-  }
-];
-
 export const LavouraSection: React.FC<LavourasSectionProps> = ({
   loading,
   error,
   talhoes,
   lavouras,
 }) => {
-  const { profile } = useAuth();
+  console.log("LavouraSection recebeu:", { loading, talhoes, lavouras });
 
   // Função para determinar a cor da badge baseada na fase
   const getPhaseColor = (phase: string) => {
@@ -71,11 +39,6 @@ export const LavouraSection: React.FC<LavourasSectionProps> = ({
         return "bg-gray-100 text-gray-800 border-gray-200";
     }
   };
-
-  console.log("LavouraSection recebeu:", { loading, talhoes, lavouras });
-
-  // Use mock data if we're authenticated but have no real data
-  const displayTalhoes = (talhoes?.length === 0 && profile) ? mockTalhoes : talhoes;
   
   if (loading) {
     return (
@@ -109,11 +72,12 @@ export const LavouraSection: React.FC<LavourasSectionProps> = ({
     );
   }
 
-  if (displayTalhoes && displayTalhoes.length > 0) {
+  // Show actual talhoes if available, no mock data for fresh experience
+  if (talhoes && talhoes.length > 0) {
     return (
       <>
         <div className="grid grid-cols-2 gap-3">
-          {displayTalhoes.slice(0, 4).map(talhao => (
+          {talhoes.slice(0, 4).map(talhao => (
             <Link key={talhao.id} to="/lavouras">
               <Card className="p-3 h-full border border-gray-100 shadow-none bg-green-50 rounded-lg hover:shadow-sm transition-all">
                 <h3 className="font-semibold">{talhao.nome || "Talhão sem nome"}</h3>
@@ -132,13 +96,13 @@ export const LavouraSection: React.FC<LavourasSectionProps> = ({
             </Link>
           ))}
         </div>
-        {displayTalhoes.length > 4 && (
+        {talhoes.length > 4 && (
           <div className="mt-3 text-right">
             <Link 
               to="/lavouras"
               className="text-sm text-green-600 hover:text-green-700 font-medium"
             >
-              Ver todas ({displayTalhoes.length}) &rarr;
+              Ver todas ({talhoes.length}) &rarr;
             </Link>
           </div>
         )}

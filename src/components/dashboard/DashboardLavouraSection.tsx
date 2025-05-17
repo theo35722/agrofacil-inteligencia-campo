@@ -19,14 +19,17 @@ export const DashboardLavouraSection: React.FC<DashboardLavouraSectionProps> = (
   lavouras,
   dataKey
 }) => {
+  // Use actual talhoes count for the badge
+  const talhaoCount = Array.isArray(talhoes) ? talhoes.length : 0;
+
   return (
     <div className="mx-4 mt-2">
       <h2 className="text-xl font-bold mb-2 flex items-center justify-between">
         <Link to="/lavouras" className="text-inherit hover:text-green-700 flex items-center">
           Suas Lavouras
-          {talhoes.length > 0 && (
+          {talhaoCount > 0 && (
             <span className="ml-2 text-sm bg-green-100 text-green-800 rounded-full px-2 py-0.5">
-              {talhoes.length}
+              {talhaoCount}
             </span>
           )}
         </Link>

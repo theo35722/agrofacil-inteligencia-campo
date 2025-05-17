@@ -12,7 +12,6 @@ import { DashboardChatButton } from "@/components/dashboard/DashboardChatButton"
 import { DashboardLavouraSection } from "@/components/dashboard/DashboardLavouraSection";
 import { useDashboardData } from "@/hooks/use-dashboard-data";
 import { usePlagueAlerts } from "@/hooks/use-plague-alerts";
-import { Button } from "@/components/ui/button";
 
 const Dashboard: React.FC = () => {
   const { profile } = useAuth();
@@ -101,38 +100,6 @@ const Dashboard: React.FC = () => {
     }
   };
 
-  // Render alert section conditionally
-  const renderAlertSection = () => {
-    if (talhoes.length === 0) {
-      return (
-        <div className="mx-4 p-3 bg-blue-50 border-none rounded-lg cursor-pointer transition-all hover:bg-blue-100" onClick={() => window.location.href = "/lavouras"}>
-          <div className="flex items-center gap-3">
-            <div>
-              <h3 className="text-blue-700 font-medium">Monitoramento de Pragas</h3>
-              <p className="text-blue-800 text-sm">
-                Cadastre sua fazenda e talhões para receber alertas de pragas
-              </p>
-            </div>
-          </div>
-          <div className="mt-2">
-            <Link to="/lavouras">
-              <Button size="sm" variant="outline" className="text-xs border-blue-300 text-blue-700 hover:bg-blue-50">
-                Cadastrar Lavoura
-              </Button>
-            </Link>
-          </div>
-        </div>
-      );
-    }
-    
-    return (
-      <PlagueAlert 
-        alertData={plagueAlertData}
-        onClick={handlePlagueAlertClick}
-      />
-    );
-  };
-
   return (
     <div className="flex flex-col gap-3 bg-gray-50 pb-16">
       {/* Top greeting text */}
@@ -143,8 +110,11 @@ const Dashboard: React.FC = () => {
         <SimplifiedWeatherCard onWeatherDataChange={handleWeatherDataChange} />
       </div>
 
-      {/* Alert card - conditionally rendered based on having talhoes */}
-      {renderAlertSection()}
+      {/* Alert card */}
+      <PlagueAlert 
+        alertData={plagueAlertData}
+        onClick={handlePlagueAlertClick}
+      />
 
       {/* Simplified Diagnóstico button */}
       <DiagnosticButton />

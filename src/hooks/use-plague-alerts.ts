@@ -19,7 +19,16 @@ export const usePlagueAlerts = (weatherData: {
     let isMounted = true;
     
     const loadPlagueAlerts = async () => {
-      if (!weatherData) return;
+      // If no weather data or no talhoes, show appropriate message
+      if (!weatherData || !hasTalhoes) {
+        if (!hasTalhoes) {
+          setPlagueAlertData({
+            hasAlert: false,
+            message: "Cadastre sua fazenda e talhões para receber alertas"
+          });
+        }
+        return;
+      }
       
       try {
         console.log("Determinando alertas de pragas com base no clima:", weatherData);
