@@ -48,13 +48,24 @@ export const getLavouraById = async (id: string): Promise<Lavoura | null> => {
 };
 
 // Criar nova lavoura
-export const createLavoura = async (lavoura: Omit<Lavoura, 'id' | 'criado_em' | 'atualizado_em' | 'user_id'>): Promise<Lavoura> => {
+export const createLavoura = async (lavouraData: Omit<Lavoura, 'id' | 'criado_em' | 'atualizado_em'>): Promise<Lavoura> => {
   try {
-    console.log("Criando lavoura:", lavoura);
+    console.log("Criando lavoura:", lavouraData);
     
+    // Get the current user
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      throw new Error("Usuário não autenticado");
+    }
+    
+    // Insert the lavoura with the user_id from the authenticated user
     const { data, error } = await supabase
       .from('lavouras')
-      .insert([lavoura])
+      .insert({
+        ...lavouraData,
+        user_id: user.id
+      })
       .select()
       .single();
 

@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { getLavouras } from "@/services/lavouraService";
 import { getTalhoes } from "@/services/talhaoService";
-import { createLavoura } from "@/services/agroService";
+import { createLavoura } from "@/services/lavouraService";
 import { Lavoura, Talhao } from "@/types/agro";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -85,7 +85,8 @@ const Fields = () => {
       await createLavoura({
         nome: newFarmName,
         area_total: parseFloat(newFarmArea),
-        localizacao: newFarmLocation
+        localizacao: newFarmLocation,
+        unidade_area: "hectares"
       });
       
       toast.success("Lavoura adicionada com sucesso!");
