@@ -139,6 +139,20 @@ function determinePlaguePotential(
         recommendation: 'Verifique a presença nos grãos armazenados e aplique controle se necessário'
       }
     ],
+    'feijão': [
+      {
+        name: 'Mosca-branca',
+        conditions: { hot: true, humid: true },
+        severity: "medium",
+        recommendation: 'Monitore a presença nas folhas e aplique controle se necessário'
+      },
+      {
+        name: 'Antracnose',
+        conditions: { rainy: true, humid: true },
+        severity: "high",
+        recommendation: 'Aplique fungicidas preventivamente em períodos chuvosos'
+      }
+    ],
     'capim': [
       {
         name: 'Cigarrinha-das-pastagens',
@@ -170,7 +184,7 @@ function determinePlaguePotential(
     } else {
       return {
         hasAlert: false,
-        message: `Nenhum alerta específico para ${culture}`,
+        message: `Monitoramento ativo para ${culture}`,
       };
     }
   }
@@ -202,7 +216,7 @@ function determinePlaguePotential(
   
   return {
     hasAlert: false,
-    message: `Nenhum alerta de pragas para ${culture} nas condições atuais`
+    message: `Monitoramento ativo para ${culture}. Sem alertas no momento.`
   };
 }
 

@@ -112,7 +112,7 @@ export const determinePlagueAlerts = async (weatherData: {
     if (!talhoes || talhoes.length === 0) {
       console.log("Nenhuma cultura encontrada, usando culturas de demonstração");
       // Usar culturas de demonstração se não houver dados reais
-      const demoCultures = ["soja", "milho", "capim"];
+      const demoCultures = ["soja", "milho", "feijão", "capim"];
       
       // Verificar cada cultura de demonstração
       for (const cultura of demoCultures) {
@@ -131,7 +131,7 @@ export const determinePlagueAlerts = async (weatherData: {
       
       return {
         hasAlert: false,
-        message: "Nenhum alerta de pragas para exibir"
+        message: "Monitoramento de pragas ativo. Nenhum alerta no momento."
       };
     }
     
@@ -139,7 +139,7 @@ export const determinePlagueAlerts = async (weatherData: {
     const checkedCultures = new Set<string>();
     let highestAlert: PlagueAlertData = {
       hasAlert: false,
-      message: "Nenhum alerta de pragas no momento"
+      message: "Monitoramento de pragas ativo. Nenhum alerta no momento."
     };
     
     // Verificar cada cultura
@@ -155,11 +155,13 @@ export const determinePlagueAlerts = async (weatherData: {
         
         console.log(`Verificação de pragas para ${talhao.cultura}:`, plagueCheck);
         
-        // Priorizar alertas positivos
+        // Priorizar alertas de severidade alta
         if (plagueCheck.hasAlert) {
-          highestAlert = plagueCheck;
-          // Se encontrou um alerta, pode parar de verificar
-          break;
+          if (!highestAlert.hasAlert || 
+              (plagueCheck.severity === 'high' && highestAlert.severity !== 'high') ||
+              (plagueCheck.severity === 'medium' && highestAlert.severity === 'low')) {
+            highestAlert = plagueCheck;
+          }
         }
       }
     }
@@ -169,7 +171,7 @@ export const determinePlagueAlerts = async (weatherData: {
     console.error("Erro ao determinar alertas de pragas:", error);
     return {
       hasAlert: false,
-      message: "Erro ao verificar alertas de pragas"
+      message: "Monitoramento de pragas ativo. Erro ao verificar alertas."
     };
   }
 };

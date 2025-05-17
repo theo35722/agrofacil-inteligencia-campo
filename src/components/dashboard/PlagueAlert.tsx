@@ -1,6 +1,6 @@
 
 import React from "react";
-import { AlertTriangle, CheckCircle, AlertCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle, AlertCircle, Activity } from "lucide-react";
 import { PlagueAlertData } from "@/types/agro";
 
 interface PlagueAlertProps {
@@ -18,7 +18,7 @@ export const PlagueAlert: React.FC<PlagueAlertProps> = ({ alertData, onClick }) 
         onClick={onClick}
       >
         <div className="flex items-center gap-3">
-          <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
+          <Activity className="w-5 h-5 text-green-500 flex-shrink-0" />
           <div>
             <h3 className="text-green-700 font-medium">Monitoramento de Pragas</h3>
             <p className="text-green-800 text-sm">

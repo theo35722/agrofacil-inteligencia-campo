@@ -100,7 +100,7 @@ export const determinePlaguePotential = (
 ): { hasAlert: boolean; message: string; severity?: "low" | "medium" | "high" } => {
   // Default values
   let hasAlert = false;
-  let message = "Nenhum alerta de pragas no momento";
+  let message = "Monitoramento de pragas ativo. Nenhum alerta no momento.";
   let severity: "low" | "medium" | "high" = "low";
 
   // Caso não tenha cultura cadastrada

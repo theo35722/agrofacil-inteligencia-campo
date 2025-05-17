@@ -25,7 +25,7 @@ const Dashboard: React.FC = () => {
   } | null>(null);
   const [plagueAlertData, setPlagueAlertData] = useState<PlagueAlertData>({
     hasAlert: false,
-    message: "Verificando alertas de pragas..."
+    message: "Verificando monitoramento de pragas..."
   });
   const [lavouras, setLavouras] = useState<Lavoura[]>([]);
   const [talhoes, setTalhoes] = useState<Talhao[]>([]);
@@ -76,9 +76,15 @@ const Dashboard: React.FC = () => {
           console.error("Erro ao determinar alertas de pragas:", error);
           setPlagueAlertData({
             hasAlert: false,
-            message: "Não foi possível verificar alertas de pragas"
+            message: "Monitoramento de pragas ativo. Erro ao verificar alertas."
           });
         }
+      } else {
+        // Garantir que temos uma mensagem adequada quando não há dados climáticos
+        setPlagueAlertData({
+          hasAlert: false,
+          message: "Monitoramento de pragas aguardando dados climáticos..."
+        });
       }
     };
     
@@ -105,7 +111,7 @@ const Dashboard: React.FC = () => {
       });
     } else {
       toast.info("Monitoramento de pragas", {
-        description: "Nenhum alerta de pragas no momento. Continue monitorando sua lavoura regularmente.",
+        description: "Sistema de monitoramento de pragas está ativo. Continue acompanhando sua lavoura regularmente.",
         duration: 5000
       });
     }
