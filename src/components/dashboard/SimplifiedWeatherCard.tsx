@@ -1,5 +1,5 @@
 
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useWeatherData } from "@/hooks/use-weather-data";
 import { useReverseGeocoding } from "@/hooks/use-reverse-geocoding";
@@ -28,15 +28,27 @@ export const SimplifiedWeatherCard = ({ onWeatherDataChange }: {
     location.longitude
   );
 
+  // Use ref to track if weather data has been sent to parent
+  const dataWasSent = useRef(false);
+  
   // Efeito para notificar o componente pai sobre alterações nos dados do tempo
   useEffect(() => {
-    if (data?.current?.description && onWeatherDataChange) {
+    if (data?.current?.description && onWeatherDataChange && !dataWasSent.current) {
+      console.log("Sending weather data to dashboard:", {
+        description: data.current.description,
+        humidity: data.current.humidity || 0
+      });
+      
       onWeatherDataChange({
         description: data.current.description,
         humidity: data.current.humidity || 0
       });
-    } else if (onWeatherDataChange) {
+      
+      // Mark that we've sent the data to prevent infinite updates
+      dataWasSent.current = true;
+    } else if (!data && onWeatherDataChange && !dataWasSent.current) {
       onWeatherDataChange(null);
+      dataWasSent.current = true;
     }
   }, [data, onWeatherDataChange]);
 

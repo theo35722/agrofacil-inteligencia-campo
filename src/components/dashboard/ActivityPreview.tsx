@@ -4,26 +4,34 @@ import { CalendarCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { getAtividades } from "@/services/atividadeService"; // Fixed import to use specific service
+import { getAtividades } from "@/services/atividadeService";
 import { Atividade, formatDate } from "@/types/agro";
 import { toast } from "sonner";
 
 export const ActivityPreview = () => {
   const [activities, setActivities] = useState<Atividade[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchActivities = async () => {
       try {
         setLoading(true);
+        setError(null);
         const data = await getAtividades({ 
           limit: 5, 
           upcoming: true 
         });
         console.log("Atividades carregadas para o dashboard:", data);
         setActivities(data);
+        
+        // Log if no activities found
+        if (data.length === 0) {
+          console.log("Nenhuma atividade encontrada para exibir no dashboard");
+        }
       } catch (error) {
         console.error("Erro ao carregar atividades:", error);
+        setError("Não foi possível carregar as atividades");
         toast.error("Não foi possível carregar as atividades");
       } finally {
         setLoading(false);
@@ -47,6 +55,13 @@ export const ActivityPreview = () => {
         return "bg-gray-400 hover:bg-gray-500";
     }
   };
+  
+  // Retry function
+  const handleRetry = () => {
+    setActivities([]);
+    setLoading(true);
+    setError(null);
+  };
 
   return (
     <Card className="border border-gray-100 shadow-sm bg-white">
@@ -59,6 +74,16 @@ export const ActivityPreview = () => {
       <CardContent className="space-y-2 p-3">
         {loading ? (
           <div className="py-2 px-3 text-sm text-gray-500">Carregando atividades...</div>
+        ) : error ? (
+          <div className="py-2 px-3 text-sm text-red-500 flex flex-col items-center">
+            <p>{error}</p>
+            <button 
+              onClick={handleRetry}
+              className="mt-2 text-xs text-green-600 hover:text-green-700"
+            >
+              Tentar novamente
+            </button>
+          </div>
         ) : activities.length > 0 ? (
           activities.map((activity) => (
             <div 
@@ -84,19 +109,27 @@ export const ActivityPreview = () => {
             </div>
           ))
         ) : (
-          <div className="py-2 px-3 text-sm text-gray-500">
-            Nenhuma atividade programada.
+          <div className="py-2 px-3 text-sm text-center text-gray-500">
+            <p>Nenhuma atividade programada.</p>
+            <Link 
+              to="/atividades/nova" 
+              className="mt-2 text-green-600 hover:text-green-700 inline-block"
+            >
+              Adicionar atividade
+            </Link>
           </div>
         )}
 
-        <div className="pt-2">
-          <Link 
-            to="/atividades" 
-            className="text-sm text-green-600 hover:text-green-700 font-medium flex justify-end"
-          >
-            Ver todas &rarr;
-          </Link>
-        </div>
+        {activities.length > 0 && (
+          <div className="pt-2">
+            <Link 
+              to="/atividades" 
+              className="text-sm text-green-600 hover:text-green-700 font-medium flex justify-end"
+            >
+              Ver todas &rarr;
+            </Link>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

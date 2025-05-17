@@ -30,6 +30,7 @@ const Dashboard: React.FC = () => {
   const [lavouras, setLavouras] = useState<Lavoura[]>([]);
   const [talhoes, setTalhoes] = useState<Talhao[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dataFetched, setDataFetched] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Buscar lavouras do usuário
@@ -42,15 +43,25 @@ const Dashboard: React.FC = () => {
         const data = await getLavouras();
         console.log("Lavouras carregadas:", data);
         setLavouras(data);
+        
+        // Se não tiver lavouras e já carregou, mostra mensagem no console
+        if (data.length === 0) {
+          console.log("Nenhuma lavoura encontrada para o usuário");
+        }
       } catch (error) {
         console.error("Erro ao buscar lavouras:", error);
         setError("Não foi possível carregar os dados das lavouras");
         toast.error("Não foi possível carregar os dados das lavouras");
+      } finally {
+        // Mesmo com erro, marca que os dados foram buscados
+        setDataFetched(true);
       }
     };
 
-    fetchLavouras();
-  }, []);
+    if (!dataFetched) {
+      fetchLavouras();
+    }
+  }, [dataFetched]);
 
   // Buscar talhões após carregar lavouras
   useEffect(() => {
@@ -60,6 +71,11 @@ const Dashboard: React.FC = () => {
         const data = await getTalhoes();
         console.log("Talhões carregados:", data);
         setTalhoes(data);
+        
+        // Se não tiver talhões, mostra mensagem no console
+        if (data.length === 0) {
+          console.log("Nenhum talhão encontrado para o usuário");
+        }
       } catch (error) {
         console.error("Erro ao buscar talhões:", error);
         toast.error("Não foi possível carregar os talhões");
@@ -68,13 +84,11 @@ const Dashboard: React.FC = () => {
       }
     };
 
-    if (lavouras.length > 0) {
+    if (dataFetched) {
+      // Busca talhões independente se tem lavouras ou não
       fetchTalhoes();
-    } else if (!loading) {
-      // Se não há lavouras e o carregamento já terminou
-      setLoading(false);
     }
-  }, [lavouras, loading]);
+  }, [dataFetched]);
 
   // Determinar alerta de pragas com base nas culturas e condições climáticas
   useEffect(() => {
@@ -116,6 +130,15 @@ const Dashboard: React.FC = () => {
     }
   };
 
+  // Verificar se o usuário está autenticado
+  useEffect(() => {
+    if (!profile) {
+      console.log("Usuário não autenticado. Alguns dados podem não ser exibidos corretamente.");
+    } else {
+      console.log("Usuário autenticado:", profile.id);
+    }
+  }, [profile]);
+
   return (
     <div className="flex flex-col gap-3 bg-gray-50 pb-16">
       {/* Top greeting text */}
@@ -137,9 +160,12 @@ const Dashboard: React.FC = () => {
 
       {/* Lavouras section - real data */}
       <div className="mx-4 mt-2">
-        <h2 className="text-xl font-bold mb-2">
+        <h2 className="text-xl font-bold mb-2 flex items-center justify-between">
           <Link to="/lavouras" className="text-inherit hover:text-green-700">
             Suas Lavouras
+          </Link>
+          <Link to="/lavouras/nova" className="text-sm text-green-600 hover:text-green-700">
+            + Nova Lavoura
           </Link>
         </h2>
         <LavouraSection 

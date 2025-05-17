@@ -1,15 +1,13 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { DiagnosticoPraga, PlagueAlertData } from "@/types/agro";
+import { determinePlaguePotential } from "@/services/openWeatherService";
 
-// Serviço para Diagnósticos de Pragas
-export const getDiagnosticosPragas = async (
-  options: {
-    limit?: number;
-    talhaoId?: string;
-    recentOnly?: boolean;
-  } = {}
-): Promise<DiagnosticoPraga[]> => {
+// Buscar diagnósticos de pragas
+export const getDiagnosticosPragas = async (options: { 
+  limit?: number; 
+  talhaoId?: string;
+}): Promise<DiagnosticoPraga[]> => {
   try {
     let query = supabase
       .from('diagnosticos_pragas')
@@ -28,13 +26,6 @@ export const getDiagnosticosPragas = async (
       query = query.eq('talhao_id', options.talhaoId);
     }
 
-    if (options.recentOnly) {
-      // Buscar apenas diagnósticos dos últimos 7 dias
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-      query = query.gte('data_diagnostico', sevenDaysAgo.toISOString());
-    }
-
     if (options.limit) {
       query = query.limit(options.limit);
     }
@@ -42,11 +33,11 @@ export const getDiagnosticosPragas = async (
     const { data, error } = await query;
 
     if (error) {
-      console.error("Erro ao buscar diagnósticos:", error);
+      console.error("Erro ao buscar diagnósticos de pragas:", error);
       throw error;
     }
 
-    console.log(`Diagnósticos carregados: ${data?.length || 0}`);
+    console.log("Diagnósticos carregados:", data?.length || 0);
     return data || [];
   } catch (error) {
     console.error("Falha na operação de buscar diagnósticos:", error);
@@ -87,83 +78,69 @@ export const getDiagnosticoById = async (id: string): Promise<DiagnosticoPraga |
   }
 };
 
-// Função para determinar alertas de pragas com base em diagnósticos, cultura e clima
-export const determinePlagueAlerts = async (
-  weatherData?: { description: string; humidity: number }
-): Promise<PlagueAlertData> => {
+// Determinar alertas de pragas com base no clima atual e nas culturas cadastradas
+export const determinePlagueAlerts = async (weatherData: {
+  description: string;
+  humidity: number;
+}): Promise<PlagueAlertData> => {
   try {
-    // Verificar condições climáticas primeiro
-    if (weatherData) {
-      const { description, humidity } = weatherData;
-      const isWarm = description.toLowerCase().includes('calor') || description.toLowerCase().includes('quente');
-      const isHumid = humidity > 70;
-      const isRainy = description.toLowerCase().includes('chuva') || description.toLowerCase().includes('chuvoso');
-
-      // Mesmo sem diagnósticos, se as condições climáticas favorecem pragas
-      if ((isWarm && isHumid) || isRainy) {
-        console.log("Condições climáticas favoráveis para pragas detectadas", { isWarm, isHumid, isRainy, humidity });
-        return {
-          hasAlert: true,
-          message: `Condições favoráveis para pragas nas lavouras`,
-          severity: "low",
-          culturas: ["Todas as culturas"]
-        };
-      }
+    console.log("Verificando alertas de pragas para culturas cadastradas...");
+    
+    // Buscar talhões para verificar culturas
+    const { data: talhoes, error } = await supabase
+      .from('talhoes')
+      .select('cultura')
+      .is('status', null) // Sem status específico ou
+      .or('status.neq.inativo'); // Status não inativo
+    
+    if (error) {
+      console.error("Erro ao buscar culturas para verificação de pragas:", error);
+      return {
+        hasAlert: false,
+        message: "Erro ao verificar alertas de pragas"
+      };
     }
     
-    // Buscar diagnósticos recentes
-    try {
-      const diagnosticos = await getDiagnosticosPragas({ recentOnly: true });
-      
-      // Se não houver diagnósticos recentes, retornar estado normal
-      if (diagnosticos.length === 0) {
-        return { 
-          hasAlert: false, 
-          message: "Nenhum alerta de pragas no momento" 
-        };
-      }
-
-      // Agrupar culturas afetadas
-      const culturas = [...new Set(diagnosticos.map(d => d.talhao?.cultura).filter(Boolean))];
-      
-      // Se houver diagnósticos recentes, determinar severidade do alerta
-      if (diagnosticos.some(d => d.nivel_infestacao === 'alto')) {
-        // Alerta de alta severidade
-        const culturasAfetadas = culturas.join(', ');
-        return {
-          hasAlert: true,
-          message: `Infestação grave de pragas em ${culturasAfetadas}`,
-          severity: "high",
-          culturas
-        };
-      }
-
-      // Alerta de baixa severidade se houver diagnósticos, mas não críticos
-      if (diagnosticos.length > 0) {
-        const culturasAfetadas = culturas.join(', ');
-        return {
-          hasAlert: true,
-          message: `Monitorar pragas em ${culturasAfetadas}`,
-          severity: "low",
-          culturas
-        };
-      }
-    } catch (error) {
-      console.error("Erro ao buscar diagnósticos de pragas:", error);
-      // Continua a execução para retornar pelo menos a mensagem padrão
+    if (!talhoes || talhoes.length === 0) {
+      console.log("Nenhuma cultura encontrada para verificação de pragas");
+      return {
+        hasAlert: false,
+        message: "Nenhum alerta de pragas para exibir"
+      };
     }
-
-    // Sem alerta caso nenhuma das condições acima seja verdadeira
-    return { 
-      hasAlert: false, 
-      message: "Nenhum alerta de pragas no momento" 
+    
+    // Manter registro de culturas verificadas para não duplicar alertas
+    const checkedCultures = new Set<string>();
+    let highestAlert: PlagueAlertData = {
+      hasAlert: false,
+      message: "Nenhum alerta de pragas no momento"
     };
     
+    // Verificar cada cultura
+    for (const talhao of talhoes) {
+      if (talhao.cultura && !checkedCultures.has(talhao.cultura)) {
+        checkedCultures.add(talhao.cultura);
+        
+        const plagueCheck = determinePlaguePotential(
+          talhao.cultura,
+          weatherData.description,
+          weatherData.humidity
+        );
+        
+        // Priorizar alertas positivos
+        if (plagueCheck.hasAlert) {
+          highestAlert = plagueCheck;
+          // Se encontrou um alerta, pode parar de verificar
+          break;
+        }
+      }
+    }
+    
+    return highestAlert;
   } catch (error) {
     console.error("Erro ao determinar alertas de pragas:", error);
-    // Fallback de segurança
-    return { 
-      hasAlert: false, 
+    return {
+      hasAlert: false,
       message: "Erro ao verificar alertas de pragas"
     };
   }

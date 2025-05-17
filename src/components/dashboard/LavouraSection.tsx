@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Talhao, Lavoura } from "@/types/agro";
+import { Loader2 } from "lucide-react";
 
 interface LavourasSectionProps {
   loading: boolean;
@@ -39,7 +40,8 @@ export const LavouraSection: React.FC<LavourasSectionProps> = ({
   if (loading) {
     return (
       <div className="p-4 text-center text-gray-500">
-        Carregando lavouras...
+        <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
+        <p>Carregando lavouras...</p>
       </div>
     );
   }
@@ -98,7 +100,7 @@ export const LavouraSection: React.FC<LavourasSectionProps> = ({
   if (lavouras.length > 0) {
     return (
       <Card className="p-6 text-center border border-dashed border-gray-300 bg-white">
-        <p className="text-gray-600 mb-4">Você tem lavouras, mas ainda não cadastrou nenhum talhão.</p>
+        <p className="text-gray-600 mb-4">Você tem {lavouras.length} lavoura{lavouras.length > 1 ? 's' : ''}, mas ainda não cadastrou nenhum talhão.</p>
         <Link to="/lavouras">
           <Button className="bg-green-500 hover:bg-green-600">
             Gerenciar Lavouras
