@@ -35,7 +35,7 @@ export function ActivityList({
         isMobile={isMobile}
       />
 
-      <TabsContent value={activeTab}>
+      <TabsContent value={activeTab} className="focus-visible:outline-none">
         {loading ? (
           <div className="text-center py-6">
             <p className="text-gray-500">Carregando atividades...</p>
@@ -52,7 +52,7 @@ export function ActivityList({
         ) : (
           <div className="space-y-3">
             {filteredActivities.map((activity) => (
-              <ActivityListItem key={activity.id} activity={activity} />
+              <ActivityListItem key={activity.id} activity={activity} isMobile={isMobile} />
             ))}
           </div>
         )}

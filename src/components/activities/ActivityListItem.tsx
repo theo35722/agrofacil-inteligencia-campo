@@ -7,10 +7,11 @@ interface ActivityListItemProps {
   activity: Atividade & {
     field?: string;
     plot?: string;
-  }
+  };
+  isMobile?: boolean;
 }
 
-export function ActivityListItem({ activity }: ActivityListItemProps) {
+export function ActivityListItem({ activity, isMobile = false }: ActivityListItemProps) {
   // Format date to Brazilian format
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -26,13 +27,13 @@ export function ActivityListItem({ activity }: ActivityListItemProps) {
 
   return (
     <div 
-      className="p-3 border border-gray-200 rounded-md hover:bg-gray-50 shadow-sm"
+      className="p-3 border border-gray-200 rounded-md hover:bg-gray-50 shadow-sm transition-all"
     >
       <div className="flex justify-between items-start">
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <h4 className="font-medium">{activity.tipo}</h4>
-            <Badge className={getStatusColor(activity.status)}>
+            <Badge className={`${getStatusColor(activity.status)} ${isMobile ? 'text-xs px-1.5 py-0' : ''}`}>
               {activity.status}
             </Badge>
           </div>

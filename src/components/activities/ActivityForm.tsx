@@ -1,10 +1,9 @@
 
 import { useState, useEffect } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
@@ -62,7 +61,7 @@ export function ActivityForm({ open, onOpenChange, fields, onSuccess }: Activity
     }
   });
   
-  const { watch, setValue } = form;
+  const { watch, setValue, formState: { errors } } = form;
   const watchedLavouraId = watch("lavouraId");
   
   // Get selected field's plots
@@ -73,10 +72,24 @@ export function ActivityForm({ open, onOpenChange, fields, onSuccess }: Activity
     setValue("talhaoId", "");
   }, [watchedLavouraId, setValue]);
 
+  // Reset form when dialog closes
+  useEffect(() => {
+    if (!open) {
+      form.reset();
+    }
+  }, [open, form]);
+
   const handleAddActivity = async (values: ActivityFormValues) => {
     try {
       setIsSubmitting(true);
       console.log("Valores do formulário:", values);
+      
+      // Validate required fields
+      if (!values.dataProgramada || !values.tipo || !values.lavouraId || !values.talhaoId) {
+        toast.error("Por favor, preencha todos os campos obrigatórios");
+        setIsSubmitting(false);
+        return;
+      }
       
       // Get the current user
       const { data: { session } } = await supabase.auth.getSession();
@@ -119,21 +132,26 @@ export function ActivityForm({ open, onOpenChange, fields, onSuccess }: Activity
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md mx-auto">
-        <DialogHeader>
-          <DialogTitle>Adicionar Nova Atividade</DialogTitle>
+      <DialogContent className="w-[95%] max-w-md mx-auto p-4 sm:p-6 rounded-lg">
+        <DialogHeader className="mb-2">
+          <DialogTitle className="text-xl text-center sm:text-left">Adicionar Nova Atividade</DialogTitle>
+          <DialogDescription className="text-sm text-gray-500">
+            Preencha os campos para adicionar uma nova atividade à sua lavoura
+          </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleAddActivity)} className="space-y-4 py-4">
+          <form onSubmit={form.handleSubmit(handleAddActivity)} className="space-y-4 py-2">
             <FormField
               control={form.control}
               name="dataProgramada"
+              rules={{ required: "Data é obrigatória" }}
               render={({ field }) => (
-                <FormItem className="space-y-2">
-                  <FormLabel>Data *</FormLabel>
+                <FormItem className="space-y-1.5">
+                  <FormLabel className="font-medium">Data *</FormLabel>
                   <FormControl>
                     <Input 
                       type="date"
+                      className="h-10"
                       {...field}
                     />
                   </FormControl>
@@ -145,15 +163,16 @@ export function ActivityForm({ open, onOpenChange, fields, onSuccess }: Activity
             <FormField
               control={form.control}
               name="tipo"
+              rules={{ required: "Tipo de atividade é obrigatório" }}
               render={({ field }) => (
-                <FormItem className="space-y-2">
-                  <FormLabel>Tipo de Atividade *</FormLabel>
+                <FormItem className="space-y-1.5">
+                  <FormLabel className="font-medium">Tipo de Atividade *</FormLabel>
                   <Select 
                     value={field.value} 
                     onValueChange={field.onChange}
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="h-10">
                         <SelectValue placeholder="Selecione o tipo" />
                       </SelectTrigger>
                     </FormControl>
@@ -173,15 +192,16 @@ export function ActivityForm({ open, onOpenChange, fields, onSuccess }: Activity
             <FormField
               control={form.control}
               name="lavouraId"
+              rules={{ required: "Lavoura é obrigatória" }}
               render={({ field }) => (
-                <FormItem className="space-y-2">
-                  <FormLabel>Lavoura *</FormLabel>
+                <FormItem className="space-y-1.5">
+                  <FormLabel className="font-medium">Lavoura *</FormLabel>
                   <Select 
                     value={field.value} 
                     onValueChange={field.onChange}
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="h-10">
                         <SelectValue placeholder="Selecione a lavoura" />
                       </SelectTrigger>
                     </FormControl>
@@ -206,16 +226,17 @@ export function ActivityForm({ open, onOpenChange, fields, onSuccess }: Activity
             <FormField
               control={form.control}
               name="talhaoId"
+              rules={{ required: "Talhão é obrigatório" }}
               render={({ field }) => (
-                <FormItem className="space-y-2">
-                  <FormLabel>Talhão *</FormLabel>
+                <FormItem className="space-y-1.5">
+                  <FormLabel className="font-medium">Talhão *</FormLabel>
                   <Select 
                     value={field.value} 
                     onValueChange={field.onChange}
                     disabled={!watchedLavouraId || selectedFieldPlots.length === 0}
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="h-10">
                         <SelectValue placeholder="Selecione o talhão" />
                       </SelectTrigger>
                     </FormControl>
@@ -241,14 +262,14 @@ export function ActivityForm({ open, onOpenChange, fields, onSuccess }: Activity
               control={form.control}
               name="status"
               render={({ field }) => (
-                <FormItem className="space-y-2">
-                  <FormLabel>Status</FormLabel>
+                <FormItem className="space-y-1.5">
+                  <FormLabel className="font-medium">Status</FormLabel>
                   <Select 
                     value={field.value} 
                     onValueChange={field.onChange}
                   >
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="h-10">
                         <SelectValue />
                       </SelectTrigger>
                     </FormControl>
@@ -267,11 +288,12 @@ export function ActivityForm({ open, onOpenChange, fields, onSuccess }: Activity
               control={form.control}
               name="descricao"
               render={({ field }) => (
-                <FormItem className="space-y-2">
-                  <FormLabel>Observações</FormLabel>
+                <FormItem className="space-y-1.5">
+                  <FormLabel className="font-medium">Observações</FormLabel>
                   <FormControl>
                     <Textarea 
                       placeholder="Detalhes da atividade..."
+                      className="resize-none"
                       {...field}
                     />
                   </FormControl>
@@ -282,7 +304,7 @@ export function ActivityForm({ open, onOpenChange, fields, onSuccess }: Activity
             
             <Button 
               type="submit"
-              className="w-full mt-4 bg-green-500 hover:bg-green-600"
+              className="w-full mt-4 bg-green-500 hover:bg-green-600 h-12 text-base"
               disabled={isSubmitting || fields.length === 0}
             >
               {isSubmitting ? "Adicionando..." : "Adicionar Atividade"}

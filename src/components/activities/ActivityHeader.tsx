@@ -9,7 +9,7 @@ interface ActivityHeaderProps {
 
 export function ActivityHeader({ onNewActivity, isMobile }: ActivityHeaderProps) {
   return (
-    <div className={`flex ${isMobile ? 'flex-col' : 'justify-between'} items-start md:items-center gap-2 md:gap-0`}>
+    <div className={`flex ${isMobile ? 'flex-col mb-3' : 'justify-between'} items-start md:items-center gap-2 md:gap-0`}>
       <div>
         <h1 className="text-xl md:text-2xl font-bold text-green-800 mb-1">
           Registro de Atividades
@@ -22,6 +22,7 @@ export function ActivityHeader({ onNewActivity, isMobile }: ActivityHeaderProps)
       <Button 
         className="bg-green-500 hover:bg-green-600 w-full md:w-auto mt-2 md:mt-0"
         onClick={onNewActivity}
+        size={isMobile ? "lg" : "default"}
       >
         <Plus className="h-4 w-4 mr-2" /> Nova Atividade
       </Button>

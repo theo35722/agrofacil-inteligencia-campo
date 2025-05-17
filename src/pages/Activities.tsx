@@ -6,13 +6,18 @@ import { Button } from "@/components/ui/button";
 import { Tabs } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuTrigger 
+} from "@/components/ui/dropdown-menu";
 
 import { getAtividades } from "@/services/atividadeService";
 import { getLavouras } from "@/services/lavouraService";
 import { getTalhoes } from "@/services/talhaoService";
 import { Atividade } from "@/types/agro";
 
-// Import our new components
+// Import our components
 import { ActivityForm } from "@/components/activities/ActivityForm";
 import { ActivityList } from "@/components/activities/ActivityList";
 import { ActivityHeader } from "@/components/activities/ActivityHeader";
@@ -50,6 +55,7 @@ const Activities = () => {
       
       // Get real activities from database
       const atividadesData = await getAtividades();
+      console.log("Atividades carregadas:", atividadesData);
       
       // Get lavouras for the form
       const lavourasData = await getLavouras();
@@ -60,6 +66,7 @@ const Activities = () => {
       // For each lavoura, get its talhoes
       for (const lavoura of lavourasData) {
         const talhoesData = await getTalhoes(lavoura.id);
+        console.log(`Talhões da lavoura ${lavoura.nome}:`, talhoesData);
         
         fieldsWithPlots.push({
           name: lavoura.nome,
@@ -125,10 +132,20 @@ const Activities = () => {
               <CalendarCheck className="h-5 w-5 mr-2 text-green-600" />
               <span className="text-green-800">Atividades</span>
             </div>
-            <Button variant="ghost" size="sm" className="text-gray-500">
-              <Filter className="h-4 w-4 mr-1" />
-              Filtrar
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="text-gray-500">
+                  <Filter className="h-4 w-4 mr-1" />
+                  Filtrar
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48 bg-white shadow-md">
+                {/* Conteúdo do dropdown será implementado conforme necessidade */}
+                <div className="p-2 text-sm text-gray-500 text-center">
+                  Filtros em breve
+                </div>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </CardTitle>
         </CardHeader>
         <CardContent className={isMobile ? 'px-3 py-2' : ''}>

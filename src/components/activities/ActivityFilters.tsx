@@ -12,7 +12,7 @@ export function ActivityFilters({ activeTab, onTabChange, isMobile }: ActivityFi
     <TabsList className="mb-4 w-full grid grid-cols-4 h-auto">
       <TabsTrigger 
         value="all" 
-        className="text-xs md:text-sm py-1" 
+        className={`${isMobile ? 'text-xs py-1.5 px-1' : 'text-sm py-1'}`}
         onClick={() => onTabChange('all')}
         data-state={activeTab === "all" ? "active" : ""}
       >
@@ -20,7 +20,7 @@ export function ActivityFilters({ activeTab, onTabChange, isMobile }: ActivityFi
       </TabsTrigger>
       <TabsTrigger 
         value="pendente" 
-        className="text-xs md:text-sm py-1"
+        className={`${isMobile ? 'text-xs py-1.5 px-1' : 'text-sm py-1'}`}
         onClick={() => onTabChange('pendente')}
         data-state={activeTab === "pendente" ? "active" : ""}
       >
@@ -28,7 +28,7 @@ export function ActivityFilters({ activeTab, onTabChange, isMobile }: ActivityFi
       </TabsTrigger>
       <TabsTrigger 
         value="concluído" 
-        className="text-xs md:text-sm py-1"
+        className={`${isMobile ? 'text-xs py-1.5 px-1' : 'text-sm py-1'}`}
         onClick={() => onTabChange('concluído')}
         data-state={activeTab === "concluído" ? "active" : ""}
       >
@@ -36,7 +36,7 @@ export function ActivityFilters({ activeTab, onTabChange, isMobile }: ActivityFi
       </TabsTrigger>
       <TabsTrigger 
         value="planejado" 
-        className="text-xs md:text-sm py-1"
+        className={`${isMobile ? 'text-xs py-1.5 px-1' : 'text-sm py-1'}`}
         onClick={() => onTabChange('planejado')}
         data-state={activeTab === "planejado" ? "active" : ""}
       >
