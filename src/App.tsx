@@ -19,6 +19,7 @@ import Marketplace from "./pages/Marketplace";
 import MyListings from "./pages/MyListings";
 import CreateMarketplaceProduct from "./pages/CreateMarketplaceProduct";
 import EditMarketplaceProduct from "./pages/EditMarketplaceProduct";
+import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import Home from "./pages/Home";
@@ -72,6 +73,7 @@ const App = () => (
               <Route path="notificacoes" element={<Notifications />} />
               <Route path="marketplace" element={<Marketplace />} />
               <Route path="my-listings" element={<MyListings />} />
+              <Route path="perfil" element={<Profile />} />
               <Route path="create-marketplace-product" element={<CreateMarketplaceProduct />} />
               <Route path="edit-marketplace-product/:productId" element={<EditMarketplaceProduct />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
