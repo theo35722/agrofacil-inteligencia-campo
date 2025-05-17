@@ -41,13 +41,15 @@ const Dashboard: React.FC = () => {
         
         console.log("Buscando dados para o dashboard...");
         
-        // Carregar lavouras
-        const lavourasData = await getLavouras();
+        // Carregar dados em paralelo para melhor performance
+        const [lavourasData, talhoesData] = await Promise.all([
+          getLavouras(),
+          getTalhoes()
+        ]);
+        
         console.log("Lavouras carregadas:", lavourasData);
         setLavouras(lavourasData);
         
-        // Carregar talhões
-        const talhoesData = await getTalhoes();
         console.log("Talhões carregados:", talhoesData);
         setTalhoes(talhoesData);
         
@@ -56,6 +58,7 @@ const Dashboard: React.FC = () => {
         setError("Não foi possível carregar os dados");
         toast.error("Não foi possível carregar os dados do dashboard");
       } finally {
+        // Definir loading como false ao concluir, mesmo em caso de erro
         setLoading(false);
       }
     };

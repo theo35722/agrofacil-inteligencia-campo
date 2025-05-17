@@ -1,5 +1,6 @@
+
 import React, { useEffect, useState } from "react";
-import { CalendarCheck, AlertCircle } from "lucide-react";
+import { CalendarCheck, AlertCircle, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
@@ -7,6 +8,7 @@ import { getAtividades } from "@/services/atividadeService";
 import { Atividade, formatDate } from "@/types/agro";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Mock data for when real data is not available
 const mockActivities = [
@@ -59,6 +61,8 @@ export const ActivityPreview = () => {
       try {
         setLoading(true);
         setError(null);
+        
+        // Pequeno atraso para evitar conflito de recursos com outras requisições do dashboard
         const data = await getAtividades({ 
           limit: 5, 
           upcoming: true 
@@ -82,11 +86,13 @@ export const ActivityPreview = () => {
         // On error, if authenticated, use mock data
         if (profile) {
           setActivities(mockActivities as Atividade[]);
+          toast.error("Usando dados de exemplo para atividades");
         } else {
           setError("Não foi possível carregar as atividades");
           toast.error("Não foi possível carregar as atividades");
         }
       } finally {
+        // Definir loading como false ao concluir, mesmo em caso de erro
         setLoading(false);
       }
     };
@@ -126,7 +132,11 @@ export const ActivityPreview = () => {
       </CardHeader>
       <CardContent className="space-y-2 p-3">
         {loading ? (
-          <div className="py-2 px-3 text-sm text-gray-500">Carregando atividades...</div>
+          <div className="space-y-2">
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-16 w-full" />
+            <Skeleton className="h-16 w-full" />
+          </div>
         ) : error ? (
           <div className="py-2 px-3 text-sm text-red-500 flex flex-col items-center">
             <AlertCircle className="h-5 w-5 mb-1" />

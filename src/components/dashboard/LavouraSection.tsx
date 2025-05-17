@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Talhao, Lavoura } from "@/types/agro";
 import { Loader2, AlertCircle } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface LavourasSectionProps {
   loading: boolean;
@@ -78,9 +79,15 @@ export const LavouraSection: React.FC<LavourasSectionProps> = ({
   
   if (loading) {
     return (
-      <div className="p-4 text-center text-gray-500">
-        <Loader2 className="w-6 h-6 animate-spin mx-auto mb-2" />
-        <p>Carregando lavouras...</p>
+      <div className="grid grid-cols-2 gap-3">
+        {[1, 2, 3, 4].map((i) => (
+          <Card key={i} className="p-3 h-[100px]">
+            <Skeleton className="h-4 w-2/3 mb-2" />
+            <Skeleton className="h-4 w-1/3 mb-2" />
+            <Skeleton className="h-3 w-1/2" />
+            <Skeleton className="h-3 w-2/3 mt-1" />
+          </Card>
+        ))}
       </div>
     );
   }
