@@ -84,7 +84,15 @@ export const determinePlagueAlerts = async (weatherData: {
   humidity: number;
 }): Promise<PlagueAlertData> => {
   try {
-    console.log("Verificando alertas de pragas para culturas cadastradas...");
+    console.log("Verificando alertas de pragas com dados:", weatherData);
+    
+    if (!weatherData || !weatherData.description) {
+      console.log("Dados climáticos insuficientes para verificar alertas");
+      return {
+        hasAlert: false,
+        message: "Aguardando dados climáticos para verificar alertas"
+      };
+    }
     
     // Buscar talhões para verificar culturas
     const { data: talhoes, error } = await supabase
@@ -102,7 +110,25 @@ export const determinePlagueAlerts = async (weatherData: {
     }
     
     if (!talhoes || talhoes.length === 0) {
-      console.log("Nenhuma cultura encontrada para verificação de pragas");
+      console.log("Nenhuma cultura encontrada, usando culturas de demonstração");
+      // Usar culturas de demonstração se não houver dados reais
+      const demoCultures = ["soja", "milho", "capim"];
+      
+      // Verificar cada cultura de demonstração
+      for (const cultura of demoCultures) {
+        const plagueCheck = determinePlaguePotential(
+          cultura,
+          weatherData.description,
+          weatherData.humidity
+        );
+        
+        // Se encontrou um alerta, retorna imediatamente
+        if (plagueCheck.hasAlert) {
+          console.log(`Alerta detectado para ${cultura}:`, plagueCheck);
+          return plagueCheck;
+        }
+      }
+      
       return {
         hasAlert: false,
         message: "Nenhum alerta de pragas para exibir"
@@ -126,6 +152,8 @@ export const determinePlagueAlerts = async (weatherData: {
           weatherData.description,
           weatherData.humidity
         );
+        
+        console.log(`Verificação de pragas para ${talhao.cultura}:`, plagueCheck);
         
         // Priorizar alertas positivos
         if (plagueCheck.hasAlert) {

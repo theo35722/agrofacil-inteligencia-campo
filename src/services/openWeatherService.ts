@@ -97,38 +97,54 @@ export const determinePlaguePotential = (
   culture: string | undefined, 
   weatherDescription: string, 
   humidity: number
-): { hasAlert: boolean; message: string } => {
+): { hasAlert: boolean; message: string; severity?: "low" | "medium" | "high" } => {
   // Default values
   let hasAlert = false;
   let message = "Nenhum alerta de pragas no momento";
+  let severity: "low" | "medium" | "high" = "low";
 
   // Caso não tenha cultura cadastrada
   if (!culture) {
     return { hasAlert: false, message };
   }
 
+  console.log(`Analisando riscos para ${culture} com condições: ${weatherDescription}, umidade: ${humidity}%`);
+
   const lowerCaseWeather = weatherDescription.toLowerCase();
   const hasContinuousRain = lowerCaseWeather.includes('chuva') && 
     (lowerCaseWeather.includes('forte') || lowerCaseWeather.includes('contínua'));
   const hasRain = lowerCaseWeather.includes('chuva');
   const isHighHumidity = humidity > 75;
+  const isMediumHumidity = humidity > 60;
   const isRainyOrHumid = hasRain || isHighHumidity;
+  const isHot = lowerCaseWeather.includes('calor') || lowerCaseWeather.includes('quente');
+  const isCloudy = lowerCaseWeather.includes('nublado');
 
   // Verificar cada cultura
   const cultureLower = culture.toLowerCase();
+  
   if (cultureLower.includes('milho') && isRainyOrHumid) {
     hasAlert = true;
     message = "Risco de lagarta-do-cartucho no milho";
-  } else if (cultureLower.includes('soja') && hasContinuousRain) {
+    severity = isHighHumidity ? "high" : "medium";
+  } else if (cultureLower.includes('soja') && (hasContinuousRain || (isHighHumidity && isCloudy))) {
     hasAlert = true;
     message = "Risco de ferrugem asiática na soja";
+    severity = hasContinuousRain ? "high" : "medium";
+  } else if (cultureLower.includes('soja') && isHot && isMediumHumidity) {
+    hasAlert = true;
+    message = "Condições favoráveis para percevejos na soja";
+    severity = "medium";
   } else if (cultureLower.includes('feijão') && isRainyOrHumid) {
     hasAlert = true;
     message = "Risco de mosca-branca no feijão";
+    severity = "medium";
   } else if ((cultureLower.includes('pasto') || cultureLower.includes('capim')) && hasRain) {
     hasAlert = true;
     message = "Risco de cigarrinha no pasto";
+    severity = hasRain && isHighHumidity ? "medium" : "low";
   }
 
-  return { hasAlert, message };
+  console.log(`Resultado da análise para ${culture}: ${hasAlert ? "Alerta detectado" : "Nenhum alerta"}`);
+  return { hasAlert, message, severity };
 };

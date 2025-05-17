@@ -71,7 +71,7 @@ const Dashboard: React.FC = () => {
           console.log("Determinando alertas de pragas com base no clima:", weatherData);
           const alertData = await determinePlagueAlerts(weatherData);
           setPlagueAlertData(alertData);
-          console.log("Dados de alerta:", alertData);
+          console.log("Dados de alerta de praga:", alertData);
         } catch (error) {
           console.error("Erro ao determinar alertas de pragas:", error);
           setPlagueAlertData({
@@ -91,15 +91,23 @@ const Dashboard: React.FC = () => {
     humidity: number;
   } | null) => {
     console.log("Dados climáticos atualizados:", data);
-    setWeatherData(data);
+    if (data && data.description) {
+      setWeatherData(data);
+    }
   };
   
   // Função para navegar para a página de detalhes do alerta (futuro)
   const handlePlagueAlertClick = () => {
     if (plagueAlertData.hasAlert) {
-      toast("Navegando para detalhes do alerta...");
+      toast.info("Detalhes do alerta", {
+        description: plagueAlertData.message,
+        duration: 5000
+      });
     } else {
-      toast("Nenhum alerta de pragas no momento");
+      toast.info("Monitoramento de pragas", {
+        description: "Nenhum alerta de pragas no momento. Continue monitorando sua lavoura regularmente.",
+        duration: 5000
+      });
     }
   };
 
