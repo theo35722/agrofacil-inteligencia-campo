@@ -2,6 +2,7 @@
 import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Atividade, formatDate } from "@/types/agro";
+import { Calendar } from "lucide-react";
 
 interface ActivityItemProps {
   activity: Atividade;
@@ -25,14 +26,15 @@ export const ActivityItem: React.FC<ActivityItemProps> = ({ activity }) => {
 
   return (
     <div 
-      className="flex justify-between items-center p-2 rounded-md bg-white border border-gray-100 hover:bg-gray-50"
+      className="flex justify-between items-center p-2 rounded-md bg-white border border-gray-100 hover:bg-gray-50 mb-2 shadow-sm"
     >
       <div className="flex items-center gap-3">
-        <div className="text-sm text-gray-500">
+        <div className="flex items-center text-sm text-green-600 min-w-[70px]">
+          <Calendar className="h-3 w-3 mr-1" />
           {formatDate(activity.data_programada)}
         </div>
         <div>
-          <p className="font-medium">{activity.tipo || "Sem tipo"}</p>
+          <p className="font-medium text-gray-800">{activity.tipo || "Sem tipo"}</p>
           <p className="text-xs text-gray-500">
             {activity.talhao ? 
               `${activity.talhao.nome || "Talhão sem nome"} - ${activity.talhao.cultura || "Sem cultura"}` 

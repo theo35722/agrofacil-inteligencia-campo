@@ -33,7 +33,7 @@ export const DashboardLavouraSection: React.FC<DashboardLavouraSectionProps> = (
             </span>
           )}
         </Link>
-        <Link to="/lavouras/nova" className="text-sm text-green-600 hover:text-green-700">
+        <Link to="/lavouras" className="text-sm text-green-600 hover:text-green-700">
           + Nova Lavoura
         </Link>
       </h2>

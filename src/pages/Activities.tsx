@@ -15,6 +15,8 @@ import { getAtividades } from "@/services/atividadeService";
 import { getLavouras } from "@/services/lavouraService";
 import { getTalhoes } from "@/services/talhaoService";
 import { Atividade, Lavoura, Talhao } from "@/types/agro";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Calendar } from "lucide-react";
 
 interface Activity extends Atividade {
   field?: string;
@@ -43,6 +45,7 @@ const Activities = () => {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [fields, setFields] = useState<Field[]>([]);
   const [loading, setLoading] = useState(true);
+  const isMobile = useIsMobile();
   
   // Fetch actual data instead of using mock data
   useEffect(() => {
@@ -152,33 +155,33 @@ const Activities = () => {
   };
   
   const getStatusColor = (status: string) => {
-    if (status === "concluído") return "bg-agro-green-500 hover:bg-agro-green-600";
+    if (status === "concluído") return "bg-green-500 hover:bg-green-600";
     if (status === "pendente") return "bg-orange-500 hover:bg-orange-600";
-    return "bg-agro-blue-400 hover:bg-agro-blue-500";
+    return "bg-blue-400 hover:bg-blue-500";
   };
   
   // Get selected field's plots
   const selectedFieldPlots = fields.find(f => f.id === newActivityField)?.plots || [];
   
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex justify-between items-center">
+    <div className="space-y-4 animate-fade-in pb-16">
+      <div className={`flex ${isMobile ? 'flex-col' : 'justify-between'} items-start md:items-center gap-2 md:gap-0`}>
         <div>
-          <h1 className="text-2xl font-bold text-agro-green-800 mb-2">
+          <h1 className="text-xl md:text-2xl font-bold text-green-800 mb-1">
             Registro de Atividades
           </h1>
-          <p className="text-gray-600">
+          <p className="text-sm text-gray-600">
             Gerencie as atividades da sua lavoura
           </p>
         </div>
         
         <Dialog>
           <DialogTrigger asChild>
-            <Button className="bg-agro-green-500 hover:bg-agro-green-600">
+            <Button className="bg-green-500 hover:bg-green-600 w-full md:w-auto mt-2 md:mt-0">
               <Plus className="h-4 w-4 mr-2" /> Nova Atividade
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-w-md mx-auto">
             <DialogHeader>
               <DialogTitle>Adicionar Nova Atividade</DialogTitle>
             </DialogHeader>
@@ -282,7 +285,7 @@ const Activities = () => {
               </div>
               
               <Button 
-                className="w-full mt-4 bg-agro-green-500 hover:bg-agro-green-600"
+                className="w-full mt-4 bg-green-500 hover:bg-green-600"
                 onClick={handleAddActivity}
                 disabled={fields.length === 0}
               >
@@ -293,12 +296,12 @@ const Activities = () => {
         </Dialog>
       </div>
       
-      <Card className="agro-card">
-        <CardHeader className="pb-2">
-          <CardTitle className="flex justify-between items-center">
+      <Card className="shadow-sm">
+        <CardHeader className={`pb-2 ${isMobile ? 'px-3 pt-3' : ''}`}>
+          <CardTitle className="flex justify-between items-center text-lg md:text-xl">
             <div className="flex items-center">
-              <CalendarCheck className="h-5 w-5 mr-2 text-agro-green-600" />
-              <span className="text-agro-green-800">Atividades</span>
+              <CalendarCheck className="h-5 w-5 mr-2 text-green-600" />
+              <span className="text-green-800">Atividades</span>
             </div>
             <Button variant="ghost" size="sm" className="text-gray-500">
               <Filter className="h-4 w-4 mr-1" />
@@ -306,13 +309,13 @@ const Activities = () => {
             </Button>
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <Tabs defaultValue="all" onValueChange={setActiveTab}>
-            <TabsList className="mb-4">
-              <TabsTrigger value="all">Todas</TabsTrigger>
-              <TabsTrigger value="pendente">Pendentes</TabsTrigger>
-              <TabsTrigger value="concluído">Concluídas</TabsTrigger>
-              <TabsTrigger value="planejado">Planejadas</TabsTrigger>
+        <CardContent className={isMobile ? 'px-3 py-2' : ''}>
+          <Tabs defaultValue="all" onValueChange={setActiveTab} className="w-full">
+            <TabsList className="mb-4 w-full grid grid-cols-4 h-auto">
+              <TabsTrigger value="all" className="text-xs md:text-sm py-1">Todas</TabsTrigger>
+              <TabsTrigger value="pendente" className="text-xs md:text-sm py-1">Pendentes</TabsTrigger>
+              <TabsTrigger value="concluído" className="text-xs md:text-sm py-1">Concluídas</TabsTrigger>
+              <TabsTrigger value="planejado" className="text-xs md:text-sm py-1">Planejadas</TabsTrigger>
             </TabsList>
             
             <TabsContent value={activeTab}>
@@ -334,7 +337,7 @@ const Activities = () => {
                   {filteredActivities.map((activity) => (
                     <div 
                       key={activity.id}
-                      className="p-3 border border-gray-200 rounded-md hover:bg-gray-50"
+                      className="p-3 border border-gray-200 rounded-md hover:bg-gray-50 shadow-sm"
                     >
                       <div className="flex justify-between items-start">
                         <div>
@@ -356,7 +359,8 @@ const Activities = () => {
                           )}
                         </div>
                         
-                        <div className="text-sm text-agro-green-600 font-medium">
+                        <div className="text-sm text-green-600 font-medium flex items-center">
+                          <Calendar className="h-3 w-3 mr-1" />
                           {activity.data_programada ? formatDate(activity.data_programada) : ""}
                         </div>
                       </div>
