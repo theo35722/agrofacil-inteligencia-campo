@@ -10,6 +10,7 @@ import { GreetingHeader } from "@/components/dashboard/GreetingHeader";
 import { DiagnosticButton } from "@/components/dashboard/DiagnosticButton";
 import { LavouraSection } from "@/components/dashboard/LavouraSection";
 import { PlagueAlert } from "@/components/dashboard/PlagueAlert";
+import { Link } from "react-router-dom";
 import { Lavoura, Talhao, PlagueAlertData } from "@/types/agro";
 import { getLavouras } from "@/services/lavouraService";
 import { getTalhoes } from "@/services/talhaoService";

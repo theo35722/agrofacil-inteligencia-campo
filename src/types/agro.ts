@@ -33,6 +33,18 @@ export interface TalhaoBasic {
   fase: string;
 }
 
+// Add UserProfile interface
+export interface UserProfile {
+  id: string;
+  nome?: string;
+  email?: string;
+  telefone?: string;
+  localizacao?: string;
+  foto_url?: string;
+  criado_em?: string;
+  atualizado_em?: string;
+}
+
 export interface Atividade {
   id: string;
   user_id: string;
