@@ -1,3 +1,4 @@
+
 export interface Lavoura {
   id: string;
   nome: string;
@@ -79,6 +80,7 @@ export interface PlagueAlertData {
   message: string;
   severity?: "low" | "medium" | "high";
   culturas?: string[];
+  recommendations?: string[]; // Add the recommendations property
 }
 
 // Helper para formatar data
