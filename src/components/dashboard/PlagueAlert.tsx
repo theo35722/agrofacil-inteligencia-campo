@@ -10,7 +10,11 @@ interface PlagueAlertProps {
 
 export const PlagueAlert: React.FC<PlagueAlertProps> = ({ alertData, onClick }) => {
   const { hasAlert, message, severity = "low" } = alertData;
-
+  
+  // Se a mensagem contém "aguardando" ou "verificando", mostrar estado de carregamento
+  const isWaiting = message.toLowerCase().includes("aguardando") || 
+                    message.toLowerCase().includes("verificando");
+  
   if (!hasAlert) {
     return (
       <div 
@@ -22,7 +26,7 @@ export const PlagueAlert: React.FC<PlagueAlertProps> = ({ alertData, onClick }) 
           <div>
             <h3 className="text-green-700 font-medium">Monitoramento de Pragas</h3>
             <p className="text-green-800 text-sm">
-              {message}
+              {isWaiting ? "Monitoramento ativo. Aguarde enquanto analisamos as condições." : message}
             </p>
           </div>
         </div>
