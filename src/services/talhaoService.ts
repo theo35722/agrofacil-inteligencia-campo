@@ -65,3 +65,27 @@ export const getTalhaoById = async (id: string): Promise<Talhao | null> => {
     throw error;
   }
 };
+
+// Criar um novo talhão
+export const createTalhao = async (talhaoData: Omit<Talhao, 'id' | 'criado_em' | 'atualizado_em'>): Promise<Talhao> => {
+  try {
+    console.log("Criando talhão:", talhaoData);
+
+    const { data, error } = await supabase
+      .from('talhoes')
+      .insert(talhaoData)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Erro ao criar talhão:", error);
+      throw error;
+    }
+
+    console.log("Talhão criado com sucesso:", data);
+    return data;
+  } catch (error) {
+    console.error("Falha na operação de criar talhão:", error);
+    throw error;
+  }
+};

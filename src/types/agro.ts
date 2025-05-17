@@ -1,3 +1,4 @@
+
 export interface Lavoura {
   id: string;
   nome: string;
@@ -15,6 +16,7 @@ export interface Talhao {
   nome: string;
   cultura: string;
   fase: string;
+  variedade?: string; // Added new field for crop variety
   status?: string;
   area?: number;
   unidade_area?: string;
