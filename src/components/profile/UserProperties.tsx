@@ -2,7 +2,7 @@
 import React from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Farm, MapPin } from "lucide-react";
+import { Sprout, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
 
 export const UserProperties = () => {
@@ -16,7 +16,7 @@ export const UserProperties = () => {
     <Card className="border-gray-200 shadow-sm">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg flex items-center">
-          <Farm className="h-5 w-5 mr-2 text-green-600" />
+          <Sprout className="h-5 w-5 mr-2 text-green-600" />
           Minhas Propriedades
         </CardTitle>
       </CardHeader>
