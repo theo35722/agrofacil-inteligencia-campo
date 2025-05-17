@@ -46,3 +46,24 @@ export const getLavouraById = async (id: string): Promise<Lavoura | null> => {
     throw error;
   }
 };
+
+// Criar nova lavoura
+export const createLavoura = async (lavoura: Omit<Lavoura, 'id' | 'criado_em' | 'atualizado_em'>): Promise<Lavoura> => {
+  try {
+    const { data, error } = await supabase
+      .from('lavouras')
+      .insert([lavoura])
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Erro ao criar lavoura:", error);
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Falha na operação de criar lavoura:", error);
+    throw error;
+  }
+};

@@ -7,7 +7,13 @@ export const getTalhoes = async (lavouraId?: string): Promise<Talhao[]> => {
   try {
     let query = supabase
       .from('talhoes')
-      .select('*')
+      .select(`
+        *,
+        lavoura:lavoura_id (
+          id,
+          nome
+        )
+      `)
       .order('nome');
 
     if (lavouraId) {
@@ -21,6 +27,7 @@ export const getTalhoes = async (lavouraId?: string): Promise<Talhao[]> => {
       throw error;
     }
 
+    console.log("Talhões carregados:", data);
     return data || [];
   } catch (error) {
     console.error("Falha na operação de buscar talhões:", error);
@@ -33,7 +40,13 @@ export const getTalhaoById = async (id: string): Promise<Talhao | null> => {
   try {
     const { data, error } = await supabase
       .from('talhoes')
-      .select('*')
+      .select(`
+        *,
+        lavoura:lavoura_id (
+          id,
+          nome
+        )
+      `)
       .eq('id', id)
       .single();
 

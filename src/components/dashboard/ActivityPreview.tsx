@@ -20,7 +20,7 @@ export const ActivityPreview = () => {
           limit: 5, 
           upcoming: true 
         });
-        console.log("Atividades carregadas:", data);
+        console.log("Atividades carregadas para o dashboard:", data);
         setActivities(data);
       } catch (error) {
         console.error("Erro ao carregar atividades:", error);

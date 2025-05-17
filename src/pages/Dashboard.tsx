@@ -13,8 +13,10 @@ import { ActivityPreview } from "@/components/dashboard/ActivityPreview";
 import { SimplifiedWeatherCard } from "@/components/dashboard/SimplifiedWeatherCard";
 import { Badge } from "@/components/ui/badge";
 import { PlagueAlert } from "@/components/dashboard/PlagueAlert";
-import { Talhao, PlagueAlertData } from "@/types/agro";
-import { getTalhoes, determinePlagueAlerts } from "@/services/agroService";
+import { Lavoura, Talhao, PlagueAlertData } from "@/types/agro";
+import { getLavouras } from "@/services/lavouraService";
+import { getTalhoes } from "@/services/talhaoService";
+import { determinePlagueAlerts } from "@/services/diagnosticoService";
 
 const Dashboard: React.FC = () => {
   const { profile } = useAuth();
@@ -28,27 +30,49 @@ const Dashboard: React.FC = () => {
     hasAlert: false,
     message: "Nenhum alerta de pragas no momento"
   });
+  const [lavouras, setLavouras] = useState<Lavoura[]>([]);
   const [talhoes, setTalhoes] = useState<Talhao[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Buscar talhões do usuário
+  // Buscar lavouras do usuário
+  useEffect(() => {
+    const fetchLavouras = async () => {
+      try {
+        setLoading(true);
+        const data = await getLavouras();
+        setLavouras(data);
+        console.log("Lavouras carregadas:", data);
+      } catch (error) {
+        console.error("Erro ao buscar lavouras:", error);
+        toast.error("Não foi possível carregar os dados das lavouras");
+      }
+    };
+
+    fetchLavouras();
+  }, []);
+
+  // Buscar talhões após carregar lavouras
   useEffect(() => {
     const fetchTalhoes = async () => {
       try {
-        setLoading(true);
-        const data = await getTalhoes();
-        setTalhoes(data);
-        console.log("Talhões carregados:", data);
+        if (lavouras.length > 0) {
+          const data = await getTalhoes();
+          setTalhoes(data);
+          console.log("Talhões carregados:", data);
+          setLoading(false);
+        } else {
+          setLoading(false);
+        }
       } catch (error) {
         console.error("Erro ao buscar talhões:", error);
-        toast.error("Não foi possível carregar os dados das lavouras");
-      } finally {
         setLoading(false);
       }
     };
 
-    fetchTalhoes();
-  }, []);
+    if (lavouras.length > 0) {
+      fetchTalhoes();
+    }
+  }, [lavouras]);
 
   // Determinar alerta de pragas com base nas culturas e condições climáticas
   useEffect(() => {
@@ -73,7 +97,6 @@ const Dashboard: React.FC = () => {
     humidity: number;
   } | null) => {
     setWeatherData(data);
-    console.log("Dados climáticos atualizados:", data);
   };
 
   // Get time of day for greeting
@@ -182,6 +205,15 @@ const Dashboard: React.FC = () => {
               </div>
             )}
           </>
+        ) : lavouras.length > 0 ? (
+          <Card className="p-6 text-center border border-dashed border-gray-300 bg-white">
+            <p className="text-gray-600 mb-4">Você tem lavouras, mas ainda não cadastrou nenhum talhão.</p>
+            <Link to="/lavouras">
+              <Button className="bg-green-500 hover:bg-green-600">
+                Gerenciar Lavouras
+              </Button>
+            </Link>
+          </Card>
         ) : (
           <Card className="p-6 text-center border border-dashed border-gray-300 bg-white">
             <p className="text-gray-600 mb-4">Nenhuma lavoura cadastrada. Adicione sua primeira lavoura!</p>

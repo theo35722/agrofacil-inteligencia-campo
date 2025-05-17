@@ -21,7 +21,8 @@ export const getAtividades = async (
           id,
           nome,
           cultura,
-          fase
+          fase,
+          lavoura_id
         )
       `)
       .order('data_programada');
@@ -52,6 +53,7 @@ export const getAtividades = async (
       throw error;
     }
 
+    console.log("Atividades carregadas:", data?.length || 0);
     return data || [];
   } catch (error) {
     console.error("Falha na operação de buscar atividades:", error);
@@ -70,7 +72,8 @@ export const getAtividadeById = async (id: string): Promise<Atividade | null> =>
           id,
           nome,
           cultura,
-          fase
+          fase,
+          lavoura_id
         )
       `)
       .eq('id', id)
@@ -88,6 +91,27 @@ export const getAtividadeById = async (id: string): Promise<Atividade | null> =>
     return data;
   } catch (error) {
     console.error(`Falha na operação de buscar atividade ${id}:`, error);
+    throw error;
+  }
+};
+
+// Criar nova atividade
+export const createAtividade = async (atividade: Omit<Atividade, 'id' | 'criado_em' | 'atualizado_em'>): Promise<Atividade> => {
+  try {
+    const { data, error } = await supabase
+      .from('atividades')
+      .insert([atividade])
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Erro ao criar atividade:", error);
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Falha na operação de criar atividade:", error);
     throw error;
   }
 };
