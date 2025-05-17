@@ -1,6 +1,10 @@
 
 // Re-exportar todos os serviços relacionados à agricultura
-export { getLavouras } from './lavouraService';
-export { getTalhoes } from './talhaoService';
-export { getAtividades } from './atividadeService';
-export { getDiagnosticosPragas, determinePlagueAlerts } from './diagnosticoService';
+export { getLavouras, getLavouraById } from './lavouraService';
+export { getTalhoes, getTalhaoById } from './talhaoService';
+export { getAtividades, getAtividadeById } from './atividadeService';
+export { 
+  getDiagnosticosPragas, 
+  determinePlagueAlerts,
+  getDiagnosticoById
+} from './diagnosticoService';

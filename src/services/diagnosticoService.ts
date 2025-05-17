@@ -10,42 +10,80 @@ export const getDiagnosticosPragas = async (
     recentOnly?: boolean;
   } = {}
 ): Promise<DiagnosticoPraga[]> => {
-  let query = supabase
-    .from('diagnosticos_pragas')
-    .select(`
-      *,
-      talhao:talhao_id (
-        id,
-        nome,
-        cultura,
-        fase
-      )
-    `)
-    .order('data_diagnostico', { ascending: false });
+  try {
+    let query = supabase
+      .from('diagnosticos_pragas')
+      .select(`
+        *,
+        talhao:talhao_id (
+          id,
+          nome,
+          cultura,
+          fase
+        )
+      `)
+      .order('data_diagnostico', { ascending: false });
 
-  if (options.talhaoId) {
-    query = query.eq('talhao_id', options.talhaoId);
-  }
+    if (options.talhaoId) {
+      query = query.eq('talhao_id', options.talhaoId);
+    }
 
-  if (options.recentOnly) {
-    // Buscar apenas diagnósticos dos últimos 7 dias
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    query = query.gte('data_diagnostico', sevenDaysAgo.toISOString());
-  }
+    if (options.recentOnly) {
+      // Buscar apenas diagnósticos dos últimos 7 dias
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      query = query.gte('data_diagnostico', sevenDaysAgo.toISOString());
+    }
 
-  if (options.limit) {
-    query = query.limit(options.limit);
-  }
+    if (options.limit) {
+      query = query.limit(options.limit);
+    }
 
-  const { data, error } = await query;
+    const { data, error } = await query;
 
-  if (error) {
-    console.error("Erro ao buscar diagnósticos:", error);
+    if (error) {
+      console.error("Erro ao buscar diagnósticos:", error);
+      throw error;
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error("Falha na operação de buscar diagnósticos:", error);
     throw error;
   }
+};
 
-  return data || [];
+// Buscar um diagnóstico específico por ID
+export const getDiagnosticoById = async (id: string): Promise<DiagnosticoPraga | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('diagnosticos_pragas')
+      .select(`
+        *,
+        talhao:talhao_id (
+          id,
+          nome,
+          cultura,
+          fase
+        )
+      `)
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        console.warn(`Diagnóstico com ID ${id} não encontrado`);
+        return null;
+      }
+      console.error(`Erro ao buscar diagnóstico ${id}:`, error);
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error(`Falha na operação de buscar diagnóstico ${id}:`, error);
+    throw error;
+  }
 };
 
 // Função para determinar alertas de pragas com base em diagnósticos, cultura e clima

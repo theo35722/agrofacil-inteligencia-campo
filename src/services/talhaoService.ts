@@ -4,21 +4,51 @@ import { Talhao } from "@/types/agro";
 
 // Serviço para Talhões
 export const getTalhoes = async (lavouraId?: string): Promise<Talhao[]> => {
-  let query = supabase
-    .from('talhoes')
-    .select('*')
-    .order('nome');
+  try {
+    let query = supabase
+      .from('talhoes')
+      .select('*')
+      .order('nome');
 
-  if (lavouraId) {
-    query = query.eq('lavoura_id', lavouraId);
-  }
+    if (lavouraId) {
+      query = query.eq('lavoura_id', lavouraId);
+    }
 
-  const { data, error } = await query;
+    const { data, error } = await query;
 
-  if (error) {
-    console.error("Erro ao buscar talhões:", error);
+    if (error) {
+      console.error("Erro ao buscar talhões:", error);
+      throw error;
+    }
+
+    return data || [];
+  } catch (error) {
+    console.error("Falha na operação de buscar talhões:", error);
     throw error;
   }
+};
 
-  return data || [];
+// Buscar um talhão específico por ID
+export const getTalhaoById = async (id: string): Promise<Talhao | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('talhoes')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        console.warn(`Talhão com ID ${id} não encontrado`);
+        return null;
+      }
+      console.error(`Erro ao buscar talhão ${id}:`, error);
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error(`Falha na operação de buscar talhão ${id}:`, error);
+    throw error;
+  }
 };
