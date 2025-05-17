@@ -9,7 +9,7 @@ export const useDiagnosisState = (locale: "pt" | "en") => {
   const [preview, setPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [resultado, setResultado] = useState<DiagnosisResult | null>(null);
-  const [showTips, setShowTips] = useState(true);
+  const [showTips, setShowTips] = useState(false); // Changed from true to false
   const [currentStep, setCurrentStep] = useState<DiagnosisStep>(DiagnosisStep.UPLOAD);
   const [isUsingFallback, setIsUsingFallback] = useState(false);
   const [apiKeyConfigured, setApiKeyConfigured] = useState<boolean | null>(null);
