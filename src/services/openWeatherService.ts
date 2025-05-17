@@ -120,31 +120,92 @@ export const determinePlaguePotential = (
   const isHot = lowerCaseWeather.includes('calor') || lowerCaseWeather.includes('quente');
   const isCloudy = lowerCaseWeather.includes('nublado');
 
-  // Verificar cada cultura
-  const cultureLower = culture.toLowerCase();
+  // Verificar cada cultura - Normalizar o nome da cultura para evitar diferenças de case e acentuação
+  const cultureLower = culture.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
   
-  if (cultureLower.includes('milho') && isRainyOrHumid) {
-    hasAlert = true;
-    message = "Risco de lagarta-do-cartucho no milho";
-    severity = isHighHumidity ? "high" : "medium";
-  } else if (cultureLower.includes('soja') && (hasContinuousRain || (isHighHumidity && isCloudy))) {
-    hasAlert = true;
-    message = "Risco de ferrugem asiática na soja";
-    severity = hasContinuousRain ? "high" : "medium";
-  } else if (cultureLower.includes('soja') && isHot && isMediumHumidity) {
-    hasAlert = true;
-    message = "Condições favoráveis para percevejos na soja";
-    severity = "medium";
-  } else if (cultureLower.includes('feijão') && isRainyOrHumid) {
-    hasAlert = true;
-    message = "Risco de mosca-branca no feijão";
-    severity = "medium";
-  } else if ((cultureLower.includes('pasto') || cultureLower.includes('capim')) && hasRain) {
-    hasAlert = true;
-    message = "Risco de cigarrinha no pasto";
-    severity = hasRain && isHighHumidity ? "medium" : "low";
+  // Milho
+  if (cultureLower.includes('milho')) {
+    if (isRainyOrHumid) {
+      hasAlert = true;
+      message = "Risco de lagarta-do-cartucho no milho";
+      severity = isHighHumidity ? "high" : "medium";
+    } else if (isHot && isMediumHumidity) {
+      hasAlert = true;
+      message = "Condições para desenvolvimento de pulgões no milho";
+      severity = "low";
+    }
+  } 
+  // Soja
+  else if (cultureLower.includes('soja')) {
+    if (hasContinuousRain || (isHighHumidity && isCloudy)) {
+      hasAlert = true;
+      message = "Risco de ferrugem asiática na soja";
+      severity = hasContinuousRain ? "high" : "medium";
+    } else if (isHot && isMediumHumidity) {
+      hasAlert = true;
+      message = "Condições favoráveis para percevejos na soja";
+      severity = "medium";
+    }
+  } 
+  // Feijão
+  else if (cultureLower.includes('feijao') || cultureLower.includes('feijão')) {
+    if (isRainyOrHumid) {
+      hasAlert = true;
+      message = "Risco de mosca-branca no feijão";
+      severity = "medium";
+    } else if (isHot) {
+      hasAlert = true;
+      message = "Condições para tripes no feijão";
+      severity = "low";
+    }
+  } 
+  // Culturas de pasto e capim - útil para pecuaristas
+  else if (cultureLower.includes('pasto') || cultureLower.includes('capim') || 
+           cultureLower.includes('forrageira') || cultureLower.includes('braquiaria')) {
+    if (hasRain) {
+      hasAlert = true;
+      message = "Risco de cigarrinha no pasto";
+      severity = hasRain && isHighHumidity ? "medium" : "low";
+    } else if (isHot && !isHighHumidity) {
+      hasAlert = true;
+      message = "Possível desenvolvimento de lagartas no pasto";
+      severity = "low";
+    }
   }
-
+  // Cana-de-açúcar
+  else if (cultureLower.includes('cana')) {
+    if (isHot && isHighHumidity) {
+      hasAlert = true;
+      message = "Risco de broca-da-cana";
+      severity = "medium";
+    }
+  }
+  // Algodão
+  else if (cultureLower.includes('algodao') || cultureLower.includes('algodão')) {
+    if (isHot) {
+      hasAlert = true;
+      message = "Condições favoráveis para bicudo-do-algodoeiro";
+      severity = "high";
+    }
+  }
+  // Café
+  else if (cultureLower.includes('cafe') || cultureLower.includes('café')) {
+    if (isHighHumidity) {
+      hasAlert = true;
+      message = "Risco de ferrugem do cafeeiro";
+      severity = "medium";
+    }
+  }
+  // Hortaliças gerais
+  else if (cultureLower.includes('horta') || cultureLower.includes('legume') || 
+           cultureLower.includes('verdura') || cultureLower.includes('tomate')) {
+    if (isHighHumidity) {
+      hasAlert = true;
+      message = "Condições favoráveis para fungos em hortaliças";
+      severity = "medium";
+    }
+  }
+  
   console.log(`Resultado da análise para ${culture}: ${hasAlert ? "Alerta detectado" : "Nenhum alerta"}`);
   return { hasAlert, message, severity };
 };

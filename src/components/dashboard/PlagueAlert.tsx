@@ -2,6 +2,7 @@
 import React from "react";
 import { AlertTriangle, CheckCircle, AlertCircle, Activity, Loader2 } from "lucide-react";
 import { PlagueAlertData } from "@/types/agro";
+import { Badge } from "@/components/ui/badge";
 
 interface PlagueAlertProps {
   alertData: PlagueAlertData;
@@ -9,7 +10,7 @@ interface PlagueAlertProps {
 }
 
 export const PlagueAlert: React.FC<PlagueAlertProps> = ({ alertData, onClick }) => {
-  const { hasAlert, message, severity = "low" } = alertData;
+  const { hasAlert, message, severity = "low", culturas = [] } = alertData;
   
   // Melhorar detecção de estado de carregamento
   const isWaiting = message.toLowerCase().includes("aguardando") || 
@@ -45,18 +46,21 @@ export const PlagueAlert: React.FC<PlagueAlertProps> = ({ alertData, onClick }) 
       bg: "bg-amber-50 hover:bg-amber-100",
       text: "text-amber-700",
       desc: "text-amber-800",
+      badge: "bg-amber-100 text-amber-800 border-amber-200",
       icon: <AlertCircle className="w-5 h-5 text-amber-500 flex-shrink-0" />
     },
     medium: {
       bg: "bg-orange-50 hover:bg-orange-100",
       text: "text-orange-700",
       desc: "text-orange-800",
+      badge: "bg-orange-100 text-orange-800 border-orange-200",
       icon: <AlertTriangle className="w-5 h-5 text-orange-500 flex-shrink-0" />
     },
     high: {
       bg: "bg-red-50 hover:bg-red-100",
       text: "text-red-700",
       desc: "text-red-800",
+      badge: "bg-red-100 text-red-800 border-red-200",
       icon: <AlertTriangle className="w-5 h-5 text-red-500 flex-shrink-0" />
     }
   };
@@ -77,6 +81,21 @@ export const PlagueAlert: React.FC<PlagueAlertProps> = ({ alertData, onClick }) 
           </p>
         </div>
       </div>
+      
+      {/* Mostra as culturas afetadas quando disponíveis */}
+      {culturas && culturas.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1">
+          {culturas.map((cultura, index) => (
+            <Badge 
+              key={index} 
+              variant="outline"
+              className={style.badge}
+            >
+              {cultura}
+            </Badge>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

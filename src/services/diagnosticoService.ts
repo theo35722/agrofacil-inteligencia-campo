@@ -110,28 +110,10 @@ export const determinePlagueAlerts = async (weatherData: {
     }
     
     if (!talhoes || talhoes.length === 0) {
-      console.log("Nenhuma cultura encontrada, usando culturas de demonstração");
-      // Usar culturas de demonstração se não houver dados reais
-      const demoCultures = ["soja", "milho", "feijão", "capim"];
-      
-      // Verificar cada cultura de demonstração
-      for (const cultura of demoCultures) {
-        const plagueCheck = determinePlaguePotential(
-          cultura,
-          weatherData.description,
-          weatherData.humidity
-        );
-        
-        // Se encontrou um alerta, retorna imediatamente
-        if (plagueCheck.hasAlert) {
-          console.log(`Alerta detectado para ${cultura}:`, plagueCheck);
-          return plagueCheck;
-        }
-      }
-      
+      console.log("Nenhuma cultura encontrada para verificação de alertas");
       return {
         hasAlert: false,
-        message: "Monitoramento de pragas ativo. Nenhum alerta no momento."
+        message: "Cadastre sua fazenda e talhões para receber alertas"
       };
     }
     
@@ -139,7 +121,8 @@ export const determinePlagueAlerts = async (weatherData: {
     const checkedCultures = new Set<string>();
     let highestAlert: PlagueAlertData = {
       hasAlert: false,
-      message: "Monitoramento de pragas ativo. Nenhum alerta no momento."
+      message: "Monitoramento de pragas ativo. Nenhum alerta no momento.",
+      culturas: []
     };
     
     // Verificar cada cultura
@@ -155,12 +138,20 @@ export const determinePlagueAlerts = async (weatherData: {
         
         console.log(`Verificação de pragas para ${talhao.cultura}:`, plagueCheck);
         
+        // Adicionar a cultura à lista de culturas verificadas
+        if (plagueCheck.hasAlert && !highestAlert.culturas?.includes(talhao.cultura)) {
+          highestAlert.culturas = [...(highestAlert.culturas || []), talhao.cultura];
+        }
+        
         // Priorizar alertas de severidade alta
         if (plagueCheck.hasAlert) {
           if (!highestAlert.hasAlert || 
               (plagueCheck.severity === 'high' && highestAlert.severity !== 'high') ||
               (plagueCheck.severity === 'medium' && highestAlert.severity === 'low')) {
-            highestAlert = plagueCheck;
+            highestAlert = {
+              ...plagueCheck,
+              culturas: highestAlert.culturas
+            };
           }
         }
       }

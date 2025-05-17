@@ -6,10 +6,12 @@ import { PlagueAlertData } from "@/types/agro";
 export const usePlagueAlerts = (weatherData: {
   description: string;
   humidity: number;
-} | null) => {
+} | null, hasTalhoes: boolean = false) => {
   const [plagueAlertData, setPlagueAlertData] = useState<PlagueAlertData>({
     hasAlert: false,
-    message: "Verificando monitoramento de pragas..."
+    message: hasTalhoes 
+      ? "Verificando monitoramento de pragas..." 
+      : "Cadastre sua fazenda e talhões para receber alertas"
   });
 
   // Effect to manage plague alerts with weatherData dependency
@@ -33,7 +35,9 @@ export const usePlagueAlerts = (weatherData: {
         if (isMounted) {
           setPlagueAlertData({
             hasAlert: false,
-            message: "Monitoramento de pragas ativo. Erro ao verificar alertas."
+            message: hasTalhoes
+              ? "Monitoramento de pragas ativo. Erro ao verificar alertas."
+              : "Cadastre sua fazenda e talhões para receber alertas"
           });
         }
       }
@@ -45,7 +49,7 @@ export const usePlagueAlerts = (weatherData: {
     return () => {
       isMounted = false;
     };
-  }, [weatherData]);
+  }, [weatherData, hasTalhoes]);
 
   return plagueAlertData;
 };
