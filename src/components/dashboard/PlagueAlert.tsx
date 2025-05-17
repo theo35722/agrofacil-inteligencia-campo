@@ -1,6 +1,6 @@
 
 import React from "react";
-import { AlertTriangle, CheckCircle, AlertCircle, Activity, Loader2 } from "lucide-react";
+import { AlertTriangle, Bug, CheckCircle, AlertCircle, Activity, Loader2 } from "lucide-react";
 import { PlagueAlertData } from "@/types/agro";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,9 +26,7 @@ export const PlagueAlert: React.FC<PlagueAlertProps> = ({
   // Estado de carregamento
   if (isLoading) {
     return (
-      <div 
-        className="mx-4 p-3 bg-blue-50 border-none rounded-lg"
-      >
+      <div className="mx-4 p-3 bg-blue-50 border-none rounded-lg">
         <div className="flex items-center gap-3">
           <Loader2 className="w-5 h-5 text-blue-500 flex-shrink-0 animate-spin" />
           <div>
@@ -44,9 +42,7 @@ export const PlagueAlert: React.FC<PlagueAlertProps> = ({
   
   if (isNeedRegistration) {
     return (
-      <div 
-        className="mx-4 p-3 bg-blue-50 border-none rounded-lg cursor-pointer transition-all hover:bg-blue-100"
-      >
+      <div className="mx-4 p-3 bg-blue-50 border-none rounded-lg cursor-pointer transition-all hover:bg-blue-100">
         <div className="flex items-center gap-3">
           <AlertCircle className="w-5 h-5 text-blue-500 flex-shrink-0" />
           <div>
@@ -100,7 +96,7 @@ export const PlagueAlert: React.FC<PlagueAlertProps> = ({
       text: "text-orange-700",
       desc: "text-orange-800",
       badge: "bg-orange-100 text-orange-800 border-orange-200",
-      icon: <AlertTriangle className="w-5 h-5 text-orange-500 flex-shrink-0" />
+      icon: <Bug className="w-5 h-5 text-orange-500 flex-shrink-0" />
     },
     high: {
       bg: "bg-red-50 hover:bg-red-100",
@@ -128,18 +124,15 @@ export const PlagueAlert: React.FC<PlagueAlertProps> = ({
         </div>
       </div>
       
-      {/* Mostra as culturas afetadas quando disponíveis */}
+      {/* Mostra apenas a cultura afetada atual */}
       {culturas && culturas.length > 0 && (
         <div className="mt-2 flex flex-wrap gap-1">
-          {culturas.map((cultura, index) => (
-            <Badge 
-              key={index} 
-              variant="outline"
-              className={style.badge}
-            >
-              {cultura}
-            </Badge>
-          ))}
+          <Badge 
+            variant="outline"
+            className={style.badge}
+          >
+            {culturas[0]}
+          </Badge>
         </div>
       )}
     </div>

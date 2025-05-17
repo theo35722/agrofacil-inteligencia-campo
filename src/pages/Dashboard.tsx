@@ -23,9 +23,11 @@ const Dashboard: React.FC = () => {
   
   // Use our custom hooks
   const { lavouras, talhoes, loading, error, fetchDashboardData } = useDashboardData();
+  
+  // Pass the actual talhoes to the hook for more accurate plague alerts
   const { plagueAlertData, isLoading: isPlagueAlertLoading } = usePlagueAlerts(
     weatherData, 
-    talhoes.length > 0
+    talhoes
   );
 
   // Initial data load and refresh on navigation back
@@ -76,13 +78,20 @@ const Dashboard: React.FC = () => {
     }
   }, []);
   
-  // Handle plague alert click
+  // Handle plague alert click with improved toast
   const handlePlagueAlertClick = () => {
     if (plagueAlertData.hasAlert) {
+      const culturasText = plagueAlertData.culturas?.length 
+        ? `Cultura afetada: ${plagueAlertData.culturas[0]}`
+        : '';
+      
+      const recommendationsText = plagueAlertData.recommendations?.length
+        ? `\n\nRecomendação: ${plagueAlertData.recommendations[0]}`
+        : '';
+        
       toast.info("Detalhes do alerta", {
-        description: `${plagueAlertData.message} ${plagueAlertData.culturas?.length ? 
-          'Culturas afetadas: ' + plagueAlertData.culturas.join(', ') : ''}`,
-        duration: 5000
+        description: `${plagueAlertData.message} ${culturasText}${recommendationsText}`,
+        duration: 7000
       });
     } else {
       if (talhoes.length === 0) {

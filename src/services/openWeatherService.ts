@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { PlagueAlertData } from "@/types/agro";
 
@@ -46,8 +45,8 @@ export const fetchWeatherData = async (
   }
 };
 
-// Função para determinar potencial de pragas com base no clima
-export const determinePlaguePotential = (
+// Improved function to get specific plague for a culture
+export const getPlagueForCulture = (
   culture: string,
   weatherDescription: string,
   humidity: number
@@ -64,7 +63,7 @@ export const determinePlaguePotential = (
                   lowerDesc.includes('chuvoso');
   const isHumid = humidity > 70;
   
-  // Mapeamento de culturas para pragas comuns e suas condições favoráveis
+  // Banco de dados de pragas específicas por cultura conforme solicitado
   const plagueMap: Record<string, {
     name: string;
     conditions: { hot?: boolean; rainy?: boolean; humid?: boolean };
@@ -79,16 +78,16 @@ export const determinePlaguePotential = (
         recommendation: 'Monitore diariamente e considere aplicação preventiva de fungicidas'
       },
       {
-        name: 'Lagartas',
+        name: 'Mosca-branca',
+        conditions: { hot: true, humid: true },
+        severity: "medium",
+        recommendation: 'Monitore a presença nas folhas e aplique controle se necessário'
+      },
+      {
+        name: 'Lagarta Helicoverpa',
         conditions: { hot: true },
         severity: "medium",
         recommendation: 'Inspecione o nível de desfolha e planeje controle se necessário'
-      },
-      {
-        name: 'Percevejos',
-        conditions: { hot: true, humid: true },
-        severity: "medium",
-        recommendation: 'Verifique presença em vagens e planeje manejo se acima do nível de dano'
       }
     ],
     'milho': [
@@ -105,20 +104,6 @@ export const determinePlaguePotential = (
         recommendation: 'Monitore a presença e transmissão potencial do vírus do enfezamento'
       }
     ],
-    'feijão': [
-      {
-        name: 'Mosca-branca',
-        conditions: { hot: true, humid: true },
-        severity: "medium",
-        recommendation: 'Monitore a presença nas folhas e aplique controle se necessário'
-      },
-      {
-        name: 'Antracnose',
-        conditions: { rainy: true, humid: true },
-        severity: "high",
-        recommendation: 'Aplique fungicidas preventivamente em períodos chuvosos'
-      }
-    ],
     'capim': [
       {
         name: 'Cigarrinha-das-pastagens',
@@ -133,35 +118,48 @@ export const determinePlaguePotential = (
         recommendation: 'Verifique a presença nas raízes e planeje manejo do solo'
       }
     ],
+    'cana': [
+      {
+        name: 'Broca-da-cana',
+        conditions: { hot: true, humid: true },
+        severity: "high",
+        recommendation: 'Faça monitoramento constante e considere controle biológico'
+      },
+      {
+        name: 'Esfenóforo',
+        conditions: { humid: true },
+        severity: "medium",
+        recommendation: 'Verifique a presença nos colmos e monitore os danos'
+      }
+    ]
   };
   
   // Verificar se a cultura está no mapa
   const plagueInfo = plagueMap[lowerCulture] || [];
   
   if (plagueInfo.length === 0) {
-    // Cultura não mapeada, retornar alerta genérico baseado apenas nas condições climáticas
-    if ((isHot && isHumid) || (isRainy && isHumid)) {
-      return {
-        hasAlert: true,
-        message: `Condições climáticas favoráveis a pragas em ${culture}`,
-        severity: "low",
-        recommendations: ['Monitore sua plantação regularmente']
-      };
-    } else {
-      return {
-        hasAlert: false,
-        message: `Monitoramento ativo para ${culture}`,
-      };
-    }
+    // Cultura não mapeada, retornar sem alerta
+    return {
+      hasAlert: false,
+      message: `Monitoramento ativo para ${culture}`,
+    };
   }
   
-  // Verificar pragas potenciais com base nas condições climáticas
-  const potentialPlagues = plagueInfo.filter(plague => {
+  // Para simular os alertas conforme solicitado, vamos verificar as condições
+  // ou selecionar aleatoriamente se as condições climáticas não forem favoráveis
+  let potentialPlagues = plagueInfo.filter(plague => {
     const { conditions } = plague;
     return (conditions.hot && isHot) || 
            (conditions.rainy && isRainy) || 
            (conditions.humid && isHumid);
   });
+  
+  // Se não houver pragas potenciais baseadas nas condições,
+  // selecionar aleatoriamente uma praga para fins de demonstração, conforme solicitado
+  if (potentialPlagues.length === 0 && Math.random() > 0.6) {
+    const randomIndex = Math.floor(Math.random() * plagueInfo.length);
+    potentialPlagues = [plagueInfo[randomIndex]];
+  }
   
   if (potentialPlagues.length > 0) {
     // Ordenar por severidade
@@ -176,7 +174,7 @@ export const determinePlaguePotential = (
       hasAlert: true,
       message: `Atenção em ${culture}: risco de ${highestSeverityPlague.name}`,
       severity: highestSeverityPlague.severity,
-      recommendations: potentialPlagues.map(p => p.recommendation)
+      recommendations: [highestSeverityPlague.recommendation]
     };
   }
   
@@ -185,3 +183,7 @@ export const determinePlaguePotential = (
     message: `Monitoramento ativo para ${culture}. Sem alertas no momento.`
   };
 };
+
+// Função para determinar potencial de pragas com base no clima
+// Mantida para compatibilidade com imports existentes
+export const determinePlaguePotential = getPlagueForCulture;
