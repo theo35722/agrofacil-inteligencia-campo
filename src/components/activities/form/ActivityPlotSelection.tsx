@@ -3,6 +3,7 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/comp
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Control } from "react-hook-form";
 import { ActivityFormValues, Field } from "@/hooks/use-activity-form";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ActivityPlotSelectionProps {
   control: Control<ActivityFormValues>;
@@ -15,6 +16,7 @@ export function ActivityPlotSelection({
   fields,
   watchedLavouraId 
 }: ActivityPlotSelectionProps) {
+  const isMobile = useIsMobile();
   // Get selected field's plots
   const selectedFieldPlots = fields.find(f => f.id === watchedLavouraId)?.plots || [];
 
@@ -25,23 +27,28 @@ export function ActivityPlotSelection({
       rules={{ required: "Talhão é obrigatório" }}
       render={({ field }) => (
         <FormItem className="space-y-1.5">
-          <FormLabel className="font-medium">Talhão *</FormLabel>
+          <FormLabel className={`${isMobile ? 'text-base' : ''} font-medium`}>Talhão *</FormLabel>
           <Select 
             value={field.value} 
             onValueChange={field.onChange}
             disabled={!watchedLavouraId || selectedFieldPlots.length === 0}
           >
             <FormControl>
-              <SelectTrigger className="h-10">
+              <SelectTrigger className={isMobile ? "h-12 text-base" : "h-10"}>
                 <SelectValue placeholder="Selecione o talhão" />
               </SelectTrigger>
             </FormControl>
-            <SelectContent>
+            <SelectContent align="center" className="bg-white">
               {selectedFieldPlots.map((plot) => (
                 <SelectItem key={plot.id} value={plot.id}>
                   {plot.name}
                 </SelectItem>
               ))}
+              {selectedFieldPlots.length === 0 && watchedLavouraId && (
+                <div className="px-2 py-4 text-center text-sm">
+                  Nenhum talhão encontrado para esta lavoura
+                </div>
+              )}
             </SelectContent>
           </Select>
           {watchedLavouraId && selectedFieldPlots.length === 0 && (
@@ -49,7 +56,7 @@ export function ActivityPlotSelection({
               Esta lavoura não tem talhões cadastrados
             </p>
           )}
-          <FormMessage />
+          <FormMessage className={isMobile ? "text-sm" : ""} />
         </FormItem>
       )}
     />

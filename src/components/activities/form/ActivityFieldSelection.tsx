@@ -4,6 +4,7 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/comp
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Control } from "react-hook-form";
 import { ActivityFormValues, Field } from "@/hooks/use-activity-form";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ActivityFieldSelectionProps {
   control: Control<ActivityFormValues>;
@@ -18,6 +19,8 @@ export function ActivityFieldSelection({
   watchedLavouraId, 
   setValue 
 }: ActivityFieldSelectionProps) {
+  const isMobile = useIsMobile();
+  
   // Reset plot selection when field changes
   useEffect(() => {
     setValue("talhaoId", "");
@@ -30,22 +33,27 @@ export function ActivityFieldSelection({
       rules={{ required: "Lavoura é obrigatória" }}
       render={({ field }) => (
         <FormItem className="space-y-1.5">
-          <FormLabel className="font-medium">Lavoura *</FormLabel>
+          <FormLabel className={`${isMobile ? 'text-base' : ''} font-medium`}>Lavoura *</FormLabel>
           <Select 
             value={field.value} 
             onValueChange={field.onChange}
           >
             <FormControl>
-              <SelectTrigger className="h-10">
+              <SelectTrigger className={isMobile ? "h-12 text-base" : "h-10"}>
                 <SelectValue placeholder="Selecione a lavoura" />
               </SelectTrigger>
             </FormControl>
-            <SelectContent>
+            <SelectContent align="center" className="bg-white">
               {fields.map((field) => (
                 <SelectItem key={field.id} value={field.id}>
                   {field.name}
                 </SelectItem>
               ))}
+              {fields.length === 0 && (
+                <div className="px-2 py-4 text-center text-sm">
+                  Nenhuma lavoura encontrada
+                </div>
+              )}
             </SelectContent>
           </Select>
           {fields.length === 0 && (
@@ -53,7 +61,7 @@ export function ActivityFieldSelection({
               Você precisa cadastrar uma lavoura primeiro
             </p>
           )}
-          <FormMessage />
+          <FormMessage className={isMobile ? "text-sm" : ""} />
         </FormItem>
       )}
     />
