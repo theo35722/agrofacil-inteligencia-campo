@@ -9,7 +9,9 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { getLavouras } from "@/services/lavouraService";
 import { getTalhoes } from "@/services/talhaoService";
+import { createLavoura } from "@/services/agroService";
 import { Lavoura, Talhao } from "@/types/agro";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Field extends Lavoura {
   plots: Talhao[];
@@ -18,6 +20,8 @@ interface Field extends Lavoura {
 const Fields = () => {
   const [farms, setFarms] = useState<Field[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isMobile = useIsMobile();
   
   const [expandedFarm, setExpandedFarm] = useState<string | null>(null);
   const [newFarmName, setNewFarmName] = useState("");
@@ -28,62 +32,79 @@ const Fields = () => {
   const [newPlotName, setNewPlotName] = useState("");
   const [newPlotArea, setNewPlotArea] = useState("");
   const [currentFarmId, setCurrentFarmId] = useState<string | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
   
   // Fetch data from database instead of using mock data
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        
-        // Get lavouras
-        const lavourasData = await getLavouras();
-        
-        // Create farms array with plots
-        const farmsWithPlots: Field[] = [];
-        
-        // For each lavoura, get its talhoes
-        for (const lavoura of lavourasData) {
-          const talhoesData = await getTalhoes(lavoura.id);
-          
-          farmsWithPlots.push({
-            ...lavoura,
-            plots: talhoesData
-          });
-        }
-        
-        setFarms(farmsWithPlots);
-      } catch (error) {
-        console.error("Erro ao carregar lavouras:", error);
-        toast.error("Não foi possível carregar as lavouras");
-      } finally {
-        setLoading(false);
-      }
-    };
-    
     fetchData();
   }, []);
+  
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      
+      // Get lavouras
+      const lavourasData = await getLavouras();
+      
+      // Create farms array with plots
+      const farmsWithPlots: Field[] = [];
+      
+      // For each lavoura, get its talhoes
+      for (const lavoura of lavourasData) {
+        const talhoesData = await getTalhoes(lavoura.id);
+        
+        farmsWithPlots.push({
+          ...lavoura,
+          plots: talhoesData
+        });
+      }
+      
+      setFarms(farmsWithPlots);
+    } catch (error) {
+      console.error("Erro ao carregar lavouras:", error);
+      toast.error("Não foi possível carregar as lavouras");
+    } finally {
+      setLoading(false);
+    }
+  };
   
   const toggleFarmExpand = (farmId: string) => {
     setExpandedFarm(expandedFarm === farmId ? null : farmId);
   };
   
-  const handleAddFarm = () => {
+  const handleAddFarm = async () => {
     if (!newFarmName || !newFarmArea || !newFarmLocation) {
       toast.error("Preencha todos os campos obrigatórios");
       return;
     }
     
-    // This would be replaced with actual API call
-    toast.success("Lavoura adicionada com sucesso!");
-    
-    // Reset form
-    setNewFarmName("");
-    setNewFarmArea("");
-    setNewFarmCulture("");
-    setNewFarmLocation("");
-    
-    // Reload data to show new farm
-    window.location.reload();
+    try {
+      setIsSubmitting(true);
+      
+      // Create the new farm using the service function
+      await createLavoura({
+        nome: newFarmName,
+        area_total: parseFloat(newFarmArea),
+        localizacao: newFarmLocation
+      });
+      
+      toast.success("Lavoura adicionada com sucesso!");
+      
+      // Reset form
+      setNewFarmName("");
+      setNewFarmArea("");
+      setNewFarmCulture("");
+      setNewFarmLocation("");
+      setDialogOpen(false);
+      
+      // Reload data to show new farm
+      fetchData();
+    } catch (error) {
+      console.error("Erro ao adicionar lavoura:", error);
+      toast.error("Não foi possível adicionar a lavoura");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
   
   const handleAddPlot = () => {
@@ -100,7 +121,7 @@ const Fields = () => {
     setNewPlotArea("");
     
     // Reload data to show new plot
-    window.location.reload();
+    fetchData();
   };
   
   const openAddPlotDialog = (farmId: string) => {
@@ -121,7 +142,7 @@ const Fields = () => {
           </p>
         </div>
         
-        <Dialog>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button className="bg-agro-green-500 hover:bg-agro-green-600">
               <Plus className="h-4 w-4 mr-2" /> Nova Lavoura
@@ -174,8 +195,9 @@ const Fields = () => {
               <Button 
                 className="w-full mt-4 bg-agro-green-500 hover:bg-agro-green-600"
                 onClick={handleAddFarm}
+                disabled={isSubmitting}
               >
-                Adicionar Lavoura
+                {isSubmitting ? "Adicionando..." : "Adicionar Lavoura"}
               </Button>
             </div>
           </DialogContent>
@@ -196,7 +218,7 @@ const Fields = () => {
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-4">
+        <div className={`space-y-4 ${isMobile ? "px-1" : ""}`}>
           {farms.map((farm) => (
             <Card key={farm.id} className="agro-card">
               <CardHeader className="pb-2">
