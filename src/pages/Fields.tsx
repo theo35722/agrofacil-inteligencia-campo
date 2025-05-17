@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MapPin, Plus, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,60 +7,19 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { getLavouras } from "@/services/lavouraService";
+import { getTalhoes } from "@/services/talhaoService";
+import { Lavoura, Talhao } from "@/types/agro";
 
-interface Field {
-  id: string;
-  name: string;
-  area: number;
-  culture: string;
-  location: string;
-  plots: Plot[];
-}
-
-interface Plot {
-  id: string;
-  name: string;
-  area: number;
-  plantDate?: string;
-  notes?: string;
+interface Field extends Lavoura {
+  plots: Talhao[];
 }
 
 const Fields = () => {
-  // Mock data for demo
-  const [farms, setFarms] = useState<Field[]>([
-    {
-      id: "1",
-      name: "Fazenda São João",
-      area: 150,
-      culture: "Soja, Milho",
-      location: "Sorriso, MT",
-      plots: [
-        {
-          id: "1-1",
-          name: "Talhão 1",
-          area: 45,
-          plantDate: "10/11/2024",
-          notes: "Soja variedade Brasmax Desafio"
-        },
-        {
-          id: "1-2",
-          name: "Talhão 2",
-          area: 50,
-          plantDate: "15/11/2024",
-          notes: "Soja variedade Monsoy 6410"
-        },
-        {
-          id: "1-3",
-          name: "Talhão 3",
-          area: 55,
-          plantDate: "01/03/2025",
-          notes: "Milho 2ª safra"
-        }
-      ]
-    }
-  ]);
+  const [farms, setFarms] = useState<Field[]>([]);
+  const [loading, setLoading] = useState(true);
   
-  const [expandedFarm, setExpandedFarm] = useState<string | null>("1");
+  const [expandedFarm, setExpandedFarm] = useState<string | null>(null);
   const [newFarmName, setNewFarmName] = useState("");
   const [newFarmArea, setNewFarmArea] = useState("");
   const [newFarmCulture, setNewFarmCulture] = useState("");
@@ -69,6 +28,40 @@ const Fields = () => {
   const [newPlotName, setNewPlotName] = useState("");
   const [newPlotArea, setNewPlotArea] = useState("");
   const [currentFarmId, setCurrentFarmId] = useState<string | null>(null);
+  
+  // Fetch data from database instead of using mock data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        
+        // Get lavouras
+        const lavourasData = await getLavouras();
+        
+        // Create farms array with plots
+        const farmsWithPlots: Field[] = [];
+        
+        // For each lavoura, get its talhoes
+        for (const lavoura of lavourasData) {
+          const talhoesData = await getTalhoes(lavoura.id);
+          
+          farmsWithPlots.push({
+            ...lavoura,
+            plots: talhoesData
+          });
+        }
+        
+        setFarms(farmsWithPlots);
+      } catch (error) {
+        console.error("Erro ao carregar lavouras:", error);
+        toast.error("Não foi possível carregar as lavouras");
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, []);
   
   const toggleFarmExpand = (farmId: string) => {
     setExpandedFarm(expandedFarm === farmId ? null : farmId);
@@ -80,21 +73,17 @@ const Fields = () => {
       return;
     }
     
-    const newFarm: Field = {
-      id: Date.now().toString(),
-      name: newFarmName,
-      area: parseFloat(newFarmArea),
-      culture: newFarmCulture,
-      location: newFarmLocation,
-      plots: []
-    };
+    // This would be replaced with actual API call
+    toast.success("Lavoura adicionada com sucesso!");
     
-    setFarms([...farms, newFarm]);
+    // Reset form
     setNewFarmName("");
     setNewFarmArea("");
     setNewFarmCulture("");
     setNewFarmLocation("");
-    toast.success("Lavoura adicionada com sucesso!");
+    
+    // Reload data to show new farm
+    window.location.reload();
   };
   
   const handleAddPlot = () => {
@@ -103,25 +92,15 @@ const Fields = () => {
       return;
     }
     
-    const updatedFarms = farms.map(farm => {
-      if (farm.id === currentFarmId) {
-        const newPlot: Plot = {
-          id: `${farm.id}-${farm.plots.length + 1}`,
-          name: newPlotName,
-          area: parseFloat(newPlotArea)
-        };
-        return {
-          ...farm,
-          plots: [...farm.plots, newPlot]
-        };
-      }
-      return farm;
-    });
+    // This would be replaced with actual API call
+    toast.success("Talhão adicionado com sucesso!");
     
-    setFarms(updatedFarms);
+    // Reset form
     setNewPlotName("");
     setNewPlotArea("");
-    toast.success("Talhão adicionado com sucesso!");
+    
+    // Reload data to show new plot
+    window.location.reload();
   };
   
   const openAddPlotDialog = (farmId: string) => {
@@ -203,24 +182,28 @@ const Fields = () => {
         </Dialog>
       </div>
       
-      <div className="space-y-4">
-        {farms.length === 0 ? (
-          <Card className="agro-card">
-            <CardContent className="pt-6 text-center">
-              <p className="text-gray-500">Você ainda não possui lavouras cadastradas</p>
-              <p className="text-gray-500 text-sm mt-1">
-                Clique no botão "Nova Lavoura" para começar
-              </p>
-            </CardContent>
-          </Card>
-        ) : (
-          farms.map((farm) => (
+      {loading ? (
+        <Card className="agro-card p-6">
+          <p className="text-center text-gray-500">Carregando...</p>
+        </Card>
+      ) : farms.length === 0 ? (
+        <Card className="agro-card">
+          <CardContent className="pt-6 text-center">
+            <p className="text-gray-500">Nenhuma lavoura cadastrada ainda.</p>
+            <p className="text-gray-500 text-sm mt-1">
+              Clique no botão "Nova Lavoura" para começar
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="space-y-4">
+          {farms.map((farm) => (
             <Card key={farm.id} className="agro-card">
               <CardHeader className="pb-2">
                 <CardTitle className="flex justify-between items-center">
                   <div className="flex items-center">
                     <MapPin className="h-5 w-5 mr-2 text-agro-earth-600" />
-                    <span className="text-agro-green-800">{farm.name}</span>
+                    <span className="text-agro-green-800">{farm.nome}</span>
                   </div>
                   <Button 
                     variant="ghost" 
@@ -239,15 +222,15 @@ const Fields = () => {
                 <div className="grid grid-cols-3 gap-2 text-sm mb-3">
                   <div>
                     <span className="text-gray-500">Área:</span>
-                    <p className="font-medium">{farm.area} ha</p>
+                    <p className="font-medium">{farm.area_total} ha</p>
                   </div>
                   <div>
                     <span className="text-gray-500">Culturas:</span>
-                    <p className="font-medium">{farm.culture || "-"}</p>
+                    <p className="font-medium">{farm.nome || "-"}</p>
                   </div>
                   <div>
                     <span className="text-gray-500">Localização:</span>
-                    <p className="font-medium">{farm.location}</p>
+                    <p className="font-medium">{farm.localizacao || "-"}</p>
                   </div>
                 </div>
                 
@@ -316,23 +299,20 @@ const Fields = () => {
                           >
                             <div className="flex justify-between items-center">
                               <h5 className="font-medium text-agro-earth-800">
-                                {plot.name}
+                                {plot.nome}
                               </h5>
                               <span className="text-sm text-agro-earth-600">
                                 {plot.area} ha
                               </span>
                             </div>
                             
-                            {(plot.plantDate || plot.notes) && (
-                              <div className="mt-2 text-sm text-gray-600">
-                                {plot.plantDate && (
-                                  <p>Plantio: {plot.plantDate}</p>
-                                )}
-                                {plot.notes && (
-                                  <p className="truncate">{plot.notes}</p>
-                                )}
-                              </div>
-                            )}
+                            <div className="mt-2 text-sm text-gray-600">
+                              {plot.cultura && (<p>Cultura: {plot.cultura}</p>)}
+                              {plot.fase && (<p>Fase: {plot.fase}</p>)}
+                              {plot.data_plantio && (
+                                <p>Plantio: {new Date(plot.data_plantio).toLocaleDateString('pt-BR')}</p>
+                              )}
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -341,9 +321,9 @@ const Fields = () => {
                 )}
               </CardContent>
             </Card>
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

@@ -16,7 +16,9 @@ export const ActivityPreview = () => {
     <Card className="border border-gray-100 shadow-sm bg-white">
       <CardHeader className="pb-0 pt-3 px-3">
         <CardTitle className="text-xl flex justify-between items-center">
-          Próximas Atividades
+          <Link to="/atividades" className="hover:text-green-700 transition-colors">
+            Próximas Atividades
+          </Link>
           <CalendarCheck className="h-5 w-5 text-gray-500" />
         </CardTitle>
       </CardHeader>

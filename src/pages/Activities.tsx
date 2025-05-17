@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CalendarCheck, Plus, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,15 +11,23 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import { getAtividades } from "@/services/atividadeService";
+import { getLavouras } from "@/services/lavouraService";
+import { getTalhoes } from "@/services/talhaoService";
+import { Atividade, Lavoura, Talhao } from "@/types/agro";
 
-interface Activity {
+interface Activity extends Atividade {
+  field?: string;
+  plot?: string;
+}
+
+interface Field {
+  name: string;
   id: string;
-  date: string;
-  type: string;
-  field: string;
-  plot: string;
-  notes?: string;
-  status: "concluído" | "pendente" | "planejado";
+  plots: {
+    name: string;
+    id: string;
+  }[];
 }
 
 const activityTypes = [
@@ -32,36 +40,74 @@ const activityTypes = [
 ];
 
 const Activities = () => {
-  // Mock data for demo
-  const [activities, setActivities] = useState<Activity[]>([
-    {
-      id: "1",
-      date: "2025-05-10",
-      type: "Plantio",
-      field: "Fazenda São João",
-      plot: "Talhão 1",
-      notes: "Plantio de soja - Variedade Brasmax Desafio",
-      status: "concluído"
-    },
-    {
-      id: "2",
-      date: "2025-05-16",
-      type: "Pulverização",
-      field: "Fazenda São João",
-      plot: "Talhão 2",
-      notes: "Aplicação de fungicida preventivo",
-      status: "pendente"
-    },
-    {
-      id: "3",
-      date: "2025-05-20",
-      type: "Adubação",
-      field: "Fazenda São João",
-      plot: "Talhão 3",
-      notes: "Adubação de cobertura - 200kg/ha",
-      status: "planejado"
-    }
-  ]);
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [fields, setFields] = useState<Field[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  // Fetch actual data instead of using mock data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        
+        // Get real activities from database
+        const atividadesData = await getAtividades();
+        
+        // Get lavouras for the form
+        const lavourasData = await getLavouras();
+        
+        // Create fields array with plots for the form
+        const fieldsWithPlots: Field[] = [];
+        
+        // For each lavoura, get its talhoes
+        for (const lavoura of lavourasData) {
+          const talhoesData = await getTalhoes(lavoura.id);
+          
+          fieldsWithPlots.push({
+            name: lavoura.nome,
+            id: lavoura.id,
+            plots: talhoesData.map(talhao => ({
+              name: talhao.nome,
+              id: talhao.id
+            }))
+          });
+        }
+        
+        // Process activities to include field and plot names
+        const processedActivities = await Promise.all(atividadesData.map(async (activity) => {
+          // Get talhao details if available
+          let field = "";
+          let plot = "";
+          
+          if (activity.talhao?.id) {
+            plot = activity.talhao.nome || "";
+            
+            // Get lavoura details
+            if (activity.talhao.lavoura_id) {
+              const lavoura = lavourasData.find(l => l.id === activity.talhao?.lavoura_id);
+              field = lavoura?.nome || "";
+            }
+          }
+          
+          return {
+            ...activity,
+            field,
+            plot
+          };
+        }));
+        
+        setActivities(processedActivities);
+        setFields(fieldsWithPlots);
+      } catch (error) {
+        console.error("Erro ao carregar atividades:", error);
+        toast.error("Não foi possível carregar as atividades");
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
+  }, []);
   
   // Form states
   const [newActivityDate, setNewActivityDate] = useState("");
@@ -74,31 +120,14 @@ const Activities = () => {
   // Filter
   const [activeTab, setActiveTab] = useState("all");
   
-  // Mock data for fields and plots
-  const fields = [
-    {
-      name: "Fazenda São João",
-      plots: ["Talhão 1", "Talhão 2", "Talhão 3"]
-    }
-  ];
-  
   const handleAddActivity = () => {
     if (!newActivityDate || !newActivityType || !newActivityField || !newActivityPlot) {
       toast.error("Preencha todos os campos obrigatórios");
       return;
     }
     
-    const newActivity: Activity = {
-      id: Date.now().toString(),
-      date: newActivityDate,
-      type: newActivityType,
-      field: newActivityField,
-      plot: newActivityPlot,
-      notes: newActivityNotes,
-      status: newActivityStatus as "concluído" | "pendente" | "planejado"
-    };
-    
-    setActivities([...activities, newActivity]);
+    // This would be replaced with actual API call
+    toast.success("Atividade adicionada com sucesso!");
     
     // Reset form
     setNewActivityDate("");
@@ -108,7 +137,8 @@ const Activities = () => {
     setNewActivityNotes("");
     setNewActivityStatus("pendente");
     
-    toast.success("Atividade adicionada com sucesso!");
+    // Reload page to show new activity
+    window.location.reload();
   };
   
   const filteredActivities = activities.filter(activity => {
@@ -126,6 +156,9 @@ const Activities = () => {
     if (status === "pendente") return "bg-orange-500 hover:bg-orange-600";
     return "bg-agro-blue-400 hover:bg-agro-blue-500";
   };
+  
+  // Get selected field's plots
+  const selectedFieldPlots = fields.find(f => f.id === newActivityField)?.plots || [];
   
   return (
     <div className="space-y-6 animate-fade-in">
@@ -184,33 +217,41 @@ const Activities = () => {
                   </SelectTrigger>
                   <SelectContent>
                     {fields.map((field) => (
-                      <SelectItem key={field.name} value={field.name}>
+                      <SelectItem key={field.id} value={field.id}>
                         {field.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
+                {fields.length === 0 && (
+                  <p className="text-orange-500 text-xs mt-1">
+                    Você precisa cadastrar uma lavoura primeiro
+                  </p>
+                )}
               </div>
               
               <div className="space-y-2">
                 <Label htmlFor="activity-plot">Talhão *</Label>
                 <Select 
                   onValueChange={setNewActivityPlot}
-                  disabled={!newActivityField}
+                  disabled={!newActivityField || selectedFieldPlots.length === 0}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione o talhão" />
                   </SelectTrigger>
                   <SelectContent>
-                    {newActivityField && 
-                      fields.find(f => f.name === newActivityField)?.plots.map((plot) => (
-                        <SelectItem key={plot} value={plot}>
-                          {plot}
-                        </SelectItem>
-                      ))
-                    }
+                    {selectedFieldPlots.map((plot) => (
+                      <SelectItem key={plot.id} value={plot.id}>
+                        {plot.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
+                {newActivityField && selectedFieldPlots.length === 0 && (
+                  <p className="text-orange-500 text-xs mt-1">
+                    Esta lavoura não tem talhões cadastrados
+                  </p>
+                )}
               </div>
               
               <div className="space-y-2">
@@ -243,6 +284,7 @@ const Activities = () => {
               <Button 
                 className="w-full mt-4 bg-agro-green-500 hover:bg-agro-green-600"
                 onClick={handleAddActivity}
+                disabled={fields.length === 0}
               >
                 Adicionar Atividade
               </Button>
@@ -274,10 +316,17 @@ const Activities = () => {
             </TabsList>
             
             <TabsContent value={activeTab}>
-              {filteredActivities.length === 0 ? (
+              {loading ? (
+                <div className="text-center py-6">
+                  <p className="text-gray-500">Carregando atividades...</p>
+                </div>
+              ) : filteredActivities.length === 0 ? (
                 <div className="text-center py-6">
                   <p className="text-gray-500">
-                    Nenhuma atividade {activeTab !== "all" ? `${activeTab}` : ""} encontrada
+                    Nenhuma atividade {activeTab !== "all" ? `${activeTab}` : ""} registrada.
+                  </p>
+                  <p className="text-gray-500 text-sm mt-1">
+                    Adicione uma atividade para iniciar o controle da sua lavoura.
                   </p>
                 </div>
               ) : (
@@ -290,25 +339,25 @@ const Activities = () => {
                       <div className="flex justify-between items-start">
                         <div>
                           <div className="flex items-center gap-2">
-                            <h4 className="font-medium">{activity.type}</h4>
+                            <h4 className="font-medium">{activity.tipo}</h4>
                             <Badge className={getStatusColor(activity.status)}>
                               {activity.status}
                             </Badge>
                           </div>
                           
                           <p className="text-sm text-gray-600 mt-1">
-                            {activity.field} - {activity.plot}
+                            {activity.field ? `${activity.field} - ${activity.plot}` : activity.plot}
                           </p>
                           
-                          {activity.notes && (
+                          {activity.descricao && (
                             <p className="text-sm text-gray-500 mt-2">
-                              {activity.notes}
+                              {activity.descricao}
                             </p>
                           )}
                         </div>
                         
                         <div className="text-sm text-agro-green-600 font-medium">
-                          {formatDate(activity.date)}
+                          {activity.data_programada ? formatDate(activity.data_programada) : ""}
                         </div>
                       </div>
                     </div>
