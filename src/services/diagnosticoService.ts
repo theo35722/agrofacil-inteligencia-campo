@@ -17,7 +17,8 @@ export const getDiagnosticosPragas = async (options: {
           id,
           nome,
           cultura,
-          fase
+          fase,
+          lavoura_id
         )
       `)
       .order('data_diagnostico', { ascending: false });
@@ -56,7 +57,8 @@ export const getDiagnosticoById = async (id: string): Promise<DiagnosticoPraga |
           id,
           nome,
           cultura,
-          fase
+          fase,
+          lavoura_id
         )
       `)
       .eq('id', id)
