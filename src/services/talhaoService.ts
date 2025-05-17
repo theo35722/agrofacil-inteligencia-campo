@@ -89,3 +89,50 @@ export const createTalhao = async (talhaoData: Omit<Talhao, 'id' | 'criado_em' |
     throw error;
   }
 };
+
+// Atualizar um talhão existente
+export const updateTalhao = async (id: string, talhaoData: Partial<Omit<Talhao, 'id' | 'criado_em' | 'atualizado_em'>>): Promise<Talhao> => {
+  try {
+    console.log(`Atualizando talhão ${id}:`, talhaoData);
+
+    const { data, error } = await supabase
+      .from('talhoes')
+      .update(talhaoData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error(`Erro ao atualizar talhão ${id}:`, error);
+      throw error;
+    }
+
+    console.log("Talhão atualizado com sucesso:", data);
+    return data;
+  } catch (error) {
+    console.error(`Falha na operação de atualizar talhão ${id}:`, error);
+    throw error;
+  }
+};
+
+// Excluir um talhão
+export const deleteTalhao = async (id: string): Promise<void> => {
+  try {
+    console.log(`Excluindo talhão ${id}`);
+
+    const { error } = await supabase
+      .from('talhoes')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error(`Erro ao excluir talhão ${id}:`, error);
+      throw error;
+    }
+
+    console.log(`Talhão ${id} excluído com sucesso`);
+  } catch (error) {
+    console.error(`Falha na operação de excluir talhão ${id}:`, error);
+    throw error;
+  }
+};

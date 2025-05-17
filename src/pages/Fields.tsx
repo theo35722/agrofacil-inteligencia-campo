@@ -6,40 +6,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { getLavouras } from "@/services/lavouraService";
 import { getTalhoes } from "@/services/talhaoService";
 import { createLavoura } from "@/services/lavouraService";
-import { createTalhao } from "@/services/talhaoService";
 import { Lavoura, Talhao } from "@/types/agro";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { useForm } from "react-hook-form";
+import { AddTalhaoDialog } from "@/components/talhao/AddTalhaoDialog";
 
 interface Field extends Lavoura {
   plots: Talhao[];
 }
-
-// Culturas disponíveis
-const CULTURAS = [
-  "Soja", 
-  "Milho", 
-  "Capim", 
-  "Algodão", 
-  "Café", 
-  "Cana-de-açúcar", 
-  "Outro"
-];
-
-// Fases de desenvolvimento
-const FASES = [
-  "Emergência", 
-  "Crescimento", 
-  "Formação", 
-  "Floração", 
-  "Maturação"
-];
 
 const Fields = () => {
   const [farms, setFarms] = useState<Field[]>([]);
@@ -55,19 +32,6 @@ const Fields = () => {
   
   const [dialogOpen, setDialogOpen] = useState(false);
   const [talhaoDialogOpen, setTalhaoDialogOpen] = useState(false);
-  
-  // Formulário para adicionar talhão
-  const talhaoForm = useForm({
-    defaultValues: {
-      nome: "",
-      area: "",
-      cultura: "",
-      fase: "",
-      variedade: ""
-    }
-  });
-  
-  // ID da lavoura atual para adicionar talhão
   const [currentFarmId, setCurrentFarmId] = useState<string | null>(null);
   
   // Fetch data from database instead of using mock data
@@ -144,49 +108,8 @@ const Fields = () => {
     }
   };
   
-  const handleAddPlot = async () => {
-    const formValues = talhaoForm.getValues();
-    
-    // Valide os campos obrigatórios
-    if (!formValues.nome || !formValues.area || !formValues.cultura || !currentFarmId) {
-      toast.error("Preencha todos os campos obrigatórios");
-      return;
-    }
-    
-    try {
-      setIsSubmitting(true);
-      
-      // Crie o talhão usando o serviço
-      await createTalhao({
-        nome: formValues.nome,
-        area: parseFloat(formValues.area),
-        lavoura_id: currentFarmId,
-        cultura: formValues.cultura,
-        fase: formValues.fase || undefined,
-        variedade: formValues.variedade || undefined
-      });
-      
-      toast.success("Talhão adicionado com sucesso!");
-      
-      // Limpar o formulário
-      talhaoForm.reset();
-      
-      // Feche o diálogo
-      setTalhaoDialogOpen(false);
-      
-      // Recarregue os dados para mostrar o novo talhão
-      fetchData();
-    } catch (error) {
-      console.error("Erro ao adicionar talhão:", error);
-      toast.error("Não foi possível adicionar o talhão");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-  
   const openAddPlotDialog = (farmId: string) => {
     setCurrentFarmId(farmId);
-    talhaoForm.reset();
     setTalhaoDialogOpen(true);
   };
   
@@ -321,100 +244,15 @@ const Fields = () => {
                     <div className="flex justify-between items-center mb-4">
                       <h4 className="font-medium text-agro-green-700">Talhões</h4>
                       
-                      <Dialog open={talhaoDialogOpen && currentFarmId === farm.id} onOpenChange={(open) => {
-                        if (!open) setTalhaoDialogOpen(false);
-                      }}>
-                        <DialogTrigger asChild>
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            className="text-xs border-agro-green-300 text-agro-green-700 hover:bg-agro-green-50"
-                            onClick={() => openAddPlotDialog(farm.id)}
-                          >
-                            <Plus className="h-3 w-3 mr-1" /> 
-                            Adicionar Talhão
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent>
-                          <DialogHeader>
-                            <DialogTitle>Adicionar Novo Talhão</DialogTitle>
-                          </DialogHeader>
-                          
-                          <div className="space-y-4 py-4">
-                            <div className="space-y-2">
-                              <Label htmlFor="plot-name">Nome do Talhão *</Label>
-                              <Input 
-                                id="plot-name"
-                                {...talhaoForm.register("nome")}
-                              />
-                            </div>
-                            
-                            <div className="space-y-2">
-                              <Label htmlFor="plot-area">Área (ha) *</Label>
-                              <Input 
-                                id="plot-area" 
-                                type="number"
-                                {...talhaoForm.register("area")}
-                              />
-                            </div>
-                            
-                            <div className="space-y-2">
-                              <Label htmlFor="plot-cultura">Cultura *</Label>
-                              <Select 
-                                onValueChange={(value) => talhaoForm.setValue("cultura", value)}
-                                value={talhaoForm.watch("cultura")}
-                              >
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Selecione uma cultura" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {CULTURAS.map((cultura) => (
-                                    <SelectItem key={cultura} value={cultura}>
-                                      {cultura}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            
-                            <div className="space-y-2">
-                              <Label htmlFor="plot-fase">Fase de Desenvolvimento</Label>
-                              <Select 
-                                onValueChange={(value) => talhaoForm.setValue("fase", value)}
-                                value={talhaoForm.watch("fase")}
-                              >
-                                <SelectTrigger>
-                                  <SelectValue placeholder="Selecione a fase (opcional)" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  {FASES.map((fase) => (
-                                    <SelectItem key={fase} value={fase}>
-                                      {fase}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            
-                            <div className="space-y-2">
-                              <Label htmlFor="plot-variedade">Variedade da Cultura</Label>
-                              <Input 
-                                id="plot-variedade"
-                                placeholder="Ex: Brasmax Ativa RR, Capim Mombaça"
-                                {...talhaoForm.register("variedade")}
-                              />
-                            </div>
-                            
-                            <Button 
-                              className="w-full mt-4 bg-agro-green-500 hover:bg-agro-green-600"
-                              onClick={handleAddPlot}
-                              disabled={isSubmitting}
-                            >
-                              {isSubmitting ? "Adicionando..." : "Adicionar Talhão"}
-                            </Button>
-                          </div>
-                        </DialogContent>
-                      </Dialog>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        className="text-xs border-agro-green-300 text-agro-green-700 hover:bg-agro-green-50"
+                        onClick={() => openAddPlotDialog(farm.id)}
+                      >
+                        <Plus className="h-3 w-3 mr-1" /> 
+                        Adicionar Talhão
+                      </Button>
                     </div>
                     
                     {farm.plots.length === 0 ? (
@@ -455,6 +293,16 @@ const Fields = () => {
             </Card>
           ))}
         </div>
+      )}
+      
+      {/* Dialog para adicionar talhão, usando o componente refatorado */}
+      {currentFarmId && (
+        <AddTalhaoDialog
+          open={talhaoDialogOpen}
+          onOpenChange={setTalhaoDialogOpen}
+          farmId={currentFarmId}
+          onSuccess={fetchData}
+        />
       )}
     </div>
   );

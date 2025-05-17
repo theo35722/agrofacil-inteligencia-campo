@@ -273,6 +273,7 @@ export type Database = {
           nome: string
           status: string | null
           unidade_area: string | null
+          variedade: string | null
         }
         Insert: {
           area?: number | null
@@ -287,6 +288,7 @@ export type Database = {
           nome: string
           status?: string | null
           unidade_area?: string | null
+          variedade?: string | null
         }
         Update: {
           area?: number | null
@@ -301,6 +303,7 @@ export type Database = {
           nome?: string
           status?: string | null
           unidade_area?: string | null
+          variedade?: string | null
         }
         Relationships: [
           {
