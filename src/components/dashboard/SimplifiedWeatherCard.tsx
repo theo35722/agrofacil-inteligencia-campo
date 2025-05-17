@@ -8,6 +8,9 @@ import { CloudSun, MapPin } from "lucide-react";
 import { WeatherIcon } from "@/components/weather/WeatherIcon";
 import { WeatherLoading } from "@/components/weather/WeatherLoading";
 import { Link } from "react-router-dom";
+import { WeatherFallback } from "./WeatherFallback";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export const SimplifiedWeatherCard = ({ onWeatherDataChange }: { 
   onWeatherDataChange?: (data: {
@@ -20,6 +23,7 @@ export const SimplifiedWeatherCard = ({ onWeatherDataChange }: {
     data, 
     isLoading, 
     isError,
+    error,
     locationError,
     refetch
   } = useWeatherData();
@@ -39,6 +43,18 @@ export const SimplifiedWeatherCard = ({ onWeatherDataChange }: {
     
     return () => clearTimeout(timeoutId);
   }, [refetch, isLoading]);
+
+  // Efeito para mostrar toast de erro
+  useEffect(() => {
+    if (isError && error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      toast.error("Erro na previsão do tempo", {
+        description: errorMessage.includes("401") 
+          ? "Erro de autenticação. Por favor, recarregue a página." 
+          : "Não foi possível obter dados meteorológicos"
+      });
+    }
+  }, [isError, error]);
 
   // Efeito para notificar o componente pai sobre alterações nos dados do tempo
   useEffect(() => {
@@ -98,57 +114,13 @@ export const SimplifiedWeatherCard = ({ onWeatherDataChange }: {
 
   // Verificação de erro ou dados ausentes
   if (isError || !data || !data.forecast || data.forecast.length === 0) {
-    return (
-      <Card className="agro-card">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-agro-green-800 flex justify-between items-center">
-            <span>Previsão do Tempo</span>
-            <CloudSun className="h-5 w-5 text-agro-blue-500" />
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="w-full flex justify-between items-center">
-            <div>
-              <p className="text-lg font-semibold">N/A</p>
-              <p className="text-sm text-gray-500">Dados indisponíveis</p>
-              <p className="text-sm text-gray-500">Amanhã: -- / --</p>
-            </div>
-            <div className="h-12 w-12 text-gray-300">
-              <WeatherIcon icon="cloud" className="h-12 w-12" />
-            </div>
-          </div>
-          <div className="mt-2">
-            <Button 
-              onClick={() => refetch()} 
-              variant="outline" 
-              size="sm" 
-              className="w-full text-xs"
-            >
-              Tentar novamente
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return <WeatherFallback error={error instanceof Error ? error.message : undefined} />;
   }
 
   // Verificar erro de localização
   if (locationError || location.error) {
     return (
-      <Card className="agro-card">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-agro-green-800 flex justify-between items-center">
-            <span>Previsão do Tempo</span>
-            <CloudSun className="h-5 w-5 text-agro-blue-500" />
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-amber-600">
-            <p>Erro ao obter localização</p>
-            <p className="text-sm mt-1">Verifique as permissões de localização</p>
-          </div>
-        </CardContent>
-      </Card>
+      <WeatherFallback error="Erro ao obter localização. Verifique as permissões." />
     );
   }
 
@@ -204,6 +176,3 @@ export const SimplifiedWeatherCard = ({ onWeatherDataChange }: {
     </Link>
   );
 };
-
-// Add the Button import
-import { Button } from "@/components/ui/button";

@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { PlagueAlertData } from "@/types/agro";
 
@@ -8,8 +7,29 @@ export const fetchWeatherData = async (
   lon: number
 ): Promise<any> => {
   try {
+    // Obter o token de autenticação atual do Supabase
+    const { data: { session } } = await supabase.auth.getSession();
+    const accessToken = session?.access_token;
+
+    if (!accessToken) {
+      console.warn('Usuário não autenticado ao buscar dados do clima');
+    }
+
+    // Configurar os headers necessários para a requisição
+    const headers = {
+      'Authorization': `Bearer ${accessToken || ''}`,
+      'Content-Type': 'application/json',
+      'apikey': process.env.SUPABASE_ANON_KEY || ''
+    };
+
+    // Fazer a requisição para a função Edge do Supabase
     const response = await fetch(
-      `https://euzaloymjefsdravbmcd.functions.supabase.co/get-weather-data?lat=${lat}&lon=${lon}`
+      `https://euzaloymjefsdravbmcd.functions.supabase.co/get-weather-data`,
+      {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify({ latitude: lat, longitude: lon })
+      }
     );
 
     if (!response.ok) {

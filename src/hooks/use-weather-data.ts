@@ -7,18 +7,27 @@ import { useState, useEffect } from 'react';
 export const useWeatherData = () => {
   const location = useGeolocation();
   const [ready, setReady] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
 
   // Verificar quando as coordenadas estão disponíveis
   useEffect(() => {
     if (location.latitude && location.longitude && !location.loading && !location.error) {
       setReady(true);
+      setLocationError(null);
+    } else if (location.error) {
+      setLocationError(location.error);
     }
   }, [location.latitude, location.longitude, location.loading, location.error]);
 
   // Usar React Query para buscar e gerenciar os dados do clima
   const weatherQuery = useQuery({
     queryKey: ['weather', location.latitude, location.longitude],
-    queryFn: () => fetchWeatherData(location.latitude!, location.longitude!),
+    queryFn: async () => {
+      if (!location.latitude || !location.longitude) {
+        throw new Error('Coordenadas de localização não disponíveis');
+      }
+      return fetchWeatherData(location.latitude, location.longitude);
+    },
     enabled: ready,
     staleTime: 30 * 60 * 1000, // 30 minutos
     refetchOnWindowFocus: false,
@@ -30,6 +39,6 @@ export const useWeatherData = () => {
   return {
     ...weatherQuery,
     isLocationLoading: location.loading,
-    locationError: location.error,
+    locationError,
   };
 };
