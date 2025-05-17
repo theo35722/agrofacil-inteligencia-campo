@@ -1,17 +1,14 @@
 
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import { Leaf } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { useGeolocation } from "@/hooks/use-geolocation";
 import { useAuth } from "@/contexts/AuthContext";
 import { ChatButton } from "@/components/chat/ChatButton";
 import { ChatDialog } from "@/components/chat/ChatDialog";
 import { toast } from "sonner";
 import { ActivityPreview } from "@/components/dashboard/ActivityPreview";
 import { SimplifiedWeatherCard } from "@/components/dashboard/SimplifiedWeatherCard";
-import { Badge } from "@/components/ui/badge";
+import { GreetingHeader } from "@/components/dashboard/GreetingHeader";
+import { DiagnosticButton } from "@/components/dashboard/DiagnosticButton";
+import { LavouraSection } from "@/components/dashboard/LavouraSection";
 import { PlagueAlert } from "@/components/dashboard/PlagueAlert";
 import { Lavoura, Talhao, PlagueAlertData } from "@/types/agro";
 import { getLavouras } from "@/services/lavouraService";
@@ -20,7 +17,6 @@ import { determinePlagueAlerts } from "@/services/diagnosticoService";
 
 const Dashboard: React.FC = () => {
   const { profile } = useAuth();
-  const location = useGeolocation();
   const [showChat, setShowChat] = useState(false);
   const [weatherData, setWeatherData] = useState<{
     description: string;
@@ -109,37 +105,10 @@ const Dashboard: React.FC = () => {
     console.log("Dados climáticos atualizados:", data);
     setWeatherData(data);
   };
-
-  // Get time of day for greeting
-  const getGreeting = () => {
-    const hour = new Date().getHours();
-    if (hour < 12) return "Bom dia";
-    if (hour < 18) return "Boa tarde";
-    return "Boa noite";
-  };
-  const greeting = `${getGreeting()}, ${profile?.nome?.split(' ')[0] || 'Produtor'}!`;
-
-  // Função para determinar a cor da badge baseada na fase
-  const getPhaseColor = (phase: string) => {
-    switch (phase?.toLowerCase()) {
-      case "crescimento":
-        return "bg-green-100 text-green-800 border-green-200";
-      case "emergência":
-      case "emergencia":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "florescimento":
-        return "bg-purple-100 text-purple-800 border-purple-200";
-      case "colheita":
-        return "bg-blue-100 text-blue-800 border-blue-200";
-      default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
-    }
-  };
   
   // Função para navegar para a página de detalhes do alerta (futuro)
   const handlePlagueAlertClick = () => {
     if (plagueAlertData.hasAlert) {
-      // Futuramente, pode-se implementar uma navegação para detalhes 
       toast("Navegando para detalhes do alerta...");
     } else {
       toast("Nenhum alerta de pragas no momento");
@@ -149,9 +118,7 @@ const Dashboard: React.FC = () => {
   return (
     <div className="flex flex-col gap-3 bg-gray-50 pb-16">
       {/* Top greeting text */}
-      <div className="py-4 px-4">
-        <h1 className="text-2xl font-bold text-center text-gray-800">{greeting}</h1>
-      </div>
+      <GreetingHeader profile={profile} />
 
       {/* Weather card */}
       <div className="mx-4">
@@ -165,12 +132,7 @@ const Dashboard: React.FC = () => {
       />
 
       {/* Simplified Diagnóstico button */}
-      <Link to="/diagnostico" className="mx-4">
-        <Button className="w-full py-3 bg-green-500 hover:bg-green-600 text-white rounded-xl shadow-sm flex items-center justify-center gap-2">
-          <Leaf className="w-5 h-5" />
-          <div className="text-base font-medium">Fazer Diagnóstico de Planta</div>
-        </Button>
-      </Link>
+      <DiagnosticButton />
 
       {/* Lavouras section - real data */}
       <div className="mx-4 mt-2">
@@ -179,72 +141,12 @@ const Dashboard: React.FC = () => {
             Suas Lavouras
           </Link>
         </h2>
-        {loading ? (
-          <div className="p-4 text-center text-gray-500">
-            Carregando lavouras...
-          </div>
-        ) : error ? (
-          <Card className="p-6 text-center border border-red-200 bg-red-50">
-            <p className="text-red-600 mb-4">{error}</p>
-            <Button 
-              onClick={() => window.location.reload()} 
-              className="bg-green-500 hover:bg-green-600"
-            >
-              Tentar Novamente
-            </Button>
-          </Card>
-        ) : talhoes.length > 0 ? (
-          <>
-            <div className="grid grid-cols-2 gap-3">
-              {talhoes.slice(0, 4).map(talhao => (
-                <Link key={talhao.id} to="/lavouras">
-                  <Card className="p-3 h-full border border-gray-100 shadow-none bg-green-50 rounded-lg hover:shadow-sm transition-all">
-                    <h3 className="font-semibold">{talhao.nome}</h3>
-                    <div className="text-green-600 font-medium">{talhao.cultura}</div>
-                    <div className="text-sm mt-1">
-                      Fase: <Badge variant="outline" className={`ml-1 border ${getPhaseColor(talhao.fase)}`}>
-                        {talhao.fase}
-                      </Badge>
-                    </div>
-                    {talhao.status && (
-                      <div className="text-xs text-gray-500 mt-1">
-                        {talhao.status}
-                      </div>
-                    )}
-                  </Card>
-                </Link>
-              ))}
-            </div>
-            {talhoes.length > 4 && (
-              <div className="mt-3 text-right">
-                <Link 
-                  to="/lavouras"
-                  className="text-sm text-green-600 hover:text-green-700 font-medium"
-                >
-                  Ver todas ({talhoes.length}) &rarr;
-                </Link>
-              </div>
-            )}
-          </>
-        ) : lavouras.length > 0 ? (
-          <Card className="p-6 text-center border border-dashed border-gray-300 bg-white">
-            <p className="text-gray-600 mb-4">Você tem lavouras, mas ainda não cadastrou nenhum talhão.</p>
-            <Link to="/lavouras">
-              <Button className="bg-green-500 hover:bg-green-600">
-                Gerenciar Lavouras
-              </Button>
-            </Link>
-          </Card>
-        ) : (
-          <Card className="p-6 text-center border border-dashed border-gray-300 bg-white">
-            <p className="text-gray-600 mb-4">Nenhuma lavoura cadastrada. Adicione sua primeira lavoura!</p>
-            <Link to="/lavouras/nova">
-              <Button className="bg-green-500 hover:bg-green-600">
-                Adicionar Lavoura
-              </Button>
-            </Link>
-          </Card>
-        )}
+        <LavouraSection 
+          loading={loading}
+          error={error}
+          talhoes={talhoes}
+          lavouras={lavouras}
+        />
       </div>
 
       {/* Activities section - real data */}
