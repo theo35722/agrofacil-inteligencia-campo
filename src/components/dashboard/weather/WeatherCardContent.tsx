@@ -16,6 +16,18 @@ export const WeatherCardContent: React.FC<WeatherCardContentProps> = ({
   agriculturalAlert 
 }) => {
   const isAlertWarning = agriculturalAlert.includes("Alerta");
+  
+  // Map weather icons to descriptions
+  const getWeatherDescription = (icon: string): string => {
+    switch (icon) {
+      case "sun": return "Céu limpo";
+      case "cloud-sun": return "Parcialmente nublado";
+      case "cloud": return "Nublado";
+      case "cloud-rain": return "Chuvoso";
+      case "cloud-drizzle": return "Garoa";
+      default: return "Condições atuais";
+    }
+  };
 
   return (
     <>
@@ -35,7 +47,7 @@ export const WeatherCardContent: React.FC<WeatherCardContentProps> = ({
             </div>
           )}
           
-          <p className="text-sm mb-2">{today.description || "Condições atuais"}</p>
+          <p className="text-sm mb-2">{getWeatherDescription(today.icon)}</p>
         </div>
         
         <WeatherIcon icon={today.icon} className="h-16 w-16" />
