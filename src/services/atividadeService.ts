@@ -98,6 +98,8 @@ export const getAtividadeById = async (id: string): Promise<Atividade | null> =>
 // Criar nova atividade
 export const createAtividade = async (atividade: Omit<Atividade, 'id' | 'criado_em' | 'atualizado_em'>): Promise<Atividade> => {
   try {
+    console.log("Dados recebidos para criar atividade:", atividade);
+
     const { data, error } = await supabase
       .from('atividades')
       .insert([atividade])
@@ -109,9 +111,50 @@ export const createAtividade = async (atividade: Omit<Atividade, 'id' | 'criado_
       throw error;
     }
 
+    console.log("Atividade criada com sucesso:", data);
     return data;
   } catch (error) {
     console.error("Falha na operação de criar atividade:", error);
+    throw error;
+  }
+};
+
+// Atualizar atividade existente
+export const updateAtividade = async (id: string, atividade: Partial<Omit<Atividade, 'id' | 'criado_em' | 'atualizado_em'>>): Promise<Atividade> => {
+  try {
+    const { data, error } = await supabase
+      .from('atividades')
+      .update(atividade)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error(`Erro ao atualizar atividade ${id}:`, error);
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error(`Falha na operação de atualizar atividade ${id}:`, error);
+    throw error;
+  }
+};
+
+// Excluir atividade
+export const deleteAtividade = async (id: string): Promise<void> => {
+  try {
+    const { error } = await supabase
+      .from('atividades')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error(`Erro ao excluir atividade ${id}:`, error);
+      throw error;
+    }
+  } catch (error) {
+    console.error(`Falha na operação de excluir atividade ${id}:`, error);
     throw error;
   }
 };

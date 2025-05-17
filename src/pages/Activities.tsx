@@ -11,12 +11,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { getAtividades } from "@/services/atividadeService";
+import { getAtividades, createAtividade } from "@/services/atividadeService";
 import { getLavouras } from "@/services/lavouraService";
 import { getTalhoes } from "@/services/talhaoService";
 import { Atividade, Lavoura, Talhao } from "@/types/agro";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Calendar } from "lucide-react";
+import { useForm, Controller } from "react-hook-form";
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Activity extends Atividade {
   field?: string;
@@ -32,6 +35,16 @@ interface Field {
   }[];
 }
 
+// Definir o tipo para o formulário
+interface ActivityFormValues {
+  dataProgramada: string;
+  tipo: string;
+  lavouraId: string;
+  talhaoId: string;
+  status: string;
+  descricao: string;
+}
+
 const activityTypes = [
   "Plantio",
   "Adubação",
@@ -45,104 +58,144 @@ const Activities = () => {
   const [activities, setActivities] = useState<Activity[]>([]);
   const [fields, setFields] = useState<Field[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const isMobile = useIsMobile();
+  
+  // Form state with react-hook-form
+  const form = useForm<ActivityFormValues>({
+    defaultValues: {
+      dataProgramada: "",
+      tipo: "",
+      lavouraId: "",
+      talhaoId: "",
+      status: "pendente",
+      descricao: ""
+    }
+  });
+  
+  const { watch, setValue } = form;
+  const watchedLavouraId = watch("lavouraId");
   
   // Fetch actual data instead of using mock data
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        
-        // Get real activities from database
-        const atividadesData = await getAtividades();
-        
-        // Get lavouras for the form
-        const lavourasData = await getLavouras();
-        
-        // Create fields array with plots for the form
-        const fieldsWithPlots: Field[] = [];
-        
-        // For each lavoura, get its talhoes
-        for (const lavoura of lavourasData) {
-          const talhoesData = await getTalhoes(lavoura.id);
-          
-          fieldsWithPlots.push({
-            name: lavoura.nome,
-            id: lavoura.id,
-            plots: talhoesData.map(talhao => ({
-              name: talhao.nome,
-              id: talhao.id
-            }))
-          });
-        }
-        
-        // Process activities to include field and plot names
-        const processedActivities = await Promise.all(atividadesData.map(async (activity) => {
-          // Get talhao details if available
-          let field = "";
-          let plot = "";
-          
-          if (activity.talhao?.id) {
-            plot = activity.talhao.nome || "";
-            
-            // Get lavoura details
-            if (activity.talhao.lavoura_id) {
-              const lavoura = lavourasData.find(l => l.id === activity.talhao?.lavoura_id);
-              field = lavoura?.nome || "";
-            }
-          }
-          
-          return {
-            ...activity,
-            field,
-            plot
-          };
-        }));
-        
-        setActivities(processedActivities);
-        setFields(fieldsWithPlots);
-      } catch (error) {
-        console.error("Erro ao carregar atividades:", error);
-        toast.error("Não foi possível carregar as atividades");
-      } finally {
-        setLoading(false);
-      }
-    };
-    
     fetchData();
   }, []);
   
-  // Form states
-  const [newActivityDate, setNewActivityDate] = useState("");
-  const [newActivityType, setNewActivityType] = useState("");
-  const [newActivityField, setNewActivityField] = useState("");
-  const [newActivityPlot, setNewActivityPlot] = useState("");
-  const [newActivityNotes, setNewActivityNotes] = useState("");
-  const [newActivityStatus, setNewActivityStatus] = useState("pendente");
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      
+      // Get real activities from database
+      const atividadesData = await getAtividades();
+      
+      // Get lavouras for the form
+      const lavourasData = await getLavouras();
+      
+      // Create fields array with plots for the form
+      const fieldsWithPlots: Field[] = [];
+      
+      // For each lavoura, get its talhoes
+      for (const lavoura of lavourasData) {
+        const talhoesData = await getTalhoes(lavoura.id);
+        
+        fieldsWithPlots.push({
+          name: lavoura.nome,
+          id: lavoura.id,
+          plots: talhoesData.map(talhao => ({
+            name: talhao.nome,
+            id: talhao.id
+          }))
+        });
+      }
+      
+      // Process activities to include field and plot names
+      const processedActivities = await Promise.all(atividadesData.map(async (activity) => {
+        // Get talhao details if available
+        let field = "";
+        let plot = "";
+        
+        if (activity.talhao?.id) {
+          plot = activity.talhao.nome || "";
+          
+          // Get lavoura details
+          if (activity.talhao.lavoura_id) {
+            const lavoura = lavourasData.find(l => l.id === activity.talhao?.lavoura_id);
+            field = lavoura?.nome || "";
+          }
+        }
+        
+        return {
+          ...activity,
+          field,
+          plot
+        };
+      }));
+      
+      setActivities(processedActivities);
+      setFields(fieldsWithPlots);
+    } catch (error) {
+      console.error("Erro ao carregar atividades:", error);
+      toast.error("Não foi possível carregar as atividades");
+    } finally {
+      setLoading(false);
+    }
+  };
   
   // Filter
   const [activeTab, setActiveTab] = useState("all");
   
-  const handleAddActivity = () => {
-    if (!newActivityDate || !newActivityType || !newActivityField || !newActivityPlot) {
-      toast.error("Preencha todos os campos obrigatórios");
-      return;
+  const handleAddActivity = async (values: ActivityFormValues) => {
+    try {
+      setIsSubmitting(true);
+      console.log("Valores do formulário:", values);
+      
+      // Get the current user
+      const { data: { session } } = await supabase.auth.getSession();
+      const userId = session?.user?.id;
+      
+      if (!userId) {
+        throw new Error("Usuário não autenticado");
+      }
+      
+      // Create the activity
+      const newActivity = {
+        tipo: values.tipo,
+        talhao_id: values.talhaoId,
+        data_programada: values.dataProgramada,
+        status: values.status,
+        descricao: values.descricao || undefined,
+        user_id: userId
+      };
+      
+      console.log("Enviando atividade:", newActivity);
+      
+      // Use the service to create the activity
+      await createAtividade(newActivity);
+      
+      toast.success("Atividade adicionada com sucesso!");
+      
+      // Reset form and close dialog
+      form.reset();
+      setDialogOpen(false);
+      
+      // Reload activities
+      fetchData();
+    } catch (error) {
+      console.error("Erro ao adicionar atividade:", error);
+      toast.error("Erro ao adicionar atividade. Tente novamente.");
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    // This would be replaced with actual API call
-    toast.success("Atividade adicionada com sucesso!");
-    
-    // Reset form
-    setNewActivityDate("");
-    setNewActivityType("");
-    setNewActivityField("");
-    setNewActivityPlot("");
-    setNewActivityNotes("");
-    setNewActivityStatus("pendente");
-    
-    // Reload page to show new activity
-    window.location.reload();
   };
+  
+  // Get selected field's plots
+  const selectedFieldPlots = fields.find(f => f.id === watchedLavouraId)?.plots || [];
+  
+  // Reset plot selection when field changes
+  useEffect(() => {
+    setValue("talhaoId", "");
+  }, [watchedLavouraId, setValue]);
   
   const filteredActivities = activities.filter(activity => {
     if (activeTab === "all") return true;
@@ -160,9 +213,6 @@ const Activities = () => {
     return "bg-blue-400 hover:bg-blue-500";
   };
   
-  // Get selected field's plots
-  const selectedFieldPlots = fields.find(f => f.id === newActivityField)?.plots || [];
-  
   return (
     <div className="space-y-4 animate-fade-in pb-16">
       <div className={`flex ${isMobile ? 'flex-col' : 'justify-between'} items-start md:items-center gap-2 md:gap-0`}>
@@ -175,7 +225,7 @@ const Activities = () => {
           </p>
         </div>
         
-        <Dialog>
+        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button className="bg-green-500 hover:bg-green-600 w-full md:w-auto mt-2 md:mt-0">
               <Plus className="h-4 w-4 mr-2" /> Nova Atividade
@@ -185,113 +235,172 @@ const Activities = () => {
             <DialogHeader>
               <DialogTitle>Adicionar Nova Atividade</DialogTitle>
             </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="activity-date">Data *</Label>
-                <Input 
-                  id="activity-date" 
-                  type="date"
-                  value={newActivityDate}
-                  onChange={(e) => setNewActivityDate(e.target.value)}
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(handleAddActivity)} className="space-y-4 py-4">
+                <FormField
+                  control={form.control}
+                  name="dataProgramada"
+                  render={({ field }) => (
+                    <FormItem className="space-y-2">
+                      <FormLabel>Data *</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="date"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="activity-type">Tipo de Atividade *</Label>
-                <Select onValueChange={setNewActivityType}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o tipo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {activityTypes.map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {type}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="activity-field">Lavoura *</Label>
-                <Select onValueChange={setNewActivityField}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione a lavoura" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {fields.map((field) => (
-                      <SelectItem key={field.id} value={field.id}>
-                        {field.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {fields.length === 0 && (
-                  <p className="text-orange-500 text-xs mt-1">
-                    Você precisa cadastrar uma lavoura primeiro
-                  </p>
-                )}
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="activity-plot">Talhão *</Label>
-                <Select 
-                  onValueChange={setNewActivityPlot}
-                  disabled={!newActivityField || selectedFieldPlots.length === 0}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione o talhão" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {selectedFieldPlots.map((plot) => (
-                      <SelectItem key={plot.id} value={plot.id}>
-                        {plot.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {newActivityField && selectedFieldPlots.length === 0 && (
-                  <p className="text-orange-500 text-xs mt-1">
-                    Esta lavoura não tem talhões cadastrados
-                  </p>
-                )}
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="activity-status">Status</Label>
-                <Select 
-                  defaultValue="pendente"
-                  onValueChange={setNewActivityStatus}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="planejado">Planejado</SelectItem>
-                    <SelectItem value="pendente">Pendente</SelectItem>
-                    <SelectItem value="concluído">Concluído</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="activity-notes">Observações</Label>
-                <Textarea 
-                  id="activity-notes" 
-                  placeholder="Detalhes da atividade..."
-                  value={newActivityNotes}
-                  onChange={(e) => setNewActivityNotes(e.target.value)}
+                
+                <FormField
+                  control={form.control}
+                  name="tipo"
+                  render={({ field }) => (
+                    <FormItem className="space-y-2">
+                      <FormLabel>Tipo de Atividade *</FormLabel>
+                      <Select 
+                        value={field.value} 
+                        onValueChange={field.onChange}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione o tipo" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {activityTypes.map((type) => (
+                            <SelectItem key={type} value={type}>
+                              {type}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
                 />
-              </div>
-              
-              <Button 
-                className="w-full mt-4 bg-green-500 hover:bg-green-600"
-                onClick={handleAddActivity}
-                disabled={fields.length === 0}
-              >
-                Adicionar Atividade
-              </Button>
-            </div>
+                
+                <FormField
+                  control={form.control}
+                  name="lavouraId"
+                  render={({ field }) => (
+                    <FormItem className="space-y-2">
+                      <FormLabel>Lavoura *</FormLabel>
+                      <Select 
+                        value={field.value} 
+                        onValueChange={field.onChange}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione a lavoura" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {fields.map((field) => (
+                            <SelectItem key={field.id} value={field.id}>
+                              {field.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {fields.length === 0 && (
+                        <p className="text-orange-500 text-xs mt-1">
+                          Você precisa cadastrar uma lavoura primeiro
+                        </p>
+                      )}
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="talhaoId"
+                  render={({ field }) => (
+                    <FormItem className="space-y-2">
+                      <FormLabel>Talhão *</FormLabel>
+                      <Select 
+                        value={field.value} 
+                        onValueChange={field.onChange}
+                        disabled={!watchedLavouraId || selectedFieldPlots.length === 0}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Selecione o talhão" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {selectedFieldPlots.map((plot) => (
+                            <SelectItem key={plot.id} value={plot.id}>
+                              {plot.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {watchedLavouraId && selectedFieldPlots.length === 0 && (
+                        <p className="text-orange-500 text-xs mt-1">
+                          Esta lavoura não tem talhões cadastrados
+                        </p>
+                      )}
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="status"
+                  render={({ field }) => (
+                    <FormItem className="space-y-2">
+                      <FormLabel>Status</FormLabel>
+                      <Select 
+                        value={field.value} 
+                        onValueChange={field.onChange}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="planejado">Planejado</SelectItem>
+                          <SelectItem value="pendente">Pendente</SelectItem>
+                          <SelectItem value="concluído">Concluído</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="descricao"
+                  render={({ field }) => (
+                    <FormItem className="space-y-2">
+                      <FormLabel>Observações</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Detalhes da atividade..."
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <Button 
+                  type="submit"
+                  className="w-full mt-4 bg-green-500 hover:bg-green-600"
+                  disabled={isSubmitting || fields.length === 0}
+                >
+                  {isSubmitting ? "Adicionando..." : "Adicionar Atividade"}
+                </Button>
+              </form>
+            </Form>
           </DialogContent>
         </Dialog>
       </div>
