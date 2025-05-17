@@ -99,9 +99,8 @@ export const determinePlagueAlerts = async (weatherData: {
     // Buscar talhões para verificar culturas
     const { data: talhoes, error } = await supabase
       .from('talhoes')
-      .select('cultura')
-      .is('status', null) // Sem status específico ou
-      .or('status.neq.inativo'); // Status não inativo
+      .select('id, nome, cultura, fase')
+      .not('cultura', 'is', null); // Garantir que só buscamos talhões com cultura definida
     
     if (error) {
       console.error("Erro ao buscar culturas para verificação de pragas:", error);
@@ -119,6 +118,8 @@ export const determinePlagueAlerts = async (weatherData: {
       };
     }
     
+    console.log("Talhões encontrados para verificação de pragas:", talhoes.length);
+    
     // Manter registro de culturas verificadas para não duplicar alertas
     const checkedCultures = new Set<string>();
     let highestAlert: PlagueAlertData = {
@@ -129,8 +130,8 @@ export const determinePlagueAlerts = async (weatherData: {
     
     // Verificar cada cultura
     for (const talhao of talhoes) {
-      if (talhao.cultura && !checkedCultures.has(talhao.cultura)) {
-        checkedCultures.add(talhao.cultura);
+      if (talhao.cultura && !checkedCultures.has(talhao.cultura.toLowerCase())) {
+        checkedCultures.add(talhao.cultura.toLowerCase());
         
         const plagueCheck = determinePlaguePotential(
           talhao.cultura,

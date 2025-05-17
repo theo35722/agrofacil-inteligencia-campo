@@ -23,7 +23,10 @@ const Dashboard: React.FC = () => {
   
   // Use our custom hooks
   const { lavouras, talhoes, loading, error, fetchDashboardData } = useDashboardData();
-  const plagueAlertData = usePlagueAlerts(weatherData, talhoes.length > 0);
+  const { plagueAlertData, isLoading: isPlagueAlertLoading } = usePlagueAlerts(
+    weatherData, 
+    talhoes.length > 0
+  );
 
   // Initial data load and refresh on navigation back
   useEffect(() => {
@@ -114,6 +117,7 @@ const Dashboard: React.FC = () => {
       <PlagueAlert 
         alertData={plagueAlertData}
         onClick={handlePlagueAlertClick}
+        isLoading={isPlagueAlertLoading}
       />
 
       {/* Simplified Diagnóstico button */}

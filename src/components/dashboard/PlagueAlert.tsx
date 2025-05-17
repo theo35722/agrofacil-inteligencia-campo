@@ -9,19 +9,38 @@ import { Link } from "react-router-dom";
 interface PlagueAlertProps {
   alertData: PlagueAlertData;
   onClick?: () => void;
+  isLoading?: boolean;
 }
 
-export const PlagueAlert: React.FC<PlagueAlertProps> = ({ alertData, onClick }) => {
+export const PlagueAlert: React.FC<PlagueAlertProps> = ({ 
+  alertData, 
+  onClick,
+  isLoading = false
+}) => {
   const { hasAlert, message, severity = "low", culturas = [] } = alertData;
   
-  // Melhorar detecção de estado de carregamento
-  const isWaiting = message.toLowerCase().includes("aguardando") || 
-                    message.toLowerCase().includes("verificando") || 
-                    message.toLowerCase().includes("carregando");
-  
-  // Check if message says to register farms/talhoes
+  // Verificar se a mensagem diz para cadastrar fazendas/talhões
   const isNeedRegistration = message.toLowerCase().includes("cadastre sua fazenda") ||
                              message.toLowerCase().includes("cadastre seus talhões");
+  
+  // Estado de carregamento
+  if (isLoading) {
+    return (
+      <div 
+        className="mx-4 p-3 bg-blue-50 border-none rounded-lg"
+      >
+        <div className="flex items-center gap-3">
+          <Loader2 className="w-5 h-5 text-blue-500 flex-shrink-0 animate-spin" />
+          <div>
+            <h3 className="text-blue-700 font-medium">Monitoramento de Pragas</h3>
+            <p className="text-blue-800 text-sm">
+              Verificando alertas de pragas para sua lavoura...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
   
   if (isNeedRegistration) {
     return (
@@ -55,15 +74,11 @@ export const PlagueAlert: React.FC<PlagueAlertProps> = ({ alertData, onClick }) 
         onClick={onClick}
       >
         <div className="flex items-center gap-3">
-          {isWaiting ? (
-            <Loader2 className="w-5 h-5 text-green-500 flex-shrink-0 animate-spin" />
-          ) : (
-            <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
-          )}
+          <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0" />
           <div>
             <h3 className="text-green-700 font-medium">Monitoramento de Pragas</h3>
             <p className="text-green-800 text-sm">
-              {isWaiting ? "Monitoramento ativo. Aguarde enquanto analisamos as condições." : message}
+              {message}
             </p>
           </div>
         </div>

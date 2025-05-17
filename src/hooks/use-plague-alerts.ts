@@ -13,19 +13,25 @@ export const usePlagueAlerts = (weatherData: {
       ? "Verificando monitoramento de pragas..." 
       : "Cadastre sua fazenda e talhões para receber alertas"
   });
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Effect to manage plague alerts with weatherData dependency
   useEffect(() => {
     let isMounted = true;
     
     const loadPlagueAlerts = async () => {
+      setIsLoading(true);
+      
       // If no weather data or no talhoes, show appropriate message
-      if (!weatherData || !hasTalhoes) {
-        if (!hasTalhoes) {
+      if (!weatherData) {
+        if (isMounted) {
           setPlagueAlertData({
             hasAlert: false,
-            message: "Cadastre sua fazenda e talhões para receber alertas"
+            message: hasTalhoes 
+              ? "Aguardando dados climáticos para verificar alertas"
+              : "Cadastre sua fazenda e talhões para receber alertas"
           });
+          setIsLoading(false);
         }
         return;
       }
@@ -38,6 +44,7 @@ export const usePlagueAlerts = (weatherData: {
         if (isMounted) {
           setPlagueAlertData(alertData);
           console.log("Dados de alerta de praga:", alertData);
+          setIsLoading(false);
         }
       } catch (error) {
         console.error("Erro ao determinar alertas de pragas:", error);
@@ -48,6 +55,7 @@ export const usePlagueAlerts = (weatherData: {
               ? "Monitoramento de pragas ativo. Erro ao verificar alertas."
               : "Cadastre sua fazenda e talhões para receber alertas"
           });
+          setIsLoading(false);
         }
       }
     };
@@ -60,5 +68,5 @@ export const usePlagueAlerts = (weatherData: {
     };
   }, [weatherData, hasTalhoes]);
 
-  return plagueAlertData;
+  return { plagueAlertData, isLoading };
 };
