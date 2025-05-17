@@ -12,6 +12,8 @@ export const getAtividades = async (
   } = {}
 ): Promise<Atividade[]> => {
   try {
+    console.log("Buscando atividades com opções:", options);
+    
     // Construir query base
     let query = supabase
       .from('atividades')
@@ -64,6 +66,8 @@ export const getAtividades = async (
 // Buscar uma atividade específica por ID
 export const getAtividadeById = async (id: string): Promise<Atividade | null> => {
   try {
+    console.log(`Buscando atividade com ID: ${id}`);
+    
     const { data, error } = await supabase
       .from('atividades')
       .select(`
@@ -88,6 +92,7 @@ export const getAtividadeById = async (id: string): Promise<Atividade | null> =>
       throw error;
     }
 
+    console.log(`Atividade ${id} encontrada:`, data);
     return data;
   } catch (error) {
     console.error(`Falha na operação de buscar atividade ${id}:`, error);
@@ -99,6 +104,16 @@ export const getAtividadeById = async (id: string): Promise<Atividade | null> =>
 export const createAtividade = async (atividade: Omit<Atividade, 'id' | 'criado_em' | 'atualizado_em'>): Promise<Atividade> => {
   try {
     console.log("Dados recebidos para criar atividade:", atividade);
+    
+    // Verificar campos obrigatórios
+    if (!atividade.tipo || !atividade.talhao_id || !atividade.data_programada) {
+      console.error("Dados obrigatórios ausentes:", { 
+        tipo: atividade.tipo, 
+        talhao_id: atividade.talhao_id, 
+        data_programada: atividade.data_programada 
+      });
+      throw new Error("Dados obrigatórios para criar atividade estão ausentes");
+    }
 
     const { data, error } = await supabase
       .from('atividades')
@@ -122,6 +137,8 @@ export const createAtividade = async (atividade: Omit<Atividade, 'id' | 'criado_
 // Atualizar atividade existente
 export const updateAtividade = async (id: string, atividade: Partial<Omit<Atividade, 'id' | 'criado_em' | 'atualizado_em'>>): Promise<Atividade> => {
   try {
+    console.log(`Atualizando atividade ${id}:`, atividade);
+    
     const { data, error } = await supabase
       .from('atividades')
       .update(atividade)
@@ -134,6 +151,7 @@ export const updateAtividade = async (id: string, atividade: Partial<Omit<Ativid
       throw error;
     }
 
+    console.log(`Atividade ${id} atualizada com sucesso:`, data);
     return data;
   } catch (error) {
     console.error(`Falha na operação de atualizar atividade ${id}:`, error);
@@ -144,6 +162,8 @@ export const updateAtividade = async (id: string, atividade: Partial<Omit<Ativid
 // Excluir atividade
 export const deleteAtividade = async (id: string): Promise<void> => {
   try {
+    console.log(`Excluindo atividade ${id}`);
+    
     const { error } = await supabase
       .from('atividades')
       .delete()
@@ -153,6 +173,8 @@ export const deleteAtividade = async (id: string): Promise<void> => {
       console.error(`Erro ao excluir atividade ${id}:`, error);
       throw error;
     }
+    
+    console.log(`Atividade ${id} excluída com sucesso`);
   } catch (error) {
     console.error(`Falha na operação de excluir atividade ${id}:`, error);
     throw error;
