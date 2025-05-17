@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { MarketplaceProduct } from "@/types/marketplace";
 import { fetchMarketplaceProducts, contactSeller } from "@/services/marketplaceService";
 import { useMarketplaceFilters } from "@/hooks/use-marketplace-filters";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 // Components
 import { MarketplaceHeader } from "@/components/marketplace/MarketplaceHeader";
@@ -16,6 +17,7 @@ import { NoProductsMessage } from "@/components/marketplace/NoProductsMessage";
 const Marketplace = () => {
   const [products, setProducts] = useState<MarketplaceProduct[]>([]);
   const [loading, setLoading] = useState(true);
+  const isMobile = useIsMobile();
   
   const {
     searchQuery,
@@ -67,10 +69,10 @@ const Marketplace = () => {
   const isLoading = loading || locationLoading;
 
   return (
-    <div className="animate-fade-in pb-6">
+    <div className={`animate-fade-in pb-6 ${isMobile ? 'pt-2' : ''}`}>
       <MarketplaceHeader isLoading={isLoading} />
       
-      <div className="max-w-md mx-auto px-3">
+      <div className={`max-w-md mx-auto ${isMobile ? 'px-3' : 'px-4'}`}>
         <MarketplaceActions />
         
         <div className="mb-4">
@@ -101,6 +103,7 @@ const Marketplace = () => {
               searchQuery={searchQuery}
               noResults={noResults}
               onContactSeller={handleContactSeller}
+              isMobile={isMobile}
             />
           ) : (
             <div className="max-w-md mx-auto px-3">

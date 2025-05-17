@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,6 +31,7 @@ export const MarketplaceItem: React.FC<MarketplaceItemProps> = ({ product, onDel
   const [imageError, setImageError] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const { user } = useAuth(); // Get authenticated user
+  const isMobile = useIsMobile();
   
   // Check if the current user is the owner of this product
   const isOwner = user && product.user_id === user.id;
@@ -91,7 +93,7 @@ export const MarketplaceItem: React.FC<MarketplaceItemProps> = ({ product, onDel
 
   return (
     <Card className="h-full flex flex-col overflow-hidden hover:shadow-md transition-shadow">
-      <div className="relative aspect-video bg-gray-100 overflow-hidden">
+      <div className={`relative aspect-video bg-gray-100 overflow-hidden ${isMobile ? 'max-h-36' : ''}`}>
         {product.image_url && !imageError ? (
           <img
             src={product.image_url}
@@ -105,22 +107,22 @@ export const MarketplaceItem: React.FC<MarketplaceItemProps> = ({ product, onDel
           </div>
         )}
       </div>
-      <CardContent className="flex-grow p-4">
-        <h3 className="font-semibold text-lg text-agro-green-800 mb-1">{product.title}</h3>
-        <p className="font-bold text-xl text-agro-green-700 mb-2">
+      <CardContent className={`flex-grow ${isMobile ? 'p-3' : 'p-4'}`}>
+        <h3 className={`font-semibold ${isMobile ? 'text-base' : 'text-lg'} text-agro-green-800 mb-1`}>{product.title}</h3>
+        <p className={`font-bold ${isMobile ? 'text-lg' : 'text-xl'} text-agro-green-700 mb-2`}>
           {formatCurrency(product.price)}
         </p>
         <p className="text-sm text-gray-600 line-clamp-2 mb-2">{product.description}</p>
         <div className="flex items-center text-gray-500">
-          <MapPin className="h-4 w-4 mr-1" />
-          <span className="text-sm">{product.location}</span>
+          <MapPin className={`${isMobile ? 'h-3 w-3' : 'h-4 w-4'} mr-1`} />
+          <span className={`${isMobile ? 'text-xs' : 'text-sm'}`}>{product.location}</span>
         </div>
       </CardContent>
-      <CardFooter className="pt-0 pb-4 px-4 flex flex-col gap-2">
+      <CardFooter className={`pt-0 ${isMobile ? 'pb-3 px-3' : 'pb-4 px-4'} flex flex-col gap-2`}>
         {!isOwner && (
           <Button 
             onClick={handleContactSeller}
-            className="w-full gap-2 bg-green-600 hover:bg-green-700"
+            className={`w-full gap-2 bg-green-600 hover:bg-green-700 ${isMobile ? 'py-1 h-9' : ''}`}
           >
             <MessageCircle className="h-4 w-4" />
             Falar com Vendedor
@@ -132,7 +134,7 @@ export const MarketplaceItem: React.FC<MarketplaceItemProps> = ({ product, onDel
             <Link to={`/edit-marketplace-product/${product.id}`} className="w-full">
               <Button 
                 variant="outline"
-                className="w-full gap-2 border-green-600 text-green-700 hover:bg-green-50"
+                className={`w-full gap-2 border-green-600 text-green-700 hover:bg-green-50 ${isMobile ? 'py-1 h-8 text-sm' : ''}`}
               >
                 <Edit className="h-4 w-4" />
                 Editar Produto
@@ -143,14 +145,14 @@ export const MarketplaceItem: React.FC<MarketplaceItemProps> = ({ product, onDel
               <AlertDialogTrigger asChild>
                 <Button 
                   variant="outline"
-                  className="w-full gap-2 border-red-600 text-red-700 hover:bg-red-50"
+                  className={`w-full gap-2 border-red-600 text-red-700 hover:bg-red-50 ${isMobile ? 'py-1 h-8 text-sm' : ''}`}
                   disabled={isDeleting}
                 >
                   <Trash2 className="h-4 w-4" />
                   Excluir Produto
                 </Button>
               </AlertDialogTrigger>
-              <AlertDialogContent>
+              <AlertDialogContent className={isMobile ? "w-[90%] max-w-sm p-4" : ""}>
                 <AlertDialogHeader>
                   <AlertDialogTitle>Confirmação de exclusão</AlertDialogTitle>
                   <AlertDialogDescription>

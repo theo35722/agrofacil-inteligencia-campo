@@ -7,6 +7,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { formatCurrency } from "@/lib/utils";
 import { MarketplaceProduct } from "@/types/marketplace";
 import { Link } from "react-router-dom";
+import { useIsMobile } from "@/hooks/use-mobile";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,6 +37,7 @@ export const ProductCard = ({
 }: ProductCardProps) => {
   const [imageError, setImageError] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const isMobile = useIsMobile();
   
   const handleDeleteProduct = async () => {
     try {
@@ -85,47 +87,49 @@ export const ProductCard = ({
   
   return (
     <Card className="overflow-hidden hover:shadow-md transition-shadow rounded-lg">
-      <div className="grid grid-cols-3 gap-3 h-full">
-        <div className="col-span-1 bg-gray-50">
+      <div className={`grid grid-cols-3 gap-2 ${isMobile ? 'p-2' : 'gap-3 p-0'} h-full`}>
+        <div className="col-span-1 bg-gray-50 rounded-md">
           <AspectRatio ratio={1 / 1} className="h-full">
             {product.image_url && !imageError ? (
               <div className="flex items-center justify-center h-full">
                 <img
                   src={product.image_url}
                   alt={product.title}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover rounded-md"
                   onError={() => setImageError(true)}
                 />
               </div>
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-50">
+              <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-50 rounded-md">
                 Sem imagem
               </div>
             )}
           </AspectRatio>
         </div>
         
-        <div className="col-span-2 p-3 flex flex-col">
-          <h3 className="font-medium text-agro-green-800 mb-1 line-clamp-2 text-center">{product.title}</h3>
+        <div className="col-span-2 p-2 flex flex-col">
+          <h3 className={`font-medium text-agro-green-800 mb-1 line-clamp-2 ${isMobile ? 'text-sm' : ''} text-center`}>
+            {product.title}
+          </h3>
           <p className="font-bold text-xl text-agro-green-700 mb-auto text-center">
             {formatCurrency(product.price)}
           </p>
           
           <div className="mt-2">
-            <div className="flex items-center justify-center text-gray-500 text-xs mb-3">
+            <div className="flex items-center justify-center text-gray-500 text-xs mb-2">
               <MapPin className="h-3 w-3 mr-1 flex-shrink-0" />
               <span className="truncate">{product.location}</span>
             </div>
             
-            <div className="space-y-2">
+            <div className="space-y-1">
               {/* Contact button for non-owners */}
               {!isOwner && (
                 <Button 
                   onClick={onContact}
-                  className="w-full gap-1 bg-green-600 hover:bg-green-700 text-sm h-11 rounded-md"
+                  className={`w-full gap-1 bg-green-600 hover:bg-green-700 text-sm ${isMobile ? 'h-9 py-1 text-xs' : 'h-11'} rounded-md`}
                 >
                   <MessageCircle className="h-4 w-4" />
-                  Falar com Vendedor
+                  {isMobile ? "Contatar" : "Falar com Vendedor"}
                 </Button>
               )}
               
@@ -135,9 +139,9 @@ export const ProductCard = ({
                   <Link to={`/edit-marketplace-product/${product.id}`} className="w-full">
                     <Button 
                       variant="outline"
-                      className="w-full gap-1 border-green-600 text-green-700 hover:bg-green-50 text-sm h-10 rounded-md"
+                      className={`w-full gap-1 border-green-600 text-green-700 hover:bg-green-50 ${isMobile ? 'text-xs h-8 py-0' : 'text-sm h-10'} rounded-md`}
                     >
-                      <Edit className="h-3.5 w-3.5" />
+                      <Edit className={`${isMobile ? 'h-3 w-3' : 'h-3.5 w-3.5'}`} />
                       Editar
                     </Button>
                   </Link>
@@ -146,14 +150,14 @@ export const ProductCard = ({
                     <AlertDialogTrigger asChild>
                       <Button 
                         variant="outline"
-                        className="w-full gap-1 border-red-600 text-red-700 hover:bg-red-50 text-sm h-10 rounded-md"
+                        className={`w-full gap-1 border-red-600 text-red-700 hover:bg-red-50 ${isMobile ? 'text-xs h-8 py-0' : 'text-sm h-10'} rounded-md`}
                         disabled={isDeleting}
                       >
-                        <Trash2 className="h-3.5 w-3.5" />
+                        <Trash2 className={`${isMobile ? 'h-3 w-3' : 'h-3.5 w-3.5'}`} />
                         {isDeleting ? "..." : "Excluir"}
                       </Button>
                     </AlertDialogTrigger>
-                    <AlertDialogContent>
+                    <AlertDialogContent className={isMobile ? "w-[90%] max-w-sm p-4" : ""}>
                       <AlertDialogHeader>
                         <AlertDialogTitle>Confirmação de exclusão</AlertDialogTitle>
                         <AlertDialogDescription>
