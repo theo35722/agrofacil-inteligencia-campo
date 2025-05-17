@@ -126,7 +126,7 @@ export const LavouraSection: React.FC<LavourasSectionProps> = ({
   return (
     <Card className="p-6 text-center border border-dashed border-gray-300 bg-white">
       <p className="text-gray-600 mb-4">Nenhuma lavoura cadastrada. Adicione sua primeira lavoura!</p>
-      <Link to="/lavouras/nova">
+      <Link to="/lavouras">
         <Button className="bg-green-500 hover:bg-green-600">
           Adicionar Lavoura
         </Button>
