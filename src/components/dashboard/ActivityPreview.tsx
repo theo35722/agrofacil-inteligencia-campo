@@ -4,7 +4,7 @@ import { CalendarCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { getAtividades } from "@/services/agroService";
+import { getAtividades } from "@/services/atividadeService"; // Fixed import to use specific service
 import { Atividade, formatDate } from "@/types/agro";
 import { toast } from "sonner";
 
@@ -33,7 +33,7 @@ export const ActivityPreview = () => {
     fetchActivities();
   }, []);
 
-  // Função para obter a cor do badge baseada no status
+  // Function to get the color of the badge based on status
   const getStatusColor = (status: string): string => {
     switch (status.toLowerCase()) {
       case "pendente":

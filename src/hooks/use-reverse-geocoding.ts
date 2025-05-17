@@ -27,8 +27,17 @@ export const useReverseGeocoding = (
     setError(null);
 
     try {
+      // Use a small delay to help avoid rate limiting
+      await new Promise(resolve => setTimeout(resolve, 300));
+      
       const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+        `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
+        {
+          headers: {
+            'User-Agent': 'SeuZeAgro/1.0',
+            'Accept-Language': 'pt-BR'
+          }
+        }
       );
       
       if (!response.ok) {
@@ -37,27 +46,27 @@ export const useReverseGeocoding = (
       
       const data = await response.json();
       
+      // Tenta extrair o nome da cidade e estado das informações retornadas
       const city = data.address?.city || 
                   data.address?.town || 
                   data.address?.village || 
                   data.address?.municipality || 
+                  data.address?.county ||
                   "Local não identificado";
                   
       const state = data.address?.state || "";
-      const formattedLocation = `${city}, ${state}`;
+      const formattedLocation = state ? `${city}, ${state}` : city;
       
       setLocationName(formattedLocation);
-      toast.success("Localização obtida com sucesso");
+      console.log("Localização obtida:", formattedLocation);
     } catch (error) {
       console.error("Erro ao buscar nome da localização:", error);
       setError("Não foi possível obter o nome da sua localização");
       
       // Use coordenadas como fallback
       if (latitude && longitude) {
-        setLocationName(`Lat: ${latitude.toFixed(4)}, Lon: ${longitude.toFixed(4)}`);
+        setLocationName(`Lat: ${latitude.toFixed(2)}, Lon: ${longitude.toFixed(2)}`);
       }
-      
-      toast.error("Erro ao buscar nome da localização");
     } finally {
       setIsLoading(false);
     }
@@ -73,6 +82,8 @@ export const useReverseGeocoding = (
   const retryFetch = () => {
     if (latitude && longitude) {
       fetchLocationName();
+    } else {
+      toast.error("Coordenadas de localização não disponíveis");
     }
   };
 

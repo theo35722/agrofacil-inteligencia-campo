@@ -28,22 +28,26 @@ const Dashboard: React.FC = () => {
   } | null>(null);
   const [plagueAlertData, setPlagueAlertData] = useState<PlagueAlertData>({
     hasAlert: false,
-    message: "Nenhum alerta de pragas no momento"
+    message: "Verificando alertas de pragas..."
   });
   const [lavouras, setLavouras] = useState<Lavoura[]>([]);
   const [talhoes, setTalhoes] = useState<Talhao[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Buscar lavouras do usuário
   useEffect(() => {
     const fetchLavouras = async () => {
       try {
         setLoading(true);
+        setError(null);
+        console.log("Buscando lavouras...");
         const data = await getLavouras();
-        setLavouras(data);
         console.log("Lavouras carregadas:", data);
+        setLavouras(data);
       } catch (error) {
         console.error("Erro ao buscar lavouras:", error);
+        setError("Não foi possível carregar os dados das lavouras");
         toast.error("Não foi possível carregar os dados das lavouras");
       }
     };
@@ -55,47 +59,54 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const fetchTalhoes = async () => {
       try {
-        if (lavouras.length > 0) {
-          const data = await getTalhoes();
-          setTalhoes(data);
-          console.log("Talhões carregados:", data);
-          setLoading(false);
-        } else {
-          setLoading(false);
-        }
+        console.log("Buscando talhões...");
+        const data = await getTalhoes();
+        console.log("Talhões carregados:", data);
+        setTalhoes(data);
       } catch (error) {
         console.error("Erro ao buscar talhões:", error);
+        toast.error("Não foi possível carregar os talhões");
+      } finally {
         setLoading(false);
       }
     };
 
     if (lavouras.length > 0) {
       fetchTalhoes();
+    } else if (!loading) {
+      // Se não há lavouras e o carregamento já terminou
+      setLoading(false);
     }
-  }, [lavouras]);
+  }, [lavouras, loading]);
 
   // Determinar alerta de pragas com base nas culturas e condições climáticas
   useEffect(() => {
     const loadPlagueAlerts = async () => {
       if (weatherData) {
         try {
+          console.log("Determinando alertas de pragas com base no clima:", weatherData);
           const alertData = await determinePlagueAlerts(weatherData);
           setPlagueAlertData(alertData);
           console.log("Dados de alerta:", alertData);
         } catch (error) {
           console.error("Erro ao determinar alertas de pragas:", error);
+          setPlagueAlertData({
+            hasAlert: false,
+            message: "Não foi possível verificar alertas de pragas"
+          });
         }
       }
     };
     
     loadPlagueAlerts();
-  }, [weatherData, talhoes]);
+  }, [weatherData]);
 
   // Manipular alteração nos dados climáticos
   const handleWeatherDataChange = (data: {
     description: string;
     humidity: number;
   } | null) => {
+    console.log("Dados climáticos atualizados:", data);
     setWeatherData(data);
   };
 
@@ -110,7 +121,7 @@ const Dashboard: React.FC = () => {
 
   // Função para determinar a cor da badge baseada na fase
   const getPhaseColor = (phase: string) => {
-    switch (phase.toLowerCase()) {
+    switch (phase?.toLowerCase()) {
       case "crescimento":
         return "bg-green-100 text-green-800 border-green-200";
       case "emergência":
@@ -172,6 +183,16 @@ const Dashboard: React.FC = () => {
           <div className="p-4 text-center text-gray-500">
             Carregando lavouras...
           </div>
+        ) : error ? (
+          <Card className="p-6 text-center border border-red-200 bg-red-50">
+            <p className="text-red-600 mb-4">{error}</p>
+            <Button 
+              onClick={() => window.location.reload()} 
+              className="bg-green-500 hover:bg-green-600"
+            >
+              Tentar Novamente
+            </Button>
+          </Card>
         ) : talhoes.length > 0 ? (
           <>
             <div className="grid grid-cols-2 gap-3">

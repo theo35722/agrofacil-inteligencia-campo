@@ -46,6 +46,7 @@ export const getDiagnosticosPragas = async (
       throw error;
     }
 
+    console.log(`Diagnósticos carregados: ${data?.length || 0}`);
     return data || [];
   } catch (error) {
     console.error("Falha na operação de buscar diagnósticos:", error);
@@ -91,59 +92,65 @@ export const determinePlagueAlerts = async (
   weatherData?: { description: string; humidity: number }
 ): Promise<PlagueAlertData> => {
   try {
-    // Buscar diagnósticos recentes
-    const diagnosticos = await getDiagnosticosPragas({ recentOnly: true });
-    
-    // Se não houver diagnósticos recentes, não há alerta
-    if (diagnosticos.length === 0) {
-      return { 
-        hasAlert: false, 
-        message: "Nenhum alerta de pragas no momento" 
-      };
-    }
-
-    // Agrupar culturas afetadas
-    const culturas = [...new Set(diagnosticos.map(d => d.talhao?.cultura).filter(Boolean))];
-    
-    // Se houver diagnósticos recentes, determinar severidade do alerta
-    if (diagnosticos.some(d => d.nivel_infestacao === 'alto')) {
-      // Alerta de alta severidade
-      const culturasAfetadas = culturas.join(', ');
-      return {
-        hasAlert: true,
-        message: `Infestação grave de pragas em ${culturasAfetadas}`,
-        severity: "high",
-        culturas
-      };
-    }
-
-    // Verificar se condições climáticas favorecem pragas
+    // Verificar condições climáticas primeiro
     if (weatherData) {
       const { description, humidity } = weatherData;
       const isWarm = description.toLowerCase().includes('calor') || description.toLowerCase().includes('quente');
       const isHumid = humidity > 70;
       const isRainy = description.toLowerCase().includes('chuva') || description.toLowerCase().includes('chuvoso');
 
-      // Condições favoráveis a pragas
+      // Mesmo sem diagnósticos, se as condições climáticas favorecem pragas
       if ((isWarm && isHumid) || isRainy) {
+        console.log("Condições climáticas favoráveis para pragas detectadas", { isWarm, isHumid, isRainy, humidity });
         return {
           hasAlert: true,
-          message: `Condições favoráveis para pragas em ${culturas.join(', ')}`,
-          severity: "medium",
-          culturas
+          message: `Condições favoráveis para pragas nas lavouras`,
+          severity: "low",
+          culturas: ["Todas as culturas"]
         };
       }
     }
+    
+    // Buscar diagnósticos recentes
+    try {
+      const diagnosticos = await getDiagnosticosPragas({ recentOnly: true });
+      
+      // Se não houver diagnósticos recentes, retornar estado normal
+      if (diagnosticos.length === 0) {
+        return { 
+          hasAlert: false, 
+          message: "Nenhum alerta de pragas no momento" 
+        };
+      }
 
-    // Alerta de baixa severidade se houver diagnósticos, mas não críticos
-    if (diagnosticos.length > 0) {
-      const culturasAfetadas = culturas.join(', ');
-      return {
-        hasAlert: true,
-        message: `Monitorar pragas em ${culturasAfetadas}`,
-        severity: "low",
-        culturas
-      };
+      // Agrupar culturas afetadas
+      const culturas = [...new Set(diagnosticos.map(d => d.talhao?.cultura).filter(Boolean))];
+      
+      // Se houver diagnósticos recentes, determinar severidade do alerta
+      if (diagnosticos.some(d => d.nivel_infestacao === 'alto')) {
+        // Alerta de alta severidade
+        const culturasAfetadas = culturas.join(', ');
+        return {
+          hasAlert: true,
+          message: `Infestação grave de pragas em ${culturasAfetadas}`,
+          severity: "high",
+          culturas
+        };
+      }
+
+      // Alerta de baixa severidade se houver diagnósticos, mas não críticos
+      if (diagnosticos.length > 0) {
+        const culturasAfetadas = culturas.join(', ');
+        return {
+          hasAlert: true,
+          message: `Monitorar pragas em ${culturasAfetadas}`,
+          severity: "low",
+          culturas
+        };
+      }
+    } catch (error) {
+      console.error("Erro ao buscar diagnósticos de pragas:", error);
+      // Continua a execução para retornar pelo menos a mensagem padrão
     }
 
     // Sem alerta caso nenhuma das condições acima seja verdadeira
@@ -154,6 +161,7 @@ export const determinePlagueAlerts = async (
     
   } catch (error) {
     console.error("Erro ao determinar alertas de pragas:", error);
+    // Fallback de segurança
     return { 
       hasAlert: false, 
       message: "Erro ao verificar alertas de pragas"

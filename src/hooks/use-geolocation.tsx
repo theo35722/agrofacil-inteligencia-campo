@@ -55,14 +55,31 @@ export function useGeolocation() {
             errorMessage = 'Tempo esgotado ao tentar obter sua localização. Tente novamente.';
           }
           
-          setLocation(prev => ({
-            ...prev,
-            loading: false,
-            error: errorMessage,
-            permissionDenied,
-          }));
+          // Fallback to default coordinates for testing if position can't be determined
+          if (error.code === 2 || error.code === 3) {
+            console.log('Usando coordenadas de fallback para testes');
+            setLocation(prev => ({
+              ...prev,
+              latitude: -15.7801,  // Coordenadas do Brasil central como fallback
+              longitude: -47.9292,
+              loading: false,
+              error: `${errorMessage} (usando localização padrão)`,
+              permissionDenied: false,
+            }));
+          } else {
+            setLocation(prev => ({
+              ...prev,
+              loading: false,
+              error: errorMessage,
+              permissionDenied,
+            }));
+          }
         },
-        { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+        { 
+          enableHighAccuracy: true, 
+          timeout: 30000, // Aumentado para 30 segundos
+          maximumAge: 60000 // Cache por 1 minuto
+        }
       );
     };
 
@@ -81,7 +98,11 @@ export function useGeolocation() {
         });
       },
       () => {}, // Ignorar erros aqui, já tratamos no getCurrentPosition
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 10000 }
+      { 
+        enableHighAccuracy: true, 
+        timeout: 30000, 
+        maximumAge: 60000 
+      }
     );
 
     return () => {
@@ -121,14 +142,31 @@ export function useGeolocation() {
           errorMessage = 'Tempo esgotado ao tentar obter sua localização. Tente novamente.';
         }
         
-        setLocation(prev => ({
-          ...prev,
-          loading: false,
-          error: errorMessage,
-          permissionDenied,
-        }));
+        // Fallback to default coordinates for testing if position can't be determined
+        if (error.code === 2 || error.code === 3) {
+          console.log('Usando coordenadas de fallback para testes');
+          setLocation(prev => ({
+            ...prev,
+            latitude: -15.7801,
+            longitude: -47.9292,
+            loading: false,
+            error: `${errorMessage} (usando localização padrão)`,
+            permissionDenied: false,
+          }));
+        } else {
+          setLocation(prev => ({
+            ...prev,
+            loading: false,
+            error: errorMessage,
+            permissionDenied,
+          }));
+        }
       },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+      { 
+        enableHighAccuracy: true, 
+        timeout: 30000,
+        maximumAge: 0 
+      }
     );
   };
 
