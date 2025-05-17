@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { PlagueAlertData } from "@/types/agro";
 
@@ -19,7 +20,8 @@ export const fetchWeatherData = async (
     const headers = {
       'Authorization': `Bearer ${accessToken || ''}`,
       'Content-Type': 'application/json',
-      'apikey': process.env.SUPABASE_ANON_KEY || ''
+      // Não usamos process.env aqui, que foi a causa do erro
+      'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY || ''
     };
 
     // Fazer a requisição para a função Edge do Supabase

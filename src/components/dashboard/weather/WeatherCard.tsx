@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { WeatherCardLoading } from "./WeatherCardLoading";
 import { WeatherCardContent } from "./WeatherCardContent";
 import { WeatherFallback } from "../WeatherFallback";
+import { WeatherCardError } from "./WeatherCardError";
 
 export interface WeatherCardProps {
   onWeatherDataChange?: (data: {
@@ -101,15 +102,17 @@ export const WeatherCard: React.FC<WeatherCardProps> = ({ onWeatherDataChange })
     return <WeatherCardLoading />;
   }
 
-  // Error states
-  if (isError || !data || !data.forecast || data.forecast.length === 0) {
-    return <WeatherFallback error={error instanceof Error ? error.message : undefined} />;
-  }
-
   // Location error
   if (locationError || location.error) {
     return (
       <WeatherFallback error="Erro ao obter localização. Verifique as permissões." />
+    );
+  }
+
+  // Error states
+  if (isError || !data || !data.forecast || data.forecast.length === 0) {
+    return (
+      <WeatherCardError onRetry={() => refetch()} />
     );
   }
 
