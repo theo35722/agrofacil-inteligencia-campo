@@ -31,15 +31,15 @@ export function ActivityForm({ open, onOpenChange, fields, onSuccess }: Activity
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="w-[95%] max-w-md mx-auto p-4 sm:p-6 rounded-lg">
-        <DialogHeader className="mb-2">
+      <DialogContent className="w-[95%] max-w-md mx-auto p-3 sm:p-6 rounded-lg max-h-[90vh] overflow-auto">
+        <DialogHeader className="mb-1 sm:mb-2">
           <DialogTitle className="text-xl text-center sm:text-left">Adicionar Nova Atividade</DialogTitle>
           <DialogDescription className="text-sm text-gray-500">
             Preencha os campos para adicionar uma nova atividade à sua lavoura
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleAddActivity)} className="space-y-4 py-2">
+          <form onSubmit={form.handleSubmit(handleAddActivity)} className="space-y-3 py-1 sm:py-2">
             <ActivityFormFields
               control={form.control}
               fields={fields}

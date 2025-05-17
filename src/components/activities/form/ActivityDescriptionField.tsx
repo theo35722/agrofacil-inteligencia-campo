@@ -4,6 +4,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Control } from "react-hook-form";
 import { ActivityFormValues } from "@/hooks/use-activity-form";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 interface ActivityDescriptionFieldProps {
   control: Control<ActivityFormValues>;
@@ -17,12 +18,15 @@ export function ActivityDescriptionField({ control }: ActivityDescriptionFieldPr
       control={control}
       name="descricao"
       render={({ field }) => (
-        <FormItem className="space-y-1.5">
-          <FormLabel className={`${isMobile ? 'text-base' : ''} font-medium`}>Observações</FormLabel>
+        <FormItem className="space-y-1">
+          <FormLabel className={cn(isMobile ? 'text-base' : '', "font-medium")}>Observações</FormLabel>
           <FormControl>
             <Textarea 
               placeholder="Detalhes da atividade..."
-              className={`resize-none ${isMobile ? 'min-h-[100px] text-base' : ''}`}
+              className={cn(
+                "resize-none",
+                isMobile ? "min-h-[80px] text-base py-2" : ""
+              )}
               {...field}
             />
           </FormControl>

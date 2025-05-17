@@ -32,20 +32,20 @@ export function ActivityFieldSelection({
       name="lavouraId"
       rules={{ required: "Lavoura é obrigatória" }}
       render={({ field }) => (
-        <FormItem className="space-y-1.5">
+        <FormItem className="space-y-1">
           <FormLabel className={`${isMobile ? 'text-base' : ''} font-medium`}>Lavoura *</FormLabel>
           <Select 
             value={field.value} 
             onValueChange={field.onChange}
           >
             <FormControl>
-              <SelectTrigger className={isMobile ? "h-12 text-base" : "h-10"}>
+              <SelectTrigger className={cn("h-11 text-base py-2", !isMobile && "h-10 text-sm")}>
                 <SelectValue placeholder="Selecione a lavoura" />
               </SelectTrigger>
             </FormControl>
-            <SelectContent align="center" className="bg-white">
+            <SelectContent align="center" className="bg-white z-50">
               {fields.map((field) => (
-                <SelectItem key={field.id} value={field.id}>
+                <SelectItem key={field.id} value={field.id} className={isMobile ? "text-base py-2" : ""}>
                   {field.name}
                 </SelectItem>
               ))}
@@ -66,4 +66,9 @@ export function ActivityFieldSelection({
       )}
     />
   );
+}
+
+// Add this helper function to use cn in this file
+function cn(...classes: (string | boolean | undefined)[]) {
+  return classes.filter(Boolean).join(' ');
 }

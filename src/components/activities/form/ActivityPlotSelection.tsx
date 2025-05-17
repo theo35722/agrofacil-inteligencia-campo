@@ -26,7 +26,7 @@ export function ActivityPlotSelection({
       name="talhaoId"
       rules={{ required: "Talhão é obrigatório" }}
       render={({ field }) => (
-        <FormItem className="space-y-1.5">
+        <FormItem className="space-y-1">
           <FormLabel className={`${isMobile ? 'text-base' : ''} font-medium`}>Talhão *</FormLabel>
           <Select 
             value={field.value} 
@@ -34,13 +34,13 @@ export function ActivityPlotSelection({
             disabled={!watchedLavouraId || selectedFieldPlots.length === 0}
           >
             <FormControl>
-              <SelectTrigger className={isMobile ? "h-12 text-base" : "h-10"}>
+              <SelectTrigger className={cn("h-11 text-base py-2", !isMobile && "h-10 text-sm")}>
                 <SelectValue placeholder="Selecione o talhão" />
               </SelectTrigger>
             </FormControl>
-            <SelectContent align="center" className="bg-white">
+            <SelectContent align="center" className="bg-white z-50">
               {selectedFieldPlots.map((plot) => (
-                <SelectItem key={plot.id} value={plot.id}>
+                <SelectItem key={plot.id} value={plot.id} className={isMobile ? "text-base py-2" : ""}>
                   {plot.name}
                 </SelectItem>
               ))}
@@ -61,4 +61,9 @@ export function ActivityPlotSelection({
       )}
     />
   );
+}
+
+// Add this helper function to use cn in this file
+function cn(...classes: (string | boolean | undefined)[]) {
+  return classes.filter(Boolean).join(' ');
 }

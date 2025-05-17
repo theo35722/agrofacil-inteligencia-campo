@@ -23,7 +23,7 @@ export function ActivityDateField({ control }: ActivityDateFieldProps) {
       name="dataProgramada"
       rules={{ required: "Data é obrigatória" }}
       render={({ field }) => (
-        <FormItem className="space-y-1.5">
+        <FormItem className="space-y-1">
           <FormLabel className={`${isMobile ? 'text-base' : ''} font-medium`}>Data *</FormLabel>
           <Popover>
             <PopoverTrigger asChild>
@@ -32,7 +32,7 @@ export function ActivityDateField({ control }: ActivityDateFieldProps) {
                   variant="outline"
                   className={cn(
                     "w-full flex justify-start text-left font-normal",
-                    isMobile ? "h-12 text-base" : "h-10",
+                    isMobile ? "h-11 text-base py-2" : "h-10",
                     !field.value && "text-muted-foreground"
                   )}
                 >
@@ -51,12 +51,11 @@ export function ActivityDateField({ control }: ActivityDateFieldProps) {
                 selected={field.value ? new Date(field.value) : undefined}
                 onSelect={(date) => {
                   if (date) {
-                    // Format the date as YYYY-MM-DD for the form value
                     field.onChange(format(date, "yyyy-MM-dd"));
                   }
                 }}
                 initialFocus
-                className="p-3 pointer-events-auto"
+                className="p-2 pointer-events-auto"
               />
             </PopoverContent>
           </Popover>
