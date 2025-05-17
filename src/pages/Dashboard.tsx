@@ -1,6 +1,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { Link } from "react-router-dom";
 import { ChatButton } from "@/components/chat/ChatButton";
 import { ChatDialog } from "@/components/chat/ChatDialog";
 import { toast } from "sonner";
@@ -10,7 +11,6 @@ import { GreetingHeader } from "@/components/dashboard/GreetingHeader";
 import { DiagnosticButton } from "@/components/dashboard/DiagnosticButton";
 import { LavouraSection } from "@/components/dashboard/LavouraSection";
 import { PlagueAlert } from "@/components/dashboard/PlagueAlert";
-import { Link } from "react-router-dom";
 import { Lavoura, Talhao, PlagueAlertData } from "@/types/agro";
 import { getLavouras } from "@/services/lavouraService";
 import { getTalhoes } from "@/services/talhaoService";
@@ -30,65 +30,38 @@ const Dashboard: React.FC = () => {
   const [lavouras, setLavouras] = useState<Lavoura[]>([]);
   const [talhoes, setTalhoes] = useState<Talhao[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dataFetched, setDataFetched] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Buscar lavouras do usuário
+  // Buscar lavouras e talhões juntos
   useEffect(() => {
-    const fetchLavouras = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
         setError(null);
-        console.log("Buscando lavouras...");
-        const data = await getLavouras();
-        console.log("Lavouras carregadas:", data);
-        setLavouras(data);
         
-        // Se não tiver lavouras e já carregou, mostra mensagem no console
-        if (data.length === 0) {
-          console.log("Nenhuma lavoura encontrada para o usuário");
-        }
-      } catch (error) {
-        console.error("Erro ao buscar lavouras:", error);
-        setError("Não foi possível carregar os dados das lavouras");
-        toast.error("Não foi possível carregar os dados das lavouras");
-      } finally {
-        // Mesmo com erro, marca que os dados foram buscados
-        setDataFetched(true);
-      }
-    };
-
-    if (!dataFetched) {
-      fetchLavouras();
-    }
-  }, [dataFetched]);
-
-  // Buscar talhões após carregar lavouras
-  useEffect(() => {
-    const fetchTalhoes = async () => {
-      try {
-        console.log("Buscando talhões...");
-        const data = await getTalhoes();
-        console.log("Talhões carregados:", data);
-        setTalhoes(data);
+        console.log("Buscando dados para o dashboard...");
         
-        // Se não tiver talhões, mostra mensagem no console
-        if (data.length === 0) {
-          console.log("Nenhum talhão encontrado para o usuário");
-        }
+        // Carregar lavouras
+        const lavourasData = await getLavouras();
+        console.log("Lavouras carregadas:", lavourasData);
+        setLavouras(lavourasData);
+        
+        // Carregar talhões
+        const talhoesData = await getTalhoes();
+        console.log("Talhões carregados:", talhoesData);
+        setTalhoes(talhoesData);
+        
       } catch (error) {
-        console.error("Erro ao buscar talhões:", error);
-        toast.error("Não foi possível carregar os talhões");
+        console.error("Erro ao buscar dados do dashboard:", error);
+        setError("Não foi possível carregar os dados");
+        toast.error("Não foi possível carregar os dados do dashboard");
       } finally {
         setLoading(false);
       }
     };
 
-    if (dataFetched) {
-      // Busca talhões independente se tem lavouras ou não
-      fetchTalhoes();
-    }
-  }, [dataFetched]);
+    fetchData();
+  }, []);
 
   // Determinar alerta de pragas com base nas culturas e condições climáticas
   useEffect(() => {

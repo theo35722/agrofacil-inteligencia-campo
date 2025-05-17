@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from "react";
-import { CalendarCheck } from "lucide-react";
+import { CalendarCheck, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
@@ -43,7 +43,7 @@ export const ActivityPreview = () => {
 
   // Function to get the color of the badge based on status
   const getStatusColor = (status: string): string => {
-    switch (status.toLowerCase()) {
+    switch (status?.toLowerCase()) {
       case "pendente":
         return "bg-orange-500 hover:bg-orange-600";
       case "concluída":
@@ -76,6 +76,7 @@ export const ActivityPreview = () => {
           <div className="py-2 px-3 text-sm text-gray-500">Carregando atividades...</div>
         ) : error ? (
           <div className="py-2 px-3 text-sm text-red-500 flex flex-col items-center">
+            <AlertCircle className="h-5 w-5 mb-1" />
             <p>{error}</p>
             <button 
               onClick={handleRetry}
@@ -88,22 +89,24 @@ export const ActivityPreview = () => {
           activities.map((activity) => (
             <div 
               key={activity.id}
-              className="flex justify-between items-center p-2 rounded-md bg-white border border-gray-100"
+              className="flex justify-between items-center p-2 rounded-md bg-white border border-gray-100 hover:bg-gray-50"
             >
               <div className="flex items-center gap-3">
                 <div className="text-sm text-gray-500">
                   {formatDate(activity.data_programada)}
                 </div>
                 <div>
-                  <p className="font-medium">{activity.tipo}</p>
+                  <p className="font-medium">{activity.tipo || "Sem tipo"}</p>
                   <p className="text-xs text-gray-500">
-                    {activity.talhao ? `${activity.talhao.nome} - ${activity.talhao.cultura}` : "Talhão não encontrado"}
+                    {activity.talhao ? 
+                      `${activity.talhao.nome || "Talhão sem nome"} - ${activity.talhao.cultura || "Sem cultura"}` 
+                      : "Talhão não encontrado"}
                   </p>
                 </div>
               </div>
               <div>
                 <Badge className={getStatusColor(activity.status)}>
-                  {activity.status.charAt(0).toUpperCase() + activity.status.slice(1)}
+                  {activity.status ? (activity.status.charAt(0).toUpperCase() + activity.status.slice(1)) : "Pendente"}
                 </Badge>
               </div>
             </div>
@@ -112,7 +115,7 @@ export const ActivityPreview = () => {
           <div className="py-2 px-3 text-sm text-center text-gray-500">
             <p>Nenhuma atividade programada.</p>
             <Link 
-              to="/atividades/nova" 
+              to="/atividades" 
               className="mt-2 text-green-600 hover:text-green-700 inline-block"
             >
               Adicionar atividade
