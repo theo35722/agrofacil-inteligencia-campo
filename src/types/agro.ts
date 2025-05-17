@@ -1,4 +1,3 @@
-
 export interface Lavoura {
   id: string;
   nome: string;
@@ -31,6 +30,7 @@ export interface TalhaoBasic {
   nome: string;
   cultura: string;
   fase: string;
+  lavoura_id: string; // Added this field to fix the error
 }
 
 // Add UserProfile interface
