@@ -2,7 +2,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { CalendarCheck } from "lucide-react";
+import { CalendarCheck, Plus } from "lucide-react";
 
 export const ActivityEmptyState: React.FC = () => {
   return (
