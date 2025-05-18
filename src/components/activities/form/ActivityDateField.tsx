@@ -38,7 +38,7 @@ export function ActivityDateField({ control }: ActivityDateFieldProps) {
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {field.value ? (
-                    // Display the date from the ISO string without timezone shifting
+                    // Garantindo que exibimos a data exatamente como selecionada
                     format(parseISO(field.value), "dd/MM/yyyy")
                   ) : (
                     <span>Selecione uma data</span>
@@ -52,12 +52,23 @@ export function ActivityDateField({ control }: ActivityDateFieldProps) {
                 selected={field.value ? parseISO(field.value) : undefined}
                 onSelect={(date) => {
                   if (date) {
-                    // Use a time at noon to avoid any timezone-related date shifts
-                    const d = new Date(date);
-                    d.setHours(12, 0, 0, 0);
+                    // Cria uma nova data com o mesmo dia, mês e ano, mas sem alteração de fuso horário
+                    const year = date.getFullYear();
+                    const month = date.getMonth();
+                    const day = date.getDate();
                     
-                    // Format with yyyy-MM-dd to ensure consistent date representation
-                    const formattedDate = format(d, "yyyy-MM-dd");
+                    // Cria uma nova data usando componentes específicos para evitar deslocamentos
+                    const safeDate = new Date(year, month, day, 12, 0, 0, 0);
+                    
+                    // Formata para uma string ISO, mas mantendo apenas a parte da data
+                    const formattedDate = format(safeDate, "yyyy-MM-dd");
+                    
+                    console.log("Data selecionada:", {
+                      original: date,
+                      formatted: formattedDate,
+                      safe: safeDate
+                    });
+                    
                     field.onChange(formattedDate);
                   }
                 }}
