@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { PlagueAlertData } from "@/types/agro";
 
@@ -13,19 +14,21 @@ export const fetchWeatherData = async (
 
     if (!accessToken) {
       console.warn('Usuário não autenticado ao buscar dados do clima');
+      throw new Error('Usuário não autenticado');
     }
 
     // Configurar os headers necessários para a requisição
     const headers = {
-      'Authorization': `Bearer ${accessToken || ''}`,
+      'Authorization': `Bearer ${accessToken}`,
       'Content-Type': 'application/json',
-      // Não usamos process.env aqui, que foi a causa do erro
       'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY || ''
     };
 
+    console.log('Iniciando requisição para a Edge Function do Supabase');
+    
     // Fazer a requisição para a função Edge do Supabase
     const response = await fetch(
-      `https://euzaloymjefsdravbmcd.functions.supabase.co/get-weather-data`,
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-weather-data`,
       {
         method: 'POST',
         headers: headers,
@@ -34,6 +37,8 @@ export const fetchWeatherData = async (
     );
 
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Falha na API de clima: ${response.status}`, errorText);
       throw new Error(`Falha na API de clima: ${response.status}`);
     }
 
@@ -45,7 +50,7 @@ export const fetchWeatherData = async (
   }
 };
 
-// Improved function to get specific plague for a culture
+// Funções existentes relacionadas a pragas são mantidas
 export const getPlagueForCulture = (
   culture: string,
   weatherDescription: string,

@@ -26,7 +26,16 @@ export const useWeatherData = () => {
       if (!location.latitude || !location.longitude) {
         throw new Error('Coordenadas de localização não disponíveis');
       }
-      return fetchWeatherData(location.latitude, location.longitude);
+      
+      console.log(`Buscando dados meteorológicos para: ${location.latitude}, ${location.longitude}`);
+      try {
+        const data = await fetchWeatherData(location.latitude, location.longitude);
+        console.log('Dados meteorológicos recebidos:', data);
+        return data;
+      } catch (error) {
+        console.error('Erro ao buscar dados meteorológicos:', error);
+        throw error;
+      }
     },
     enabled: ready,
     staleTime: 30 * 60 * 1000, // 30 minutos
@@ -34,6 +43,7 @@ export const useWeatherData = () => {
     refetchInterval: 60 * 60 * 1000, // Atualização automática a cada 1 hora
     retry: 2,
     refetchOnMount: 'always', // Always fetch fresh data when component mounts
+    gcTime: 60 * 60 * 1000, // Manter dados em cache por 1 hora
   });
 
   return {

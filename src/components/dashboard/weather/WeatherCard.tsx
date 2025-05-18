@@ -39,6 +39,7 @@ export const WeatherCard: React.FC<WeatherCardProps> = ({ onWeatherDataChange })
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (!isLoading) {
+        console.log("Atualizando dados meteorológicos no montagem do componente");
         refetch();
       }
     }, 500);
@@ -55,6 +56,7 @@ export const WeatherCard: React.FC<WeatherCardProps> = ({ onWeatherDataChange })
           ? "Erro de autenticação. Por favor, recarregue a página." 
           : "Não foi possível obter dados meteorológicos"
       });
+      console.error("Erro na previsão do tempo:", errorMessage);
     }
   }, [isError, error]);
 
@@ -66,7 +68,7 @@ export const WeatherCard: React.FC<WeatherCardProps> = ({ onWeatherDataChange })
         humidity: data.current.humidity || 0
       };
       
-      console.log("Sending weather data to dashboard:", weatherInfo);
+      console.log("Enviando dados meteorológicos para o dashboard:", weatherInfo);
       onWeatherDataChange(weatherInfo);
     } else if (!data && onWeatherDataChange) {
       onWeatherDataChange(null);
@@ -75,7 +77,7 @@ export const WeatherCard: React.FC<WeatherCardProps> = ({ onWeatherDataChange })
 
   // Function to determine agricultural alert
   const getAgriculturalAlert = () => {
-    if (!data || !data.forecast || data.forecast.length < 2) return "";
+    if (!data || !data.forecast || data.forecast.length < 2) return "Monitorando condições para atividades agrícolas.";
     
     const todayIcon = data.forecast[0].icon;
     const tomorrowIcon = data.forecast[1].icon;
