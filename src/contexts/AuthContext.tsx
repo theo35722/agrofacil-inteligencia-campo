@@ -25,6 +25,7 @@ interface AuthContextType {
     data: any | null;
   }>;
   signOut: () => Promise<void>;
+  refreshProfile: () => Promise<void>; // Add this new function to refresh profile data
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -39,14 +40,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // Configurar o listener de mudança de estado de autenticação
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
+      async (event, newSession) => {
+        setSession(newSession);
+        setUser(newSession?.user ?? null);
         
-        if (session?.user) {
+        if (newSession?.user) {
           // Buscar perfil do usuário utilizando setTimeout para evitar deadlocks
           setTimeout(async () => {
-            await fetchUserProfile(session.user.id);
+            await fetchUserProfile(newSession.user.id);
           }, 0);
         } else {
           setProfile(null);
@@ -55,12 +56,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     );
 
     // Verificar sessão atual
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    supabase.auth.getSession().then(async ({ data: { session: currentSession } }) => {
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
       
-      if (session?.user) {
-        await fetchUserProfile(session.user.id);
+      if (currentSession?.user) {
+        await fetchUserProfile(currentSession.user.id);
       }
       
       setIsLoading(false);
@@ -85,9 +86,33 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (data) {
         setProfile(data as Profile);
+      } else {
+        console.log("No profile found for user:", userId);
+        // Create a default profile if none exists
+        const { error: insertError } = await supabase
+          .from("profiles")
+          .insert({
+            id: userId,
+            nome: user?.user_metadata?.nome || "Novo Usuário",
+            tipo_usuario: "Produtor"
+          });
+          
+        if (insertError) {
+          console.error("Error creating default profile:", insertError);
+        } else {
+          // Fetch the newly created profile
+          await fetchUserProfile(userId);
+        }
       }
     } catch (error) {
       console.error("Erro ao buscar perfil:", error);
+    }
+  };
+
+  // Add this function to refresh the profile data
+  const refreshProfile = async () => {
+    if (user?.id) {
+      await fetchUserProfile(user.id);
     }
   };
 
@@ -141,6 +166,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         signUp,
         signIn,
         signOut,
+        refreshProfile, // Add the new function here
       }}
     >
       {children}

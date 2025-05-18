@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { LogOut, User } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { Link } from "react-router-dom";
 
 export const UserMenu = () => {
   const { signOut, profile } = useAuth();
@@ -42,10 +43,12 @@ export const UserMenu = () => {
             {profile?.tipo_usuario || "Produtor"}
           </p>
         </div>
-        <DropdownMenuItem onClick={() => console.log("Perfil")}>
-          <User className="mr-2 h-4 w-4" />
-          <span>Meu perfil</span>
-        </DropdownMenuItem>
+        <Link to="/perfil">
+          <DropdownMenuItem>
+            <User className="mr-2 h-4 w-4" />
+            <span>Meu perfil</span>
+          </DropdownMenuItem>
+        </Link>
         <DropdownMenuItem onClick={signOut}>
           <LogOut className="mr-2 h-4 w-4" />
           <span>Sair</span>
