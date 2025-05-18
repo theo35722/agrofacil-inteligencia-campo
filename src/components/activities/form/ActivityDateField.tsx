@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 
 interface ActivityDateFieldProps {
   control: Control<ActivityFormValues>;
@@ -38,7 +38,8 @@ export function ActivityDateField({ control }: ActivityDateFieldProps) {
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
                   {field.value ? (
-                    format(new Date(field.value), "dd/MM/yyyy")
+                    // Display the date from the ISO string without timezone shifting
+                    format(parseISO(field.value), "dd/MM/yyyy")
                   ) : (
                     <span>Selecione uma data</span>
                   )}
@@ -48,10 +49,16 @@ export function ActivityDateField({ control }: ActivityDateFieldProps) {
             <PopoverContent className="w-auto p-0" align="start">
               <Calendar
                 mode="single"
-                selected={field.value ? new Date(field.value) : undefined}
+                selected={field.value ? parseISO(field.value) : undefined}
                 onSelect={(date) => {
                   if (date) {
-                    field.onChange(format(date, "yyyy-MM-dd"));
+                    // Use a time at noon to avoid any timezone-related date shifts
+                    const d = new Date(date);
+                    d.setHours(12, 0, 0, 0);
+                    
+                    // Format with yyyy-MM-dd to ensure consistent date representation
+                    const formattedDate = format(d, "yyyy-MM-dd");
+                    field.onChange(formattedDate);
                   }
                 }}
                 initialFocus
