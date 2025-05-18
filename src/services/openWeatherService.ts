@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { PlagueAlertData } from "@/types/agro";
 
@@ -21,28 +20,21 @@ export const fetchWeatherData = async (
     const headers = {
       'Authorization': `Bearer ${accessToken}`,
       'Content-Type': 'application/json',
-      'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY || ''
+      'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1emFsb3ltamVmc2RyYXZibWNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYzMTUxMDQsImV4cCI6MjA2MTg5MTEwNH0.1ARoxdC1JqqaFK7jz3YXllu8bmDqXKLJgEMAQjLNqQo'
     };
 
     console.log('Iniciando requisição para a Edge Function do Supabase');
     
-    // Fazer a requisição para a função Edge do Supabase
-    const response = await fetch(
-      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-weather-data`,
-      {
-        method: 'POST',
-        headers: headers,
-        body: JSON.stringify({ latitude: lat, longitude: lon })
-      }
-    );
+    // Usar o método do cliente Supabase para chamar a função Edge diretamente
+    const { data, error } = await supabase.functions.invoke('get-weather-data', {
+      body: { latitude: lat, longitude: lon },
+    });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`Falha na API de clima: ${response.status}`, errorText);
-      throw new Error(`Falha na API de clima: ${response.status}`);
+    if (error) {
+      console.error(`Falha na API de clima:`, error);
+      throw new Error(`Falha na API de clima: ${error.message}`);
     }
 
-    const data = await response.json();
     return data;
   } catch (error) {
     console.error("Erro ao buscar dados climáticos:", error);

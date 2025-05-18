@@ -41,7 +41,8 @@ export const useWeatherData = () => {
     staleTime: 30 * 60 * 1000, // 30 minutos
     refetchOnWindowFocus: false,
     refetchInterval: 60 * 60 * 1000, // Atualização automática a cada 1 hora
-    retry: 2,
+    retry: 3, // Aumentado para 3 tentativas
+    retryDelay: 2000, // 2 segundos entre tentativas
     refetchOnMount: 'always', // Always fetch fresh data when component mounts
     gcTime: 60 * 60 * 1000, // Manter dados em cache por 1 hora
   });
