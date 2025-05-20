@@ -119,7 +119,7 @@ const Dashboard: React.FC = () => {
 
       {/* Weather card - Replaced with NewWeatherCard */}
       <div className="mx-4">
-        <NewWeatherCard />
+        <NewWeatherCard onWeatherDataChange={handleWeatherDataChange} />
       </div>
 
       {/* Alert card */}

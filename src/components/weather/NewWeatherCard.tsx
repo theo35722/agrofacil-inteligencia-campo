@@ -182,9 +182,31 @@ export const NewWeatherCard = ({ onWeatherDataChange }: NewWeatherCardProps = {}
     );
   }
 
-  // Extract data for today and tomorrow
-  const today = weatherData.forecast[0];
-  const tomorrow = weatherData.forecast.length > 1 ? weatherData.forecast[1] : null;
+  // Make sure forecast exists and has items before trying to access them
+  const hasForecast = weatherData.forecast && weatherData.forecast.length > 0;
+  
+  // Extract data for today and tomorrow only if they exist
+  const today = hasForecast ? weatherData.forecast[0] : null;
+  const tomorrow = hasForecast && weatherData.forecast.length > 1 ? weatherData.forecast[1] : null;
+
+  // If we don't have even today's forecast data, show an error
+  if (!today) {
+    return (
+      <Card className="w-full">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-lg font-medium flex items-center justify-between">
+            <span>Previsão do Tempo</span>
+            <CloudSun className="h-5 w-5 text-blue-500" />
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col items-center justify-center py-4">
+            <p className="text-gray-600 text-center">Dados de previsão incompletos. Tentando atualizar...</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="w-full bg-white shadow-md">
@@ -225,7 +247,7 @@ export const NewWeatherCard = ({ onWeatherDataChange }: NewWeatherCardProps = {}
           {/* Divider */}
           <div className="border-t border-gray-200 my-2"></div>
           
-          {/* Tomorrow's forecast */}
+          {/* Tomorrow's forecast - only render if data exists */}
           {tomorrow && (
             <div className="flex items-center justify-between">
               <div>
