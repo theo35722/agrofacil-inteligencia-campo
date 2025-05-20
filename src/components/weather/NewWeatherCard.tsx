@@ -24,7 +24,14 @@ interface WeatherData {
   }[];
 }
 
-export const NewWeatherCard = () => {
+export interface NewWeatherCardProps {
+  onWeatherDataChange?: (data: {
+    description: string;
+    humidity: number;
+  } | null) => void;
+}
+
+export const NewWeatherCard = ({ onWeatherDataChange }: NewWeatherCardProps = {}) => {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -58,6 +65,14 @@ export const NewWeatherCard = () => {
         console.log("Weather data received:", data);
         setWeatherData(data);
         
+        // Notify parent component about weather data if callback provided
+        if (onWeatherDataChange && data?.current) {
+          onWeatherDataChange({
+            description: data.current.description,
+            humidity: data.current.humidity || 0
+          });
+        }
+        
         // Try to fetch location name
         try {
           const geoResponse = await fetch(
@@ -90,6 +105,11 @@ export const NewWeatherCard = () => {
       } catch (error) {
         console.error("Error fetching weather data:", error);
         setError("Não foi possível obter a previsão do tempo no momento.");
+        
+        // Notify parent component about weather data error
+        if (onWeatherDataChange) {
+          onWeatherDataChange(null);
+        }
       } finally {
         setLoading(false);
       }
@@ -116,7 +136,7 @@ export const NewWeatherCard = () => {
       setError("Geolocalização não suportada pelo seu navegador.");
       setLoading(false);
     }
-  }, []);
+  }, [onWeatherDataChange]);
 
   // Helper function to get the weather icon URL
   const getWeatherIconUrl = (iconCode: string) => {
