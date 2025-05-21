@@ -1,12 +1,14 @@
 
 import React from "react";
-import { CloudSun } from "lucide-react";
+import { CloudSun, CloudRain, Wind, Droplet } from "lucide-react";
 
 interface CurrentWeather {
   temperature: string;
   description: string;
   icon: string;
   humidity?: number;
+  wind?: number;
+  rainChance?: number;
 }
 
 interface WeatherPreviewContentProps {
@@ -20,7 +22,7 @@ export const WeatherPreviewContent: React.FC<WeatherPreviewContentProps> = ({
   currentWeather,
   locationName,
   recommendation,
-  showMetrics = false
+  showMetrics = true // Changed default to true so metrics show by default
 }) => {
   return (
     <div className="animate-fade-in">
@@ -38,12 +40,31 @@ export const WeatherPreviewContent: React.FC<WeatherPreviewContentProps> = ({
       </div>
       
       {/* Weather metrics if enabled */}
-      {showMetrics && currentWeather.humidity !== undefined && (
+      {showMetrics && (
         <div className="mb-4 grid grid-cols-1 gap-2 text-sm text-gray-700">
-          <div className="flex items-center gap-1">
-            <span className="font-medium">Umidade:</span>
-            <span>{currentWeather.humidity}%</span>
-          </div>
+          {currentWeather.humidity !== undefined && (
+            <div className="flex items-center gap-1">
+              <Droplet className="h-4 w-4 text-agro-blue-400 mr-1" />
+              <span className="font-medium">Umidade:</span>
+              <span>{currentWeather.humidity}%</span>
+            </div>
+          )}
+          
+          {currentWeather.rainChance !== undefined && (
+            <div className="flex items-center gap-1">
+              <CloudRain className="h-4 w-4 text-agro-blue-500 mr-1" />
+              <span className="font-medium">Chance de chuva:</span>
+              <span>{currentWeather.rainChance}%</span>
+            </div>
+          )}
+          
+          {currentWeather.wind !== undefined && (
+            <div className="flex items-center gap-1">
+              <Wind className="h-4 w-4 text-gray-500 mr-1" />
+              <span className="font-medium">Vento:</span>
+              <span>{currentWeather.wind} km/h</span>
+            </div>
+          )}
         </div>
       )}
       

@@ -19,7 +19,7 @@ interface WeatherPreviewProps {
 
 export const WeatherPreview = ({ onWeatherDataChange }: WeatherPreviewProps) => {
   const { weatherData, loading, error, refetch, locationName: fetchedLocation } = useWeatherFetch();
-  const { currentWeather, recommendation } = useWeatherProcessor(weatherData);
+  const { currentWeather, recommendation, forecast } = useWeatherProcessor(weatherData);
   const [locationName, setLocationName] = useState<string>("Obtendo localização...");
 
   // Update weather data when it changes
@@ -58,6 +58,9 @@ export const WeatherPreview = ({ onWeatherDataChange }: WeatherPreviewProps) => 
     return <WeatherPreviewError onRetry={handleRetry} />;
   }
 
+  // Get today's forecast data for additional metrics
+  const todayForecast = forecast && forecast.length > 0 ? forecast[0] : null;
+
   // Main render with weather data
   return (
     <Link to="/clima" className="block">
@@ -71,9 +74,14 @@ export const WeatherPreview = ({ onWeatherDataChange }: WeatherPreviewProps) => 
         <CardContent>
           {currentWeather && (
             <WeatherPreviewContent
-              currentWeather={currentWeather}
+              currentWeather={{
+                ...currentWeather,
+                rainChance: todayForecast?.rainChance,
+                wind: todayForecast?.wind
+              }}
               locationName={locationName}
               recommendation={recommendation}
+              showMetrics={true}
             />
           )}
         </CardContent>

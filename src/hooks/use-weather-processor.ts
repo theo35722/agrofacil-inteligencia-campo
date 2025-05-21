@@ -7,6 +7,8 @@ type WeatherDay = {
   icon: "sun" | "cloud" | "cloud-sun" | "cloud-rain";
   temperature: string;
   description: string;
+  rainChance?: number;
+  wind?: number;
 };
 
 // Interface to define what the source weather data looks like
@@ -25,6 +27,9 @@ interface WeatherSourceData {
       min: number;
       max: number;
     };
+    humidity: number;
+    wind: number;
+    rainChance: number;
     description?: string;
     recommendation?: string;
   }>;
@@ -37,6 +42,7 @@ interface ProcessedWeatherData {
     temperature: string;
     description: string;
     icon: string;
+    humidity: number;
   } | null;
   recommendation: string | undefined;
 }
@@ -65,6 +71,8 @@ export function useWeatherProcessor(weatherData: WeatherSourceData | null) {
         icon: mapIconToType(today.icon),
         temperature: `${Math.round(today.temperature.max)}°C`,
         description: today.description || "Sem descrição",
+        rainChance: today.rainChance,
+        wind: today.wind
       });
 
       // Add the next two days if available
@@ -84,6 +92,8 @@ export function useWeatherProcessor(weatherData: WeatherSourceData | null) {
           icon: mapIconToType(day.icon),
           temperature: `${Math.round(day.temperature.max)}°C`,
           description: day.description || "Sem descrição",
+          rainChance: day.rainChance,
+          wind: day.wind
         });
       }
     }
@@ -93,7 +103,8 @@ export function useWeatherProcessor(weatherData: WeatherSourceData | null) {
       currentWeather: weatherData.current ? {
         temperature: weatherData.current.temperature,
         description: weatherData.current.description,
-        icon: weatherData.current.icon
+        icon: weatherData.current.icon,
+        humidity: weatherData.current.humidity
       } : null,
       recommendation: weatherData.forecast?.[0]?.recommendation
     });
