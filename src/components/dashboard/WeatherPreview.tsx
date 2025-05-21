@@ -9,6 +9,7 @@ import { Link } from "react-router-dom";
 import { WeatherPreviewLoading } from "./weather/WeatherPreviewLoading";
 import { WeatherPreviewError } from "./weather/WeatherPreviewError";
 import { WeatherPreviewContent } from "./weather/WeatherPreviewContent";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface WeatherPreviewProps {
   onWeatherDataChange?: (data: {
@@ -21,6 +22,7 @@ export const WeatherPreview = ({ onWeatherDataChange }: WeatherPreviewProps) => 
   const { weatherData, loading, error, refetch, locationName: fetchedLocation } = useWeatherFetch();
   const { currentWeather, recommendation, forecast } = useWeatherProcessor(weatherData as WeatherSourceData | null);
   const [locationName, setLocationName] = useState<string>("Obtendo localização...");
+  const isMobile = useIsMobile();
 
   // Update weather data when it changes
   useEffect(() => {
@@ -64,28 +66,30 @@ export const WeatherPreview = ({ onWeatherDataChange }: WeatherPreviewProps) => 
   // Main render with weather data
   return (
     <Link to="/clima" className="block">
-      <Card className="agro-card hover:shadow-md transition-shadow">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-agro-green-800 flex justify-between items-center">
-            <span>Previsão do Tempo</span>
-            <CloudSun className="h-5 w-5 text-agro-blue-500" />
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {currentWeather && (
-            <WeatherPreviewContent
-              currentWeather={{
-                ...currentWeather,
-                rainChance: todayForecast?.rainChance,
-                wind: todayForecast?.wind
-              }}
-              locationName={locationName}
-              recommendation={recommendation}
-              showMetrics={true}
-            />
-          )}
-        </CardContent>
-      </Card>
+      <div className={`flex justify-center ${isMobile ? 'w-full' : ''}`}>
+        <Card className={`agro-card hover:shadow-md transition-shadow rounded-xl p-0 ${isMobile ? 'max-w-[90%] mx-auto' : 'w-full'}`}>
+          <CardHeader className="pb-2 p-4">
+            <CardTitle className="text-agro-green-800 flex justify-between items-center">
+              <span>Previsão do Tempo</span>
+              <CloudSun className="h-5 w-5 text-agro-blue-500" />
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 pt-0">
+            {currentWeather && (
+              <WeatherPreviewContent
+                currentWeather={{
+                  ...currentWeather,
+                  rainChance: todayForecast?.rainChance,
+                  wind: todayForecast?.wind
+                }}
+                locationName={locationName}
+                recommendation={recommendation}
+                showMetrics={true}
+              />
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </Link>
   );
 };

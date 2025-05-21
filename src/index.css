@@ -176,4 +176,17 @@
     @apply px-4 py-2 bg-white text-agro-green-600 rounded-lg 
     border border-agro-green-400 hover:bg-agro-green-50 transition-colors shadow-sm;
   }
+  
+  /* Classes adicionadas para melhor suporte mobile */
+  .mobile-card {
+    @apply max-w-[90%] mx-auto rounded-xl p-4;
+  }
+  
+  .mobile-text-sm {
+    @apply text-xs md:text-sm;
+  }
+  
+  .mobile-card-container {
+    @apply flex justify-center w-full;
+  }
 }

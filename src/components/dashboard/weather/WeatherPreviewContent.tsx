@@ -1,6 +1,7 @@
 
 import React from "react";
 import { CloudSun, CloudRain, Wind, Droplet } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface CurrentWeather {
   temperature: string;
@@ -22,8 +23,10 @@ export const WeatherPreviewContent: React.FC<WeatherPreviewContentProps> = ({
   currentWeather,
   locationName,
   recommendation,
-  showMetrics = true // Changed default to true so metrics show by default
+  showMetrics = true
 }) => {
+  const isMobile = useIsMobile();
+  
   return (
     <div className="animate-fade-in">
       {/* Location */}
@@ -35,7 +38,7 @@ export const WeatherPreviewContent: React.FC<WeatherPreviewContentProps> = ({
       <div className="mb-4">
         <div className="flex items-center">
           <span className="text-4xl font-semibold mr-2">{currentWeather.temperature}</span>
-          <span className="text-gray-700">{currentWeather.description}</span>
+          <span className="text-gray-700 text-sm">{currentWeather.description}</span>
         </div>
       </div>
       
@@ -68,10 +71,10 @@ export const WeatherPreviewContent: React.FC<WeatherPreviewContentProps> = ({
         </div>
       )}
       
-      {/* Recommendation banner if available - with yellow background */}
+      {/* Recommendation banner if available - with improved mobile styling */}
       {recommendation && (
         <div className="bg-yellow-50 text-yellow-800 text-sm p-2 rounded-md">
-          <p>{recommendation}</p>
+          <p className="text-xs md:text-sm">{recommendation}</p>
         </div>
       )}
     </div>
