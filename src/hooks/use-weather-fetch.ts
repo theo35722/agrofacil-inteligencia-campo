@@ -13,6 +13,7 @@ interface WeatherForecastItem {
   description: string;
   humidity: number;
   rainChance: number;
+  wind: number; // Added missing wind property
   recommendation?: string;
 }
 

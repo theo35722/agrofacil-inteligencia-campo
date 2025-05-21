@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 
 // Define the type for weather day data used in the UI
@@ -12,7 +11,7 @@ type WeatherDay = {
 };
 
 // Interface to define what the source weather data looks like
-interface WeatherSourceData {
+export interface WeatherSourceData {
   current: {
     temperature: string;
     description: string;

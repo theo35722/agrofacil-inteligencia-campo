@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CloudSun } from "lucide-react";
 import { useWeatherFetch } from "@/hooks/use-weather-fetch";
-import { useWeatherProcessor } from "@/hooks/use-weather-processor";
+import { useWeatherProcessor, WeatherSourceData } from "@/hooks/use-weather-processor";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import { WeatherPreviewLoading } from "./weather/WeatherPreviewLoading";
@@ -19,7 +19,7 @@ interface WeatherPreviewProps {
 
 export const WeatherPreview = ({ onWeatherDataChange }: WeatherPreviewProps) => {
   const { weatherData, loading, error, refetch, locationName: fetchedLocation } = useWeatherFetch();
-  const { currentWeather, recommendation, forecast } = useWeatherProcessor(weatherData);
+  const { currentWeather, recommendation, forecast } = useWeatherProcessor(weatherData as WeatherSourceData | null);
   const [locationName, setLocationName] = useState<string>("Obtendo localização...");
 
   // Update weather data when it changes
