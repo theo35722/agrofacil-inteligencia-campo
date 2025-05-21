@@ -19,7 +19,7 @@ interface WeatherPreviewProps {
 
 export const WeatherPreview = ({ onWeatherDataChange }: WeatherPreviewProps) => {
   const { weatherData, loading, error, refetch, locationName: fetchedLocation } = useWeatherFetch();
-  const { forecast, currentWeather, recommendation } = useWeatherProcessor(weatherData);
+  const { currentWeather, recommendation } = useWeatherProcessor(weatherData);
   const [locationName, setLocationName] = useState<string>("Obtendo localização...");
 
   // Update weather data when it changes
@@ -72,7 +72,6 @@ export const WeatherPreview = ({ onWeatherDataChange }: WeatherPreviewProps) => 
           {currentWeather && (
             <WeatherPreviewContent
               currentWeather={currentWeather}
-              forecast={forecast}
               locationName={locationName}
               recommendation={recommendation}
             />
