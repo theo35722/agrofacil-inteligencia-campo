@@ -7,25 +7,10 @@ export const fetchWeatherData = async (
   lon: number
 ): Promise<any> => {
   try {
-    // Obter o token de autenticação atual do Supabase
-    const { data: { session } } = await supabase.auth.getSession();
-    const accessToken = session?.access_token;
-
-    if (!accessToken) {
-      console.warn('Usuário não autenticado ao buscar dados do clima');
-      throw new Error('Usuário não autenticado');
-    }
-
-    // Configurar os headers necessários para a requisição
-    const headers = {
-      'Authorization': `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
-      'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1emFsb3ltamVmc2RyYXZibWNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYzMTUxMDQsImV4cCI6MjA2MTg5MTEwNH0.1ARoxdC1JqqaFK7jz3YXllu8bmDqXKLJgEMAQjLNqQo'
-    };
-
     console.log('Iniciando requisição para a Edge Function do Supabase');
     
     // Usar o método do cliente Supabase para chamar a função Edge diretamente
+    // Sem exigir autenticação, já que a weather function está configurada como pública
     const { data, error } = await supabase.functions.invoke('get-weather-data', {
       body: { latitude: lat, longitude: lon },
     });

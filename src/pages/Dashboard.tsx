@@ -4,7 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import { ActivityPreview } from "@/components/dashboard/ActivityPreview";
-import { NewWeatherCard } from "@/components/weather/NewWeatherCard";
+import { WeatherPreview } from "@/components/dashboard/WeatherPreview";
 import { GreetingHeader } from "@/components/dashboard/GreetingHeader";
 import { DiagnosticButton } from "@/components/dashboard/DiagnosticButton";
 import { PlagueAlert } from "@/components/dashboard/PlagueAlert";
@@ -67,7 +67,7 @@ const Dashboard: React.FC = () => {
     }
   }, [dataKey, fetchDashboardData]);
 
-  // Handle weather data changes from the NewWeatherCard
+  // Handle weather data changes from the WeatherPreview
   const handleWeatherDataChange = useCallback((data: {
     description: string;
     humidity: number;
@@ -115,9 +115,9 @@ const Dashboard: React.FC = () => {
       {/* Top greeting text */}
       <GreetingHeader profile={profile} />
 
-      {/* Weather card - Using NewWeatherCard with improved error handling */}
+      {/* Weather card - Using WeatherPreview with improved error handling */}
       <div className="mx-4">
-        <NewWeatherCard onWeatherDataChange={handleWeatherDataChange} />
+        <WeatherPreview onWeatherDataChange={handleWeatherDataChange} />
       </div>
 
       {/* Alert card */}
