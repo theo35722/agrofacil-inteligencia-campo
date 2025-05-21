@@ -3,18 +3,12 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CloudSun } from "lucide-react";
 import { useWeatherFetch } from "@/hooks/use-weather-fetch";
+import { useWeatherProcessor } from "@/hooks/use-weather-processor";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
 import { WeatherPreviewLoading } from "./weather/WeatherPreviewLoading";
 import { WeatherPreviewError } from "./weather/WeatherPreviewError";
 import { WeatherPreviewContent } from "./weather/WeatherPreviewContent";
-
-type WeatherDay = {
-  day: string;
-  icon: "sun" | "cloud" | "cloud-sun" | "cloud-rain";
-  temperature: string;
-  description: string;
-};
 
 interface WeatherPreviewProps {
   onWeatherDataChange?: (data: {
@@ -25,49 +19,14 @@ interface WeatherPreviewProps {
 
 export const WeatherPreview = ({ onWeatherDataChange }: WeatherPreviewProps) => {
   const { weatherData, loading, error, refetch, locationName: fetchedLocation } = useWeatherFetch();
-  const [forecast, setForecast] = useState<WeatherDay[]>([]);
+  const { forecast, currentWeather, recommendation } = useWeatherProcessor(weatherData);
   const [locationName, setLocationName] = useState<string>("Obtendo localização...");
 
   // Update weather data when it changes
   useEffect(() => {
-    if (weatherData) {
-      const updatedForecast: WeatherDay[] = [];
-      
-      // Process today and add to forecast
-      if (weatherData.forecast && weatherData.forecast.length > 0) {
-        const today = weatherData.forecast[0];
-        updatedForecast.push({
-          day: "Hoje",
-          icon: mapIconToType(today.icon),
-          temperature: `${Math.round(today.temperature.max)}°C`,
-          description: today.description || "Sem descrição",
-        });
-
-        // Add the next two days if available
-        for (let i = 1; i < Math.min(3, weatherData.forecast.length); i++) {
-          const day = weatherData.forecast[i];
-          let dayLabel = "Amanhã";
-          if (i === 2) {
-            // Get day of week for the third day
-            const date = new Date();
-            date.setDate(date.getDate() + 2);
-            const dayOfWeek = date.toLocaleDateString('pt-BR', { weekday: 'short' });
-            dayLabel = dayOfWeek.charAt(0).toUpperCase() + dayOfWeek.slice(1, 3);
-          }
-          
-          updatedForecast.push({
-            day: dayLabel,
-            icon: mapIconToType(day.icon),
-            temperature: `${Math.round(day.temperature.max)}°C`,
-            description: day.description || "Sem descrição",
-          });
-        }
-      }
-      
-      setForecast(updatedForecast);
-      
+    if (weatherData?.current) {
       // Notify parent component about weather data
-      if (onWeatherDataChange && weatherData.current) {
+      if (onWeatherDataChange) {
         onWeatherDataChange({
           description: weatherData.current.description,
           humidity: Number(weatherData.current.humidity) || 0
@@ -82,18 +41,6 @@ export const WeatherPreview = ({ onWeatherDataChange }: WeatherPreviewProps) => 
       setLocationName(fetchedLocation);
     }
   }, [fetchedLocation]);
-
-  // Helper function to map OpenWeather icon to our icon types
-  const mapIconToType = (iconCode: string): "sun" | "cloud" | "cloud-sun" | "cloud-rain" => {
-    if (!iconCode) return "cloud-sun";
-    
-    if (iconCode.includes("01")) return "sun"; // clear sky
-    if (iconCode.includes("02") || iconCode.includes("03")) return "cloud-sun"; // few/scattered clouds
-    if (iconCode.includes("04")) return "cloud"; // broken clouds
-    if (iconCode.includes("09") || iconCode.includes("10") || iconCode.includes("11")) return "cloud-rain"; // rain/thunder
-    
-    return "cloud-sun";
-  };
 
   // Handle retry button click
   const handleRetry = () => {
@@ -122,16 +69,12 @@ export const WeatherPreview = ({ onWeatherDataChange }: WeatherPreviewProps) => 
           </CardTitle>
         </CardHeader>
         <CardContent>
-          {weatherData?.current && (
+          {currentWeather && (
             <WeatherPreviewContent
-              currentWeather={{
-                description: weatherData.current.description,
-                temperature: weatherData.current.temperature,
-                icon: weatherData.current.icon
-              }}
+              currentWeather={currentWeather}
               forecast={forecast}
               locationName={locationName}
-              recommendation={weatherData.forecast?.[0]?.recommendation}
+              recommendation={recommendation}
             />
           )}
         </CardContent>
