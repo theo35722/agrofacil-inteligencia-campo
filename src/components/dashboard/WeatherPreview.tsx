@@ -2,9 +2,9 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Cloud, CloudRain, CloudSun, Sun, MapPin, Loader2 } from "lucide-react";
-import { useGeolocation } from "@/hooks/use-geolocation";
 import { useWeatherFetch } from "@/hooks/use-weather-fetch";
 import { toast } from "sonner";
+import { Link } from "react-router-dom";
 
 type WeatherDay = {
   day: string;
@@ -21,29 +21,9 @@ interface WeatherPreviewProps {
 }
 
 export const WeatherPreview = ({ onWeatherDataChange }: WeatherPreviewProps) => {
-  const location = useGeolocation();
   const [locationName, setLocationName] = useState<string>("Obtendo localização...");
-  const { weatherData, loading, error, refetch } = useWeatherFetch();
-  const [forecast, setForecast] = useState<WeatherDay[]>([
-    {
-      day: "Hoje",
-      icon: "sun",
-      temperature: "28°C",
-      description: "Ensolarado",
-    },
-    {
-      day: "Amanhã",
-      icon: "cloud-rain",
-      temperature: "22°C",
-      description: "Chuva",
-    },
-    {
-      day: "Ter",
-      icon: "cloud-sun",
-      temperature: "25°C",
-      description: "Parcialmente nublado",
-    },
-  ]);
+  const { weatherData, loading, error, refetch, locationName: fetchedLocation } = useWeatherFetch();
+  const [forecast, setForecast] = useState<WeatherDay[]>([]);
 
   // Update weather data when it changes
   useEffect(() => {
@@ -92,34 +72,13 @@ export const WeatherPreview = ({ onWeatherDataChange }: WeatherPreviewProps) => 
       }
     }
   }, [weatherData, onWeatherDataChange]);
-
-  // Efeito para obter o nome da localização quando as coordenadas são carregadas
+  
+  // Update location name from fetched data
   useEffect(() => {
-    if (location.latitude && location.longitude) {
-      // Aqui estamos usando a API de Geocoding Reversa para obter o nome da localização
-      fetch(`https://nominatim.openstreetmap.org/reverse?lat=${location.latitude}&lon=${location.longitude}&format=json`)
-        .then(response => response.json())
-        .then(data => {
-          const city = data.address?.city || data.address?.town || data.address?.village || "Local não identificado";
-          const state = data.address?.state || "";
-          setLocationName(`${city}, ${state}`);
-        })
-        .catch(() => {
-          setLocationName("Não foi possível obter o local");
-        });
+    if (fetchedLocation) {
+      setLocationName(fetchedLocation);
     }
-  }, [location.latitude, location.longitude]);
-
-  // Efeito para mostrar erro de localização
-  useEffect(() => {
-    if (location.error) {
-      toast.error("Erro ao obter localização", {
-        description: location.error,
-        duration: 5000,
-      });
-      setLocationName("Localização não disponível");
-    }
-  }, [location.error]);
+  }, [fetchedLocation]);
 
   // Helper function to map OpenWeather icon to our icon types
   const mapIconToType = (iconCode: string): "sun" | "cloud" | "cloud-sun" | "cloud-rain" => {
@@ -193,81 +152,83 @@ export const WeatherPreview = ({ onWeatherDataChange }: WeatherPreviewProps) => 
 
   // Main render with new design based on the image
   return (
-    <Card className="agro-card">
-      <CardHeader className="pb-2">
-        <CardTitle className="text-agro-green-800 flex justify-between items-center">
-          <span>Previsão do Tempo</span>
-          <CloudSun className="h-5 w-5 text-agro-blue-500" />
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {/* Main weather display */}
-        <div className="flex items-center justify-between mb-4">
-          {/* Left side: Location and description */}
-          <div className="flex flex-col">
-            {locationName !== "Obtendo localização..." && (
-              <div className="flex items-center text-sm text-agro-blue-600 mb-1">
-                <MapPin className="h-3 w-3 mr-1" />
-                <span>{locationName}</span>
-              </div>
-            )}
-            {weatherData?.current && (
-              <p className="text-base text-gray-800">
-                {weatherData.current.description.charAt(0).toUpperCase() + weatherData.current.description.slice(1)}
-              </p>
-            )}
+    <Link to="/clima" className="block">
+      <Card className="agro-card hover:shadow-md transition-shadow">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-agro-green-800 flex justify-between items-center">
+            <span>Previsão do Tempo</span>
+            <CloudSun className="h-5 w-5 text-agro-blue-500" />
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {/* Main weather display - Match the screenshot exactly */}
+          <div className="flex items-center justify-between mb-4">
+            {/* Left side: Location and description */}
+            <div className="flex flex-col">
+              {locationName && (
+                <div className="flex items-center text-sm text-agro-blue-600 mb-1">
+                  <MapPin className="h-3 w-3 mr-1" />
+                  <span>{locationName}</span>
+                </div>
+              )}
+              {weatherData?.current && (
+                <p className="text-base text-gray-800">
+                  {weatherData.current.description.charAt(0).toUpperCase() + weatherData.current.description.slice(1)}
+                </p>
+              )}
+            </div>
+            
+            {/* Right side: Current temperature */}
+            <div className="flex items-center">
+              {weatherData?.current && (
+                <>
+                  {(() => {
+                    const iconName = forecast.length > 0 ? forecast[0].icon : "cloud-sun";
+                    const WeatherIcon = weatherIcons[iconName];
+                    let colorClass = "text-agro-blue-500";
+                    
+                    if (iconName === "sun") colorClass = "text-yellow-500";
+                    if (iconName === "cloud-rain") colorClass = "text-agro-blue-600";
+                    
+                    return <WeatherIcon className={`h-14 w-14 ${colorClass} mr-2`} />;
+                  })()}
+                  <span className="text-4xl font-semibold">
+                    {Math.round(parseFloat(weatherData.current.temperature))}°C
+                  </span>
+                </>
+              )}
+            </div>
           </div>
           
-          {/* Right side: Current temperature */}
-          <div className="flex items-center">
-            {weatherData?.current && forecast.length > 0 && (
-              <>
-                {(() => {
-                  const WeatherIcon = weatherIcons[forecast[0].icon];
-                  let colorClass = "text-agro-blue-500";
-                  
-                  if (forecast[0].icon === "sun") colorClass = "text-yellow-500";
-                  if (forecast[0].icon === "cloud-rain") colorClass = "text-agro-blue-600";
-                  
-                  return <WeatherIcon className={`h-12 w-12 ${colorClass}`} />;
-                })()}
-                <span className="text-4xl font-semibold ml-2">
-                  {Math.round(parseFloat(weatherData.current.temperature))}°C
-                </span>
-              </>
-            )}
+          {/* Forecast for next days in a compact row - simplified to match the screenshot */}
+          <div className="flex justify-between border-t border-gray-100 pt-3">
+            {forecast.map((day, index) => {
+              const WeatherIcon = weatherIcons[day.icon];
+              let colorClass = "text-agro-blue-500";
+              
+              if (day.icon === "sun") colorClass = "text-yellow-500";
+              if (day.icon === "cloud-rain") colorClass = "text-agro-blue-600";
+              
+              return (
+                <div key={index} className="flex flex-col items-center">
+                  <span className="text-sm font-medium text-gray-600">{day.day}</span>
+                  <WeatherIcon className={`h-8 w-8 my-1 ${colorClass}`} />
+                  <span className="font-semibold">{day.temperature}</span>
+                </div>
+              );
+            })}
           </div>
-        </div>
-        
-        {/* Forecast for next days in a compact row */}
-        <div className="flex justify-between border-t border-gray-100 pt-3">
-          {forecast.map((day, index) => {
-            const WeatherIcon = weatherIcons[day.icon];
-            let colorClass = "text-agro-blue-500";
-            
-            if (day.icon === "sun") colorClass = "text-yellow-500";
-            if (day.icon === "cloud-rain") colorClass = "text-agro-blue-600";
-            
-            return (
-              <div key={index} className="flex flex-col items-center">
-                <span className="text-sm font-medium text-gray-600">{day.day}</span>
-                <WeatherIcon className={`h-8 w-8 my-1 ${colorClass}`} />
-                <span className="font-semibold">{day.temperature}</span>
-                <span className="text-xs text-gray-500">{day.description}</span>
-              </div>
-            );
-          })}
-        </div>
-        
-        {/* Weather recommendation banner */}
-        {weatherData?.forecast?.[0]?.recommendation && (
-          <div className="mt-4 p-2 bg-amber-50 border border-amber-100 rounded-md">
-            <p className="text-sm text-amber-800">
-              <strong>Dica:</strong> {weatherData.forecast[0].recommendation}
-            </p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+          
+          {/* Weather recommendation banner - style to match the screenshot with yellow background */}
+          {weatherData?.forecast?.[0]?.recommendation && (
+            <div className="mt-4 p-2 bg-amber-50 border border-amber-100 rounded-md">
+              <p className="text-sm text-amber-800">
+                <strong>Dica:</strong> {weatherData.forecast[0].recommendation}
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </Link>
   );
 };

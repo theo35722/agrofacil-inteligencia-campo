@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState, useCallback } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -114,7 +115,7 @@ const Dashboard: React.FC = () => {
       {/* Top greeting text */}
       <GreetingHeader profile={profile} />
 
-      {/* Weather card - Using WeatherPreview with improved error handling */}
+      {/* Weather card - Using WeatherPreview that links to the Weather page */}
       <div className="mx-4">
         <WeatherPreview onWeatherDataChange={handleWeatherDataChange} />
       </div>
