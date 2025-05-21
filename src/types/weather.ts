@@ -10,7 +10,7 @@ export interface WeatherDay {
   recommendation?: string;
   soilMoisture?: number;
   uvIndex?: number;
-  description?: string; // Added missing description property
+  description?: string;
 }
 
 export interface ActivityRecommendation {

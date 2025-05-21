@@ -32,6 +32,7 @@ export interface WeatherDay {
   rainChance: number;
   uvIndex?: number;
   recommendation?: string;
+  description?: string;
 }
 
 export interface RawOpenWeatherCurrent {

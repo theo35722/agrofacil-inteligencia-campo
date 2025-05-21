@@ -191,27 +191,59 @@ export const WeatherPreview = ({ onWeatherDataChange }: WeatherPreviewProps) => 
     );
   }
 
+  // Main render with new design based on the image
   return (
     <Card className="agro-card">
       <CardHeader className="pb-2">
         <CardTitle className="text-agro-green-800 flex justify-between items-center">
-          <div className="flex items-center">
-            <span>Previsão do Tempo</span>
-            {locationName !== "Obtendo localização..." && (
-              <div className="flex items-center ml-2 text-sm font-normal text-agro-blue-500">
-                <MapPin className="h-3 w-3 mr-1" />
-                <span>{locationName}</span>
-              </div>
-            )}
-          </div>
+          <span>Previsão do Tempo</span>
           <CloudSun className="h-5 w-5 text-agro-blue-500" />
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="flex justify-between">
+        {/* Main weather display */}
+        <div className="flex items-center justify-between mb-4">
+          {/* Left side: Location and description */}
+          <div className="flex flex-col">
+            {locationName !== "Obtendo localização..." && (
+              <div className="flex items-center text-sm text-agro-blue-600 mb-1">
+                <MapPin className="h-3 w-3 mr-1" />
+                <span>{locationName}</span>
+              </div>
+            )}
+            {weatherData?.current && (
+              <p className="text-base text-gray-800">
+                {weatherData.current.description.charAt(0).toUpperCase() + weatherData.current.description.slice(1)}
+              </p>
+            )}
+          </div>
+          
+          {/* Right side: Current temperature */}
+          <div className="flex items-center">
+            {weatherData?.current && forecast.length > 0 && (
+              <>
+                {(() => {
+                  const WeatherIcon = weatherIcons[forecast[0].icon];
+                  let colorClass = "text-agro-blue-500";
+                  
+                  if (forecast[0].icon === "sun") colorClass = "text-yellow-500";
+                  if (forecast[0].icon === "cloud-rain") colorClass = "text-agro-blue-600";
+                  
+                  return <WeatherIcon className={`h-12 w-12 ${colorClass}`} />;
+                })()}
+                <span className="text-4xl font-semibold ml-2">
+                  {Math.round(parseFloat(weatherData.current.temperature))}°C
+                </span>
+              </>
+            )}
+          </div>
+        </div>
+        
+        {/* Forecast for next days in a compact row */}
+        <div className="flex justify-between border-t border-gray-100 pt-3">
           {forecast.map((day, index) => {
             const WeatherIcon = weatherIcons[day.icon];
-            let colorClass = "text-agro-blue-500"; // Default
+            let colorClass = "text-agro-blue-500";
             
             if (day.icon === "sun") colorClass = "text-yellow-500";
             if (day.icon === "cloud-rain") colorClass = "text-agro-blue-600";
@@ -219,7 +251,7 @@ export const WeatherPreview = ({ onWeatherDataChange }: WeatherPreviewProps) => 
             return (
               <div key={index} className="flex flex-col items-center">
                 <span className="text-sm font-medium text-gray-600">{day.day}</span>
-                <WeatherIcon className={`h-10 w-10 my-2 ${colorClass}`} />
+                <WeatherIcon className={`h-8 w-8 my-1 ${colorClass}`} />
                 <span className="font-semibold">{day.temperature}</span>
                 <span className="text-xs text-gray-500">{day.description}</span>
               </div>
@@ -227,9 +259,10 @@ export const WeatherPreview = ({ onWeatherDataChange }: WeatherPreviewProps) => 
           })}
         </div>
         
+        {/* Weather recommendation banner */}
         {weatherData?.forecast?.[0]?.recommendation && (
-          <div className="mt-4 p-2 bg-agro-blue-50 border border-agro-blue-100 rounded-md">
-            <p className="text-sm text-agro-blue-800">
+          <div className="mt-4 p-2 bg-amber-50 border border-amber-100 rounded-md">
+            <p className="text-sm text-amber-800">
               <strong>Dica:</strong> {weatherData.forecast[0].recommendation}
             </p>
           </div>

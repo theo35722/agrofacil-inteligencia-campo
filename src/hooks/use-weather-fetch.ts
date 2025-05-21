@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 
@@ -13,6 +12,7 @@ interface WeatherForecastItem {
   description: string;
   humidity: number;
   rainChance: number;
+  recommendation?: string; // Added recommendation property
 }
 
 interface WeatherData {
