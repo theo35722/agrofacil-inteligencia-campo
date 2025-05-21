@@ -73,9 +73,7 @@ const Dashboard: React.FC = () => {
     humidity: number;
   } | null) => {
     console.log("Dados climáticos atualizados:", data);
-    if (data && data.description) {
-      setWeatherData(data);
-    }
+    setWeatherData(data);
   }, []);
   
   // Handle plague alert click with improved toast
@@ -117,7 +115,7 @@ const Dashboard: React.FC = () => {
       {/* Top greeting text */}
       <GreetingHeader profile={profile} />
 
-      {/* Weather card - Replaced with NewWeatherCard */}
+      {/* Weather card - Using NewWeatherCard with improved error handling */}
       <div className="mx-4">
         <NewWeatherCard onWeatherDataChange={handleWeatherDataChange} />
       </div>

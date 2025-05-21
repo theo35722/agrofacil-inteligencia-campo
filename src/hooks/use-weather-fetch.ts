@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react';
+import { supabase } from "@/integrations/supabase/client";
 
 interface WeatherForecastItem {
   date: string;
@@ -29,73 +30,99 @@ export function useWeatherFetch() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [locationName, setLocationName] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const MAX_RETRIES = 3;
 
-  useEffect(() => {
-    const fetchWeatherData = async (latitude: number, longitude: number) => {
-      try {
-        console.log(`Fetching weather data for coordinates: ${latitude}, ${longitude}`);
-        
-        const response = await fetch(
-          "https://euzaloymjefsdravbmcd.supabase.co/functions/v1/get-weather-data",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "apikey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV1emFsb3ltamVmc2RyYXZibWNkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDYzMTUxMDQsImV4cCI6MjA2MTg5MTEwNH0.1ARoxdC1JqqaFK7jz3YXllu8bmDqXKLJgEMAQjLNqQo"
-            },
-            body: JSON.stringify({
-              latitude,
-              longitude
-            })
-          }
-        );
+  // Function to fetch weather data with coordinates
+  const fetchWeatherData = async (latitude: number, longitude: number) => {
+    try {
+      console.log(`Fetching weather data for coordinates: ${latitude}, ${longitude}`);
+      
+      const { data, error: fetchError } = await supabase.functions.invoke('get-weather-data', {
+        body: { latitude, longitude }
+      });
 
-        if (!response.ok) {
-          throw new Error(`Weather API returned status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        console.log("Weather data received:", data);
-        setWeatherData(data);
-        
-        // Try to fetch location name
-        try {
-          const geoResponse = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
-            {
-              headers: {
-                "Accept-Language": "pt-BR",
-                "User-Agent": "SeuZeAgro/1.0"
-              }
-            }
-          );
-          
-          if (geoResponse.ok) {
-            const geoData = await geoResponse.json();
-            const city = geoData.address?.city || 
-                        geoData.address?.town || 
-                        geoData.address?.village;
-            const state = geoData.address?.state;
-            
-            if (city && state) {
-              setLocationName(`${city}, ${state}`);
-            } else if (city) {
-              setLocationName(city);
-            }
-          }
-        } catch (error) {
-          console.error("Error fetching location name:", error);
-        }
-        
-      } catch (error) {
-        console.error("Error fetching weather data:", error);
-        setError("Não foi possível obter a previsão do tempo no momento.");
-      } finally {
-        setLoading(false);
+      if (fetchError) {
+        console.error("Weather API error:", fetchError);
+        throw new Error(`Weather API error: ${fetchError.message}`);
       }
-    };
 
-    // Get user's geolocation
+      if (!data) {
+        throw new Error("No data received from weather API");
+      }
+
+      console.log("Weather data received:", data);
+      setWeatherData(data);
+      setError(null);
+      
+      // Try to fetch location name
+      fetchLocationName(latitude, longitude);
+      
+    } catch (error) {
+      console.error("Error fetching weather data:", error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to fetch weather data";
+      setError(errorMessage);
+      
+      // Implement retry logic
+      if (retryCount < MAX_RETRIES) {
+        console.log(`Retrying weather fetch (${retryCount + 1}/${MAX_RETRIES})...`);
+        setRetryCount(prev => prev + 1);
+        // Wait 2 seconds before retrying
+        setTimeout(() => fetchWeatherData(latitude, longitude), 2000);
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Helper function to fetch location name
+  const fetchLocationName = async (latitude: number, longitude: number) => {
+    try {
+      const geoResponse = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
+        {
+          headers: {
+            "Accept-Language": "pt-BR",
+            "User-Agent": "SeuZeAgro/1.0"
+          }
+        }
+      );
+      
+      if (geoResponse.ok) {
+        const geoData = await geoResponse.json();
+        const city = geoData.address?.city || 
+                   geoData.address?.town || 
+                   geoData.address?.village;
+        const state = geoData.address?.state;
+        
+        if (city && state) {
+          setLocationName(`${city}, ${state}`);
+        } else if (city) {
+          setLocationName(city);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching location name:", error);
+      // Non-critical error, don't set error state
+    }
+  };
+
+  // Manual refetch method
+  const refetch = (coords?: { latitude: number, longitude: number }) => {
+    setLoading(true);
+    setError(null);
+    setRetryCount(0);
+
+    if (coords?.latitude && coords?.longitude) {
+      fetchWeatherData(coords.latitude, coords.longitude);
+    } else {
+      // Start from scratch with geolocation
+      getUserLocation();
+    }
+  };
+
+  // Function to get user location with fallbacks
+  const getUserLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -104,19 +131,34 @@ export function useWeatherFetch() {
         },
         (error) => {
           console.error("Geolocation error:", error.message);
-          setError("Não foi possível obter a sua localização. Verifique as permissões do navegador.");
-          setLoading(false);
           
-          // Fallback to a default location (Brazil)
-          fetchWeatherData(-15.7801, -47.9292);
+          // Default location for Brazil if geolocation fails
+          const DEFAULT_LAT = -15.7801;
+          const DEFAULT_LON = -47.9292;
+          
+          console.log(`Geolocation failed. Using default coordinates (${DEFAULT_LAT}, ${DEFAULT_LON})`);
+          setError("Não foi possível obter a sua localização. Utilizando localização padrão.");
+          
+          // Use default coordinates as fallback
+          fetchWeatherData(DEFAULT_LAT, DEFAULT_LON);
         },
         { enableHighAccuracy: true, timeout: 15000, maximumAge: 60000 }
       );
     } else {
       setError("Geolocalização não suportada pelo seu navegador.");
       setLoading(false);
+      
+      // Still try with default coordinates
+      const DEFAULT_LAT = -15.7801;
+      const DEFAULT_LON = -47.9292;
+      fetchWeatherData(DEFAULT_LAT, DEFAULT_LON);
     }
+  };
+
+  // Initial fetch on component mount
+  useEffect(() => {
+    getUserLocation();
   }, []);
 
-  return { weatherData, loading, error, locationName };
+  return { weatherData, loading, error, locationName, refetch };
 }

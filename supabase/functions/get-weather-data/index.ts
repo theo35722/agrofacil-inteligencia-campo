@@ -4,72 +4,72 @@ import { corsHeaders } from '../_shared/cors.ts';
 import { RequestBody } from './types.ts';
 import { processWeatherData } from './utils.ts';
 
-// Função principal
+// Main handler function
 const handler = async (req: Request): Promise<Response> => {
-  // Lidar com requisição OPTIONS (preflight)
+  // Handle OPTIONS preflight request
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    // Obter API key do OpenWeather das variáveis de ambiente
+    // Get OpenWeather API key from environment variables
     const apiKey = Deno.env.get('OPENWEATHER_API_KEY');
     if (!apiKey) {
-      console.error('API key não encontrada nas variáveis de ambiente');
-      throw new Error('API key não encontrada nas variáveis de ambiente');
+      console.error('API key not found in environment variables');
+      throw new Error('API key not found in environment variables');
     }
 
-    // Obter lat/lon do corpo da requisição
+    // Get lat/lon from request body
     let requestBody: RequestBody;
     try {
       requestBody = await req.json() as RequestBody;
-      console.log('Recebido pedido para coordenadas:', requestBody);
+      console.log('Received request for coordinates:', requestBody);
     } catch (error) {
-      console.error('Erro ao processar corpo da requisição:', error);
-      throw new Error('Erro ao processar corpo da requisição: formato JSON inválido');
+      console.error('Error processing request body:', error);
+      throw new Error('Error processing request body: invalid JSON format');
     }
     
     const { latitude, longitude } = requestBody;
     
     if (!latitude || !longitude) {
-      console.error('Parâmetros obrigatórios não fornecidos:', requestBody);
-      throw new Error('Latitude e longitude são obrigatórios');
+      console.error('Required parameters not provided:', requestBody);
+      throw new Error('Latitude and longitude are required');
     }
 
-    // Em vez de usar o One Call API (3.0), vamos usar endpoints gratuitos
-    // 1. Buscar dados atuais do clima
-    console.log(`Buscando dados atuais do clima para ${latitude}, ${longitude}`);
+    // Instead of using the One Call API (3.0), use free endpoints
+    // 1. Fetch current weather data
+    console.log(`Fetching current weather data for ${latitude}, ${longitude}`);
     const currentWeatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&units=metric&lang=pt_br&appid=${apiKey}`;
     const currentResponse = await fetch(currentWeatherUrl);
     
     if (!currentResponse.ok) {
       const errorText = await currentResponse.text();
-      console.error(`Erro na API OpenWeather (current): ${currentResponse.status}`, errorText);
-      throw new Error(`Erro na API OpenWeather (current): ${currentResponse.status} - ${errorText}`);
+      console.error(`Error in OpenWeather API (current): ${currentResponse.status}`, errorText);
+      throw new Error(`Error in OpenWeather API (current): ${currentResponse.status} - ${errorText}`);
     }
     
     const currentData = await currentResponse.json();
-    console.log('Dados atuais recebidos com sucesso');
+    console.log('Current data received successfully');
     
-    // 2. Buscar previsão para 5 dias
-    console.log('Buscando previsão para 5 dias');
+    // 2. Fetch 5-day forecast
+    console.log('Fetching 5-day forecast');
     const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&units=metric&lang=pt_br&appid=${apiKey}`;
     const forecastResponse = await fetch(forecastUrl);
     
     if (!forecastResponse.ok) {
       const errorText = await forecastResponse.text();
-      console.error(`Erro na API OpenWeather (forecast): ${forecastResponse.status}`, errorText);
-      throw new Error(`Erro na API OpenWeather (forecast): ${forecastResponse.status} - ${errorText}`);
+      console.error(`Error in OpenWeather API (forecast): ${forecastResponse.status}`, errorText);
+      throw new Error(`Error in OpenWeather API (forecast): ${forecastResponse.status} - ${errorText}`);
     }
     
     const forecastData = await forecastResponse.json();
-    console.log('Dados de previsão recebidos com sucesso');
+    console.log('Forecast data received successfully');
     
-    // Processar dados para formato similar ao esperado pelo frontend
+    // Process data to the format expected by the frontend
     const processedData = processWeatherData(currentData, forecastData);
-    console.log('Dados processados com sucesso');
+    console.log('Data processed successfully');
 
-    // Retornar dados do clima processados
+    // Return the processed weather data
     return new Response(JSON.stringify(processedData), {
       headers: {
         ...corsHeaders,
@@ -78,9 +78,9 @@ const handler = async (req: Request): Promise<Response> => {
     });
     
   } catch (error) {
-    // Lidar com erros
-    console.error('Erro ao processar pedido:', error);
-    const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+    // Handle errors
+    console.error('Error processing request:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     
     return new Response(
       JSON.stringify({
@@ -97,5 +97,5 @@ const handler = async (req: Request): Promise<Response> => {
   }
 };
 
-// Iniciar o servidor
+// Start the server
 serve(handler);

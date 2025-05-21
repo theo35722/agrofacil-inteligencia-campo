@@ -1,13 +1,15 @@
 
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CloudSun } from "lucide-react";
+import { CloudSun, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface ErrorStateProps {
   message: string;
+  onRetry?: () => void;
 }
 
-export const ErrorState: React.FC<ErrorStateProps> = ({ message }) => {
+export const ErrorState: React.FC<ErrorStateProps> = ({ message, onRetry }) => {
   return (
     <Card className="w-full">
       <CardHeader className="pb-2">
@@ -18,7 +20,19 @@ export const ErrorState: React.FC<ErrorStateProps> = ({ message }) => {
       </CardHeader>
       <CardContent>
         <div className="flex flex-col items-center justify-center py-4">
-          <p className="text-gray-600 text-center">{message}</p>
+          <p className="text-gray-600 text-center mb-3">{message}</p>
+          
+          {onRetry && (
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={onRetry}
+              className="flex items-center"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Tentar novamente
+            </Button>
+          )}
         </div>
       </CardContent>
     </Card>

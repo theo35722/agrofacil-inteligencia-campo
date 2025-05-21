@@ -6,6 +6,7 @@ import { WeatherCardHeader } from "./WeatherCardHeader";
 import { ForecastItem } from "./ForecastItem";
 import { LoadingState } from "./LoadingState";
 import { ErrorState } from "./ErrorState";
+import { toast } from "sonner";
 
 export interface NewWeatherCardProps {
   onWeatherDataChange?: (data: {
@@ -15,7 +16,16 @@ export interface NewWeatherCardProps {
 }
 
 export const NewWeatherCard = ({ onWeatherDataChange }: NewWeatherCardProps = {}) => {
-  const { weatherData, loading, error, locationName } = useWeatherFetch();
+  const { weatherData, loading, error, locationName, refetch } = useWeatherFetch();
+
+  // Show toast only for network errors, not for geolocation errors
+  useEffect(() => {
+    if (error && error.includes("API error")) {
+      toast.error("Erro na atualização do clima", {
+        description: "Não foi possível conectar ao serviço meteorológico.",
+      });
+    }
+  }, [error]);
 
   // Notify parent component about weather data changes
   useEffect(() => {
@@ -34,9 +44,9 @@ export const NewWeatherCard = ({ onWeatherDataChange }: NewWeatherCardProps = {}
     return <LoadingState />;
   }
 
-  // Render error state
+  // Render error state with retry button
   if (error || !weatherData) {
-    return <ErrorState message={error || "Não foi possível obter a previsão do tempo no momento."} />;
+    return <ErrorState message={error || "Não foi possível obter a previsão do tempo no momento."} onRetry={() => refetch()} />;
   }
 
   // Make sure forecast exists and has items before trying to access them
@@ -48,7 +58,10 @@ export const NewWeatherCard = ({ onWeatherDataChange }: NewWeatherCardProps = {}
 
   // If we don't have even today's forecast data, show an error
   if (!today) {
-    return <ErrorState message="Dados de previsão incompletos. Tentando atualizar..." />;
+    return <ErrorState 
+      message="Dados de previsão incompletos. Tentando atualizar..." 
+      onRetry={() => refetch()}
+    />;
   }
 
   return (
