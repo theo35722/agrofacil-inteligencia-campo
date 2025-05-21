@@ -94,6 +94,12 @@ export function processWeatherData(currentData: RawOpenWeatherCurrent, forecastD
       iconCounts[a] > iconCounts[b] ? a : b
     );
     
+    // Calcular a média das chances de chuva em vez do máximo
+    // Isso dará um valor mais representativo para todo o dia
+    const avgRainChance = day.rainChances.length > 0 
+      ? Math.round(day.rainChances.reduce((sum: number, val: number) => sum + val, 0) / day.rainChances.length)
+      : 0;
+    
     return {
       date: formatDate(new Date(day.date)),
       dayOfWeek: day.dayOfWeek,
@@ -104,9 +110,9 @@ export function processWeatherData(currentData: RawOpenWeatherCurrent, forecastD
       },
       humidity: Math.round(day.humidity.reduce((sum: number, val: number) => sum + val, 0) / day.humidity.length),
       wind: Math.round(day.wind.reduce((sum: number, val: number) => sum + val, 0) / day.wind.length * 3.6), // m/s para km/h
-      rainChance: Math.round(Math.max(...day.rainChances)),
+      rainChance: avgRainChance,
       uvIndex: 3, // Valor padrão, pois não está disponível na API gratuita
-      recommendation: getRecommendation(predominantIcon, Math.max(...day.rainChances))
+      recommendation: getRecommendation(predominantIcon, avgRainChance)
     };
   });
   

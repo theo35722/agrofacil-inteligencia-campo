@@ -6,18 +6,21 @@ interface CurrentWeather {
   temperature: string;
   description: string;
   icon: string;
+  humidity?: number;
 }
 
 interface WeatherPreviewContentProps {
   currentWeather: CurrentWeather;
   locationName: string;
   recommendation?: string;
+  showMetrics?: boolean;
 }
 
 export const WeatherPreviewContent: React.FC<WeatherPreviewContentProps> = ({
   currentWeather,
   locationName,
-  recommendation
+  recommendation,
+  showMetrics = false
 }) => {
   return (
     <div className="animate-fade-in">
@@ -33,6 +36,16 @@ export const WeatherPreviewContent: React.FC<WeatherPreviewContentProps> = ({
           <span className="text-gray-700">{currentWeather.description}</span>
         </div>
       </div>
+      
+      {/* Weather metrics if enabled */}
+      {showMetrics && currentWeather.humidity !== undefined && (
+        <div className="mb-4 grid grid-cols-1 gap-2 text-sm text-gray-700">
+          <div className="flex items-center gap-1">
+            <span className="font-medium">Umidade:</span>
+            <span>{currentWeather.humidity}%</span>
+          </div>
+        </div>
+      )}
       
       {/* Recommendation banner if available - with yellow background */}
       {recommendation && (
