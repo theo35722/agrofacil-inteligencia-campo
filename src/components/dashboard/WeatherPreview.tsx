@@ -66,15 +66,15 @@ export const WeatherPreview = ({ onWeatherDataChange }: WeatherPreviewProps) => 
   // Main render with weather data
   return (
     <Link to="/clima" className="block">
-      <div className={`flex justify-center ${isMobile ? 'w-full' : ''}`}>
-        <Card className={`agro-card hover:shadow-md transition-shadow rounded-xl p-0 ${isMobile ? 'max-w-[90%] mx-auto' : 'w-full'}`}>
-          <CardHeader className="pb-2 p-4">
-            <CardTitle className="text-agro-green-800 flex justify-between items-center">
+      <div className="flex justify-center">
+        <Card className={`hover:shadow-md transition-shadow rounded-lg shadow-md ${isMobile ? 'max-w-[85%] mx-auto' : 'w-full'}`}>
+          <CardHeader className="pb-1 p-3">
+            <CardTitle className="text-agro-green-800 flex justify-between items-center text-base">
               <span>Previsão do Tempo</span>
-              <CloudSun className="h-5 w-5 text-agro-blue-500" />
+              <CloudSun className="h-4 w-4 text-agro-blue-500" />
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-4 pt-0">
+          <CardContent className="p-3 pt-0">
             {currentWeather && (
               <WeatherPreviewContent
                 currentWeather={{
