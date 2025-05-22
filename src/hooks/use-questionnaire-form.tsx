@@ -20,13 +20,14 @@ export function useQuestionnaireForm({
   const { locationName, setLocationName, isLoading: locationLoading, error: locationError } = useLocationName();
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState(1);
-  const totalSteps = 6;
+  const totalSteps = 2; // Reduced from 6 to 2
   
   const [formData, setFormData] = useState<DiagnosisQuestions>({
     culture: "",
     symptoms: "",
-    affectedArea: "",
-    timeFrame: "",
+    // Default values for fields we're keeping but not asking user about
+    affectedArea: "whole_plant",
+    timeFrame: "recent",
     recentProducts: locale === "pt" ? "Não" : "No",
     weatherChanges: "",
   });
@@ -47,11 +48,7 @@ export function useQuestionnaireForm({
     
     switch (step) {
       case 1: canContinue = !!formData.culture; break;
-      case 2: canContinue = !!formData.affectedArea; break;
-      case 3: canContinue = !!formData.symptoms; break;
-      case 4: canContinue = !!formData.timeFrame; break;
-      case 5: canContinue = !!formData.recentProducts; break;
-      case 6: canContinue = true; break;
+      case 2: canContinue = !!formData.symptoms; break;
     }
     
     if (canContinue) {

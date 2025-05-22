@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
@@ -10,8 +9,8 @@ interface PlantAnalysisRequest {
   imageUrl: string;
   culture: string;
   symptoms: string;
-  affectedArea: string;
-  timeFrame: string;
+  affectedArea?: string;
+  timeFrame?: string;
   recentProducts?: string;
   weatherChanges?: string;
   location?: string;
@@ -54,8 +53,8 @@ serve(async (req) => {
       Imagem da planta: URL fornecida
       Cultura: ${culture}
       Sintomas observados: ${symptoms}
-      Parte afetada: ${affectedArea}
-      Tempo de surgimento dos sintomas: ${timeFrame}
+      Parte afetada: ${affectedArea || "Não informado"}
+      Tempo de surgimento dos sintomas: ${timeFrame || "Não informado"}
       Produtos aplicados recentemente: ${recentProducts || "Não informado"}
       Condições climáticas recentes: ${weatherChanges || "Não informado"}
       Localização: ${location || "Não informado"}
@@ -64,6 +63,7 @@ serve(async (req) => {
       {
         "disease": {
           "name": "Nome provável da doença ou condição",
+          "scientificName": "Nome científico da doença ou da planta afetada (ex: Phytophthora infestans para requeima do tomate)",
           "description": "Descrição breve da doença, incluindo o agente causador e como ela afeta a planta"
         },
         "severity": {
@@ -93,7 +93,11 @@ serve(async (req) => {
         "extraTips": "Dicas extras importantes para o agricultor",
         "affectedArea": "Parte da planta mais afetada",
         "spreadRisk": "Risco de disseminação (baixo, médio, alto)",
-        "confidence": 85 // Um número de 0 a 100 representando a confiança no diagnóstico
+        "confidence": 85, // Um número de 0 a 100 representando a confiança no diagnóstico
+        "symptoms": [
+          "Sintoma identificado 1",
+          "Sintoma identificado 2"
+        ]
       }
       
       Responda apenas com o JSON, sem texto adicional.
@@ -165,7 +169,7 @@ serve(async (req) => {
           preventiveMeasures: parsedResult.preventiveMeasures,
           confidence: parsedResult.confidence,
           recommendations: parsedResult.treatment.products || [],
-          symptoms: parsedResult.symptoms || ["Sintomas não especificados"]
+          symptoms: parsedResult.symptoms || []
         };
         
         return new Response(

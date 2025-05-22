@@ -3,13 +3,8 @@ import React from "react";
 import { DiagnosisQuestions } from "@/services/openai-api";
 import { QuestionnaireImagePreview } from "./QuestionnaireImagePreview";
 import { QuestionnaireNavigation } from "./QuestionnaireNavigation";
-import { LocationDisplay } from "./LocationDisplay";
 import { StepCulture } from "./steps/StepCulture";
-import { StepAffectedArea } from "./steps/StepAffectedArea";
 import { StepSymptoms } from "./steps/StepSymptoms";
-import { StepTimeFrame } from "./steps/StepTimeFrame";
-import { StepProducts } from "./steps/StepProducts";
-import { StepWeather } from "./steps/StepWeather";
 import { useQuestionnaireForm } from "@/hooks/use-questionnaire-form";
 import { questionnaireTranslations } from "./questionnaireTranslations";
 
@@ -35,11 +30,8 @@ export const QuestionnaireBase: React.FC<QuestionnaireBaseProps> = ({
     formData,
     isLoading,
     locationName,
-    locationLoading,
-    locationError,
     handleChange,
     handleContinue,
-    clearLocation
   } = useQuestionnaireForm({
     imagePreview,
     imageFile,
@@ -62,10 +54,7 @@ export const QuestionnaireBase: React.FC<QuestionnaireBaseProps> = ({
   const isNextButtonDisabled = () => {
     switch (step) {
       case 1: return !formData.culture;
-      case 2: return !formData.affectedArea;
-      case 3: return !formData.symptoms;
-      case 4: return !formData.timeFrame;
-      case 5: return !formData.recentProducts;
+      case 2: return !formData.symptoms;
       default: return false;
     }
   };
@@ -83,56 +72,11 @@ export const QuestionnaireBase: React.FC<QuestionnaireBaseProps> = ({
         );
       case 2: 
         return (
-          <StepAffectedArea 
-            affectedArea={formData.affectedArea} 
-            onChange={(value) => handleChange("affectedArea", value)}
-            locale={locale}
-          />
-        );
-      case 3: 
-        return (
           <StepSymptoms 
             symptoms={formData.symptoms} 
             onChange={(value) => handleChange("symptoms", value)}
             locale={locale}
           />
-        );
-      case 4: 
-        return (
-          <StepTimeFrame 
-            timeFrame={formData.timeFrame} 
-            onChange={(value) => handleChange("timeFrame", value)}
-            locale={locale}
-          />
-        );
-      case 5: 
-        return (
-          <StepProducts 
-            recentProducts={formData.recentProducts || ""} 
-            onChange={(value) => handleChange("recentProducts", value)}
-            locale={locale}
-          />
-        );
-      case 6: 
-        return (
-          <>
-            <StepWeather 
-              weatherChanges={formData.weatherChanges || ""} 
-              onChange={(value) => handleChange("weatherChanges", value)}
-              locale={locale}
-            />
-            
-            {/* Location Information */}
-            <LocationDisplay 
-              locationName={locationName} 
-              isLoading={locationLoading} 
-              error={locationError} 
-              onClear={clearLocation}
-              label={t.location.title}
-              loadingMessage={t.location.loading}
-              errorMessage={t.location.error}
-            />
-          </>
         );
       default:
         return null;

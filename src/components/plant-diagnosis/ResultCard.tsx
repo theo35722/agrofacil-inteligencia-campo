@@ -1,6 +1,5 @@
-
 import React from "react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { 
@@ -101,6 +100,8 @@ const ResultCard: React.FC<ResultCardProps> = ({ result, onNewAnalysis }) => {
     }
   };
 
+  const hasSymptoms = result.symptoms && result.symptoms.length > 0;
+
   return (
     <Card className="w-full mt-4 shadow-md overflow-hidden">
       <div className={`w-full p-3 ${getSeverityColor(result.severity)}`}>
@@ -119,11 +120,11 @@ const ResultCard: React.FC<ResultCardProps> = ({ result, onNewAnalysis }) => {
       
       <CardContent className="p-4">
         <div className="space-y-4">
-          {/* Disease Name */}
+          {/* Disease Name with Scientific Name */}
           <div>
             <h3 className="text-xl font-semibold text-gray-800">{result.disease}</h3>
             {result.scientificName && (
-              <p className="text-xs text-gray-600 italic">{result.scientificName}</p>
+              <p className="text-sm text-gray-600 italic">{result.scientificName}</p>
             )}
             <div className="flex justify-between items-center mt-1">
               <Badge variant="outline" className="text-xs px-2 py-0">
@@ -169,8 +170,8 @@ const ResultCard: React.FC<ResultCardProps> = ({ result, onNewAnalysis }) => {
             )}
           </div>
           
-          {/* Symptoms */}
-          {result.symptoms && result.symptoms.length > 0 && (
+          {/* Symptoms - Only show if available */}
+          {hasSymptoms && (
             <Accordion type="single" collapsible className="w-full">
               <AccordionItem value="symptoms">
                 <AccordionTrigger className="py-2">
