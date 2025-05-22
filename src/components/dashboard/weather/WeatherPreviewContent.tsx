@@ -2,7 +2,6 @@
 import React from "react";
 import { CloudRain, Wind, Droplet } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { formatRainChance } from "@/utils/weather-utils";
 
 interface CurrentWeather {
   temperature: string;
@@ -56,7 +55,7 @@ export const WeatherPreviewContent: React.FC<WeatherPreviewContentProps> = ({
           {currentWeather.rainChance !== undefined && (
             <div className="flex items-center">
               <CloudRain className="h-4 w-4 text-agro-blue-500 mr-1" />
-              <span>{formatRainChance(currentWeather.rainChance)}</span>
+              <span>{currentWeather.rainChance}%</span>
             </div>
           )}
           
