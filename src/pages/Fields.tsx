@@ -94,6 +94,7 @@ const Fields = () => {
               expandedFarm={expandedFarm}
               toggleFarmExpand={toggleFarmExpand}
               openAddPlotDialog={openAddPlotDialog}
+              onUpdateSuccess={fetchData}
             />
           ))}
         </div>

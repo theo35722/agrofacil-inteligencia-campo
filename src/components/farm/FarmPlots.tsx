@@ -1,12 +1,24 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Talhao } from "@/types/agro";
+import { Button } from "@/components/ui/button";
+import { Pencil } from "lucide-react";
+import { EditTalhaoDialog } from "@/components/talhao/EditTalhaoDialog";
 
 interface FarmPlotsProps {
   plots: Talhao[];
+  onUpdateSuccess: () => void;
 }
 
-const FarmPlots = ({ plots }: FarmPlotsProps) => {
+const FarmPlots = ({ plots, onUpdateSuccess }: FarmPlotsProps) => {
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [currentTalhao, setCurrentTalhao] = useState<Talhao | null>(null);
+  
+  const handleEditClick = (talhao: Talhao) => {
+    setCurrentTalhao(talhao);
+    setEditDialogOpen(true);
+  };
+
   if (plots.length === 0) {
     return (
       <p className="text-gray-500 text-sm">
@@ -26,9 +38,20 @@ const FarmPlots = ({ plots }: FarmPlotsProps) => {
             <h5 className="font-medium text-agro-earth-800">
               {plot.nome}
             </h5>
-            <span className="text-sm text-agro-earth-600">
-              {plot.area} ha
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-agro-earth-600">
+                {plot.area} ha
+              </span>
+              <Button 
+                size="sm" 
+                variant="ghost" 
+                className="h-8 w-8 p-0" 
+                onClick={() => handleEditClick(plot)}
+              >
+                <Pencil className="h-4 w-4 text-agro-earth-600" />
+                <span className="sr-only">Editar</span>
+              </Button>
+            </div>
           </div>
           
           <div className="mt-2 text-sm text-gray-600">
@@ -41,6 +64,14 @@ const FarmPlots = ({ plots }: FarmPlotsProps) => {
           </div>
         </div>
       ))}
+      
+      {/* Edit dialog */}
+      <EditTalhaoDialog 
+        open={editDialogOpen} 
+        onOpenChange={setEditDialogOpen} 
+        talhao={currentTalhao}
+        onSuccess={onUpdateSuccess}
+      />
     </div>
   );
 };

@@ -15,6 +15,7 @@ interface FarmCardProps {
   expandedFarm: string | null;
   toggleFarmExpand: (farmId: string) => void;
   openAddPlotDialog: (farmId: string) => void;
+  onUpdateSuccess: () => void;
 }
 
 const FarmCard = ({
@@ -26,6 +27,7 @@ const FarmCard = ({
   expandedFarm,
   toggleFarmExpand,
   openAddPlotDialog,
+  onUpdateSuccess,
 }: FarmCardProps) => {
   const isExpanded = expandedFarm === id;
 
@@ -82,7 +84,7 @@ const FarmCard = ({
               </Button>
             </div>
             
-            <FarmPlots plots={plots} />
+            <FarmPlots plots={plots} onUpdateSuccess={onUpdateSuccess} />
           </div>
         )}
       </CardContent>
