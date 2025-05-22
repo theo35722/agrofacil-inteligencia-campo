@@ -1,6 +1,9 @@
+
 import React from "react";
 import { CloudRain, Wind, Droplet } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { formatRainChance } from "@/utils/weather-utils";
+
 interface CurrentWeather {
   temperature: string;
   description: string;
@@ -9,12 +12,14 @@ interface CurrentWeather {
   wind?: number;
   rainChance?: number;
 }
+
 interface WeatherPreviewContentProps {
   currentWeather: CurrentWeather;
   locationName: string;
   recommendation?: string;
   showMetrics?: boolean;
 }
+
 export const WeatherPreviewContent: React.FC<WeatherPreviewContentProps> = ({
   currentWeather,
   locationName,
@@ -22,7 +27,9 @@ export const WeatherPreviewContent: React.FC<WeatherPreviewContentProps> = ({
   showMetrics = true
 }) => {
   const isMobile = useIsMobile();
-  return <div className="animate-fade-in">
+  
+  return (
+    <div className="animate-fade-in">
       {/* Location */}
       <div className="mb-2">
         <span className="text-sm text-gray-600">{locationName}</span>
@@ -37,26 +44,37 @@ export const WeatherPreviewContent: React.FC<WeatherPreviewContentProps> = ({
       </div>
       
       {/* Weather metrics if enabled - improved layout */}
-      {showMetrics && <div className="mb-3 grid grid-cols-3 gap-2 text-sm text-gray-700">
-          {currentWeather.humidity !== undefined && <div className="flex items-center">
+      {showMetrics && (
+        <div className="mb-3 grid grid-cols-3 gap-2 text-sm text-gray-700">
+          {currentWeather.humidity !== undefined && (
+            <div className="flex items-center">
               <Droplet className="h-4 w-4 text-agro-blue-400 mr-1" />
               <span>{currentWeather.humidity}%</span>
-            </div>}
+            </div>
+          )}
           
-          {currentWeather.rainChance !== undefined && <div className="flex items-center">
+          {currentWeather.rainChance !== undefined && (
+            <div className="flex items-center">
               <CloudRain className="h-4 w-4 text-agro-blue-500 mr-1" />
-              <span>{currentWeather.rainChance}%</span>
-            </div>}
+              <span>{formatRainChance(currentWeather.rainChance)}</span>
+            </div>
+          )}
           
-          {currentWeather.wind !== undefined && <div className="flex items-center">
+          {currentWeather.wind !== undefined && (
+            <div className="flex items-center">
               <Wind className="h-4 w-4 text-gray-500 mr-1" />
               <span>{currentWeather.wind}km/h</span>
-            </div>}
-        </div>}
+            </div>
+          )}
+        </div>
+      )}
       
       {/* Recommendation banner - more prominent */}
-      {recommendation && <div className="bg-yellow-50 text-yellow-800 rounded p-2.5 border border-yellow-100">
+      {recommendation && (
+        <div className="bg-yellow-50 text-yellow-800 rounded p-2.5 border border-yellow-100">
           <p className="text-sm">{recommendation}</p>
-        </div>}
-    </div>;
+        </div>
+      )}
+    </div>
+  );
 };

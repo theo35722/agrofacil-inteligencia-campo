@@ -3,6 +3,7 @@ import React from "react";
 import { WeatherDay } from "@/types/weather";
 import { WeatherIcon } from "@/components/weather/WeatherIcon";
 import { MapPin } from "lucide-react";
+import { formatRainChance } from "@/utils/weather-utils";
 
 interface WeatherCardContentProps {
   today: WeatherDay;
