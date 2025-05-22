@@ -1,9 +1,14 @@
 
 {
+  "id": "app.agrofacil.inteligencia-campo",
   "name": "AgroFácil",
   "short_name": "AgroFácil",
-  "start_url": "/dashboard",
-  "description": "Aplicativo para diagnóstico de plantas, previsão do tempo e gestão agrícola",
+  "description": "Aplicativo para diagnóstico de plantas, previsão do tempo e gestão agrícola.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#2E7D32",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "/icon-192x192.png",
@@ -22,10 +27,51 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    },
+    {
+      "src": "/apple-touch-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
     }
   ],
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#388e3c",
-  "orientation": "portrait"
+  "screenshots": [
+    {
+      "src": "/screenshots/screen1.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "label": "Tela inicial do AgroFácil"
+    },
+    {
+      "src": "/screenshots/screen2.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "label": "Diagnóstico de plantas"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "url": "/dashboard",
+      "description": "Painel principal"
+    },
+    {
+      "name": "Diagnóstico",
+      "url": "/diagnostico",
+      "description": "Diagnóstico de plantas"
+    }
+  ],
+  "launch_handler": {
+    "client_mode": ["navigate-existing", "auto"]
+  },
+  "categories": [
+    "agriculture",
+    "productivity",
+    "utilities"
+  ],
+  "dir": "ltr",
+  "lang": "pt-BR",
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "scope": "/"
 }

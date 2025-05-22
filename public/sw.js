@@ -6,7 +6,11 @@ const urlsToCache = [
   '/manifest.json',
   '/favicon.ico',
   '/icon-192x192.png',
-  '/icon-512x512.png'
+  '/icon-512x512.png',
+  '/maskable-icon.png',
+  '/apple-touch-icon.png',
+  '/screenshots/screen1.png',
+  '/screenshots/screen2.png'
 ];
 
 // Install event - cache assets
@@ -18,36 +22,54 @@ self.addEventListener('install', event => {
         return cache.addAll(urlsToCache);
       })
   );
+  self.skipWaiting(); // Força ativação em todas as abas
 });
 
-// Fetch event - serve from cache when possible
+// Fetch event - serve from cache when possible, use network as fallback
 self.addEventListener('fetch', event => {
-  event.respondWith(
-    caches.match(event.request)
-      .then(response => {
-        // Return cached response if found
-        if (response) {
-          return response;
-        }
-        return fetch(event.request)
-          .then(response => {
-            // Don't cache if not a valid response
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
-            }
-
-            // Clone the response as it can only be consumed once
-            const responseToCache = response.clone();
-
-            caches.open(CACHE_NAME)
-              .then(cache => {
-                cache.put(event.request, responseToCache);
-              });
-
+  // Verifica se a requisição é feita para o mesmo domínio ou utiliza HTTPS
+  if (
+    event.request.url.startsWith(self.location.origin) || 
+    event.request.url.startsWith('https://')
+  ) {
+    event.respondWith(
+      caches.match(event.request)
+        .then(response => {
+          // Return cached response if found
+          if (response) {
             return response;
-          });
-      })
-  );
+          }
+          
+          // Clone the request to use it for cache and also for fetch
+          const fetchRequest = event.request.clone();
+          
+          return fetch(fetchRequest)
+            .then(response => {
+              // Don't cache if not a valid response
+              if (!response || response.status !== 200 || response.type !== 'basic') {
+                return response;
+              }
+
+              // Clone the response as it can only be consumed once
+              const responseToCache = response.clone();
+
+              caches.open(CACHE_NAME)
+                .then(cache => {
+                  cache.put(event.request, responseToCache);
+                });
+
+              return response;
+            })
+            .catch(() => {
+              // Se falhar ao buscar e for um documento HTML, 
+              // tenta retornar a página offline
+              if (event.request.headers.get('accept').includes('text/html')) {
+                return caches.match('/offline.html');
+              }
+            });
+        })
+    );
+  }
 });
 
 // Activate event - clean up old caches
@@ -62,6 +84,17 @@ self.addEventListener('activate', event => {
           }
         })
       );
+    }).then(() => {
+      // Para que o Service Worker conquiste o controle das páginas imediatamente
+      return self.clients.claim();
     })
   );
+});
+
+// Ouvir mensagem para pular o cache forçadamente 
+// (útil quando o usuário solicita atualização explicitamente)
+self.addEventListener('message', (event) => {
+  if (event.data === 'skipWaiting') {
+    self.skipWaiting();
+  }
 });

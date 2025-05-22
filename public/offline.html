@@ -1,0 +1,75 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AgroFácil - Offline</title>
+  <style>
+    body {
+      font-family: 'Nunito', sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background-color: #f3f4f6;
+      color: #333;
+    }
+    .container {
+      text-align: center;
+      padding: 2rem;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      max-width: 90%;
+      width: 400px;
+    }
+    .icon {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 1rem;
+    }
+    h1 {
+      color: #2E7D32;
+      margin-bottom: 1rem;
+    }
+    p {
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+    }
+    .button {
+      background-color: #2E7D32;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 4px;
+      font-weight: bold;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <svg class="icon" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect width="192" height="192" fill="#2E7D32" />
+      <path d="M96 48C80 48 58 60 58 100C90 100 96 82 96 82C96 82 102 100 134 100C134 60 112 48 96 48Z" fill="white" stroke="white" strokeWidth="2" />
+      <path d="M96 144C96 144 96 104 96 82" stroke="white" strokeWidth="10" strokeLinecap="round" />
+      <path d="M80 116C80 116 86 122 96 122C106 122 112 116 112 116" stroke="white" strokeWidth="6" strokeLinecap="round" />
+    </svg>
+    <h1>AgroFácil - Sem conexão</h1>
+    <p>Parece que você está offline no momento. Por favor, verifique sua conexão com a internet e tente novamente.</p>
+    <button class="button" onclick="tryReconnect()">Tentar novamente</button>
+  </div>
+  
+  <script>
+    function tryReconnect() {
+      window.location.reload();
+    }
+  </script>
+</body>
+</html>

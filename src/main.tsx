@@ -3,17 +3,51 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 import { Toaster } from 'sonner';
+import { toast } from 'sonner';
 
-// Register Service Worker
+// Register Service Worker with enhanced update detection
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then(registration => {
-        console.log('Service Worker registered with scope:', registration.scope);
-      })
-      .catch(error => {
-        console.error('Service Worker registration failed:', error);
+  window.addEventListener('load', async () => {
+    try {
+      const registration = await navigator.serviceWorker.register('/sw.js');
+      console.log('Service Worker registered with scope:', registration.scope);
+      
+      // Check for updates on page load
+      registration.addEventListener('updatefound', () => {
+        const newWorker = registration.installing;
+        
+        if (newWorker) {
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // New service worker is installed but waiting
+              toast.info('Nova atualização disponível!', {
+                description: 'Recarregue a página para ver as novidades.',
+                action: {
+                  label: 'Atualizar agora',
+                  onClick: () => {
+                    newWorker.postMessage({ type: 'SKIP_WAITING' });
+                    window.location.reload();
+                  }
+                },
+                duration: 10000
+              });
+            }
+          });
+        }
       });
+      
+      // Handle controller change (when skipWaiting is called)
+      let refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (!refreshing) {
+          refreshing = true;
+          window.location.reload();
+        }
+      });
+      
+    } catch (error) {
+      console.error('Service Worker registration failed:', error);
+    }
   });
 }
 
