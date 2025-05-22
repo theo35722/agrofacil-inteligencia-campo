@@ -5,12 +5,13 @@ const urlsToCache = [
   '/index.html',
   '/manifest.json',
   '/favicon.ico',
-  '/icon-192x192.png',
-  '/icon-512x512.png',
-  '/maskable-icon.png',
+  '/icons/icon-192x192.png',
+  '/icons/icon-512x512.png',
+  '/icons/maskable-icon.png',
   '/apple-touch-icon.png',
   '/screenshots/screen1.png',
-  '/screenshots/screen2.png'
+  '/screenshots/screen2.png',
+  '/offline.html'
 ];
 
 // Install event - cache assets
@@ -63,7 +64,7 @@ self.addEventListener('fetch', event => {
             .catch(() => {
               // Se falhar ao buscar e for um documento HTML, 
               // tenta retornar a página offline
-              if (event.request.headers.get('accept').includes('text/html')) {
+              if (event.request.headers.get('accept')?.includes('text/html')) {
                 return caches.match('/offline.html');
               }
             });

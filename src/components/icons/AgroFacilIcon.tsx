@@ -20,25 +20,24 @@ export const AgroFacilIcon: React.FC<AgroFacilIconProps> = ({
       className={className}
     >
       {/* Fundo verde */}
-      <rect width="512" height="512" fill="#2E7D32" />
+      <rect width="512" height="512" fill="#1E7F3D" />
       
-      {/* Ícone de folhas estilizado em branco */}
-      <path
-        d="M256 128C204.8 128 153.6 179.2 153.6 307.2C256 307.2 256 256 256 256C256 256 256 307.2 358.4 307.2C358.4 179.2 307.2 128 256 128Z"
-        fill="white"
-        stroke="white"
-        strokeWidth="2"
+      {/* Ícone da folha branca */}
+      <path 
+        d="M256 128C160 128 128 256 128 384C160 384 192 352 256 352C320 352 352 384 384 384C384 256 352 128 256 128Z" 
+        fill="white" 
+        strokeWidth="0"
       />
-      <path
-        d="M214.4 128C171.52 128 128.64 166.4 128.64 268.8C214.4 268.8 214.4 230.4 214.4 230.4C214.4 230.4 214.4 268.8 300.16 268.8C300.16 166.4 257.28 128 214.4 128Z"
-        fill="#2E7D32"
-        stroke="#2E7D32"
-        strokeWidth="2"
+      <path 
+        d="M192 128C128 160 128 288 128 384" 
+        stroke="white" 
+        strokeWidth="16" 
+        strokeLinecap="round"
       />
-      <path
-        d="M256 384C256 384 256 307.2 256 256"
-        stroke="white"
-        strokeWidth="16"
+      <path 
+        d="M224 224C256 192 320 192 352 224" 
+        stroke="#1E7F3D" 
+        strokeWidth="16" 
         strokeLinecap="round"
       />
     </svg>
