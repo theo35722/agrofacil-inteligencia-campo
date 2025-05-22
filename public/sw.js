@@ -94,7 +94,7 @@ self.addEventListener('activate', event => {
 // Ouvir mensagem para pular o cache forçadamente 
 // (útil quando o usuário solicita atualização explicitamente)
 self.addEventListener('message', (event) => {
-  if (event.data === 'skipWaiting') {
+  if (event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
   }
 });
