@@ -1,5 +1,5 @@
 
-const CACHE_NAME = 'agrofacil-v2';
+const CACHE_NAME = 'agrofacil-v3';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -7,10 +7,6 @@ const urlsToCache = [
   '/favicon.ico',
   '/icon-192.png',
   '/icon-512.png',
-  '/maskable-icon.png',
-  '/apple-touch-icon.png',
-  '/screenshots/screen1.png',
-  '/screenshots/screen2.png',
   '/offline.html'
 ];
 
