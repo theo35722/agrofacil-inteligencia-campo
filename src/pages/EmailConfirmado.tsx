@@ -12,15 +12,15 @@ const EmailConfirmado = () => {
           <div className="flex justify-center mb-2">
             <CheckCircle className="h-12 w-12 text-green-500" />
           </div>
-          <CardTitle className="text-2xl font-bold text-agro-green-700">
-            Conta confirmada com sucesso!
+          <CardTitle className="text-2xl font-bold text-green-700">
+            Conta confirmada!
           </CardTitle>
-          <CardDescription>
-            Agora você pode fazer login normalmente.
+          <CardDescription className="text-lg">
+            Agora você pode voltar ao app e fazer login normalmente. 🌱
           </CardDescription>
         </CardHeader>
         <CardContent className="flex justify-center">
-          <Button asChild className="bg-agro-green-600 hover:bg-agro-green-700">
+          <Button asChild className="bg-green-600 hover:bg-green-700">
             <Link to="/auth">Fazer login</Link>
           </Button>
         </CardContent>
