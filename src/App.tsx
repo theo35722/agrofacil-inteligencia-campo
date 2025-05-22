@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -20,6 +21,7 @@ import CreateMarketplaceProduct from "./pages/CreateMarketplaceProduct";
 import EditMarketplaceProduct from "./pages/EditMarketplaceProduct";
 import Profile from "./pages/Profile";
 import Auth from "./pages/Auth";
+import EmailConfirmado from "./pages/EmailConfirmado";
 import NotFound from "./pages/NotFound";
 import Home from "./pages/Home";
 import WeatherTest from "./pages/WeatherTest";
@@ -49,8 +51,9 @@ const App = () => (
             {/* Página inicial pública - apenas para usuários não autenticados */}
             <Route path="/" element={<Home />} />
             
-            {/* Rota de autenticação */}
+            {/* Rotas de autenticação */}
             <Route path="/auth" element={<Auth />} />
+            <Route path="/confirmado" element={<EmailConfirmado />} />
             
             {/* Rotas protegidas */}
             <Route

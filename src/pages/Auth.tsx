@@ -8,8 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { CheckCircle, Mail } from "lucide-react";
 
 const loginSchema = z.object({
   email: z.string().email("E-mail inválido").min(1, "E-mail é obrigatório"),
@@ -32,6 +34,7 @@ const Auth = () => {
   const { signIn, signUp } = useAuth();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<string>("login");
+  const [registrationSuccess, setRegistrationSuccess] = useState(false);
 
   const loginForm = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -88,11 +91,8 @@ const Auth = () => {
           variant: "destructive",
         });
       } else {
-        toast({
-          title: "Conta criada com sucesso!",
-          description: "Verifique seu e-mail para confirmar o cadastro.",
-        });
-        setActiveTab("login");
+        setRegistrationSuccess(true);
+        registerForm.reset();
       }
     } catch (error) {
       toast({
@@ -170,81 +170,102 @@ const Auth = () => {
             </TabsContent>
             
             <TabsContent value="register">
-              <Form {...registerForm}>
-                <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
-                  <FormField
-                    control={registerForm.control}
-                    name="nome"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Nome</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Seu nome" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+              {registrationSuccess ? (
+                <div className="space-y-4">
+                  <Alert className="bg-green-50 border-green-200">
+                    <div className="flex items-center gap-2">
+                      <Mail className="h-5 w-5 text-green-600" />
+                      <div className="text-green-800 font-medium">Verifique seu e-mail</div>
+                    </div>
+                    <AlertDescription className="mt-2 text-green-700">
+                      Enviamos um link de confirmação para o seu e-mail. Por favor, verifique sua caixa de entrada e clique no link para ativar sua conta.
+                    </AlertDescription>
+                  </Alert>
                   
-                  <FormField
-                    control={registerForm.control}
-                    name="email"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>E-mail</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="email" 
-                            placeholder="seu@email.com" 
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={registerForm.control}
-                    name="password"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Senha</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="password" 
-                            placeholder="********" 
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={registerForm.control}
-                    name="confirmPassword"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Confirmar senha</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="password" 
-                            placeholder="********" 
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <Button type="submit" className="w-full bg-agro-green-600 hover:bg-agro-green-700" disabled={isLoading}>
-                    {isLoading ? "Criando conta..." : "Criar conta"}
+                  <Button 
+                    onClick={() => setActiveTab("login")} 
+                    className="w-full bg-agro-green-600 hover:bg-agro-green-700"
+                  >
+                    Ir para login
                   </Button>
-                </form>
-              </Form>
+                </div>
+              ) : (
+                <Form {...registerForm}>
+                  <form onSubmit={registerForm.handleSubmit(onRegisterSubmit)} className="space-y-4">
+                    <FormField
+                      control={registerForm.control}
+                      name="nome"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Nome</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Seu nome" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={registerForm.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>E-mail</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="email" 
+                              placeholder="seu@email.com" 
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={registerForm.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Senha</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="password" 
+                              placeholder="********" 
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={registerForm.control}
+                      name="confirmPassword"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Confirmar senha</FormLabel>
+                          <FormControl>
+                            <Input 
+                              type="password" 
+                              placeholder="********" 
+                              {...field} 
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <Button type="submit" className="w-full bg-agro-green-600 hover:bg-agro-green-700" disabled={isLoading}>
+                      {isLoading ? "Criando conta..." : "Criar conta"}
+                    </Button>
+                  </form>
+                </Form>
+              )}
             </TabsContent>
           </Tabs>
         </CardContent>
