@@ -16,7 +16,7 @@ export interface UseQuestionnaireFormReturn {
   isLoading: boolean;
   locationName: string | null;
   locationLoading: boolean;
-  locationError: Error | null; 
+  locationError: Error | null | string; // Updated to allow string type
   handleChange: (field: keyof DiagnosisQuestions, value: string) => void;
   handleContinue: () => void;
   clearLocation: () => void;
