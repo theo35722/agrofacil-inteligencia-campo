@@ -2,12 +2,25 @@
 import React from "react";
 import { Avatar } from "@/components/ui/avatar";
 import { type Message } from "@/hooks/useChatMessages";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ChatMessageProps {
   message: Message;
 }
 
 const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
+  const { profile } = useAuth();
+  
+  const getInitials = (name: string | null) => {
+    if (!name) return "AU";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .substring(0, 2);
+  };
+  
   return (
     <div
       className={`flex ${
@@ -28,10 +41,18 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ message }) => {
             />
           </Avatar>
         ) : (
-          <Avatar className="bg-agro-green-600 w-8 h-8 mt-1">
-            <div className="flex items-center justify-center h-full text-white text-xs font-semibold">
-              EU
-            </div>
+          <Avatar className="w-8 h-8 mt-1">
+            {profile?.foto_url ? (
+              <img 
+                src={profile.foto_url}
+                alt={profile.nome || "Usuário"}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              <div className="flex items-center justify-center h-full w-full bg-agro-green-600 text-white text-xs font-semibold">
+                {getInitials(profile?.nome)}
+              </div>
+            )}
           </Avatar>
         )}
         <div

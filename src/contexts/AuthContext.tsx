@@ -25,7 +25,7 @@ interface AuthContextType {
     data: any | null;
   }>;
   signOut: () => Promise<void>;
-  refreshProfile: () => Promise<void>; // Add this new function to refresh profile data
+  refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -109,7 +109,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
-  // Add this function to refresh the profile data
   const refreshProfile = async () => {
     if (user?.id) {
       await fetchUserProfile(user.id);
@@ -166,7 +165,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         signUp,
         signIn,
         signOut,
-        refreshProfile, // Add the new function here
+        refreshProfile,
       }}
     >
       {children}
