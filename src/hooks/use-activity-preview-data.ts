@@ -18,10 +18,10 @@ export const useActivityPreviewData = () => {
       
       console.log("Buscando atividades para o dashboard...");
       
-      // Buscar atividades pendentes e planejadas para a dashboard
+      // Remover o upcoming: true para buscar atividades independente da data programada
       const data = await getAtividades({ 
         limit: 5, 
-        upcoming: true,
+        // upcoming: true, // Remover esse filtro para incluir atividades de qualquer data
         includeConcluidas: false, // Excluir atividades concluídas
         includeStatus: ['pendente', 'planejado', 'Planejado', 'Pendente'] // Garantir que busque pendentes e planejadas com case insensitive
       });
