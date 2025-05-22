@@ -16,11 +16,13 @@ export const useActivityPreviewData = () => {
       setLoading(true);
       setError(null);
       
-      // Carregar atividades pendentes e planejadas, excluindo concluídas
+      // Buscar atividades pendentes e planejadas para a dashboard
+      // Importante: incluir explicitamente atividades pendentes
       const data = await getAtividades({ 
         limit: 5, 
         upcoming: true,
-        includeConcluidas: false // Explicitamente excluir atividades concluídas
+        includeConcluidas: false, // Excluir atividades concluídas
+        includeStatus: ['pendente', 'planejado'] // Garantir que busque pendentes e planejadas
       });
       
       console.log("Atividades carregadas para o dashboard:", data);

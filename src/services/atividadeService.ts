@@ -10,6 +10,7 @@ export const getAtividades = async (
     status?: string;
     upcoming?: boolean;
     includeConcluidas?: boolean;
+    includeStatus?: string[];
   } = {}
 ): Promise<Atividade[]> => {
   try {
@@ -45,9 +46,13 @@ export const getAtividades = async (
       query = query.eq('status', options.status);
     }
 
-    // Se includeConcluidas não estiver explicitamente definido como true,
+    // Se includeStatus for fornecido, use-o para filtrar por status específicos
+    if (options.includeStatus && options.includeStatus.length > 0) {
+      query = query.in('status', options.includeStatus);
+    }
+    // Caso contrário, se includeConcluidas não estiver explicitamente definido como true,
     // exclua as atividades concluídas por padrão
-    if (options.includeConcluidas !== true && !options.status) {
+    else if (options.includeConcluidas !== true && !options.status) {
       query = query.not('status', 'eq', 'concluído');
     }
 
