@@ -5,7 +5,7 @@ import { QuestionnaireImagePreview } from "./QuestionnaireImagePreview";
 import { QuestionnaireNavigation } from "./QuestionnaireNavigation";
 import { StepCulture } from "./steps/StepCulture";
 import { StepSymptoms } from "./steps/StepSymptoms";
-import { useQuestionnaireForm } from "@/hooks/use-questionnaire-form";
+import { useQuestionnaireForm } from "@/hooks/questionnaire-form";
 import { questionnaireTranslations } from "./questionnaireTranslations";
 
 interface QuestionnaireBaseProps {
