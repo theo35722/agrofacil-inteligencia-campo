@@ -14,20 +14,18 @@ interface ActivityItemProps {
 export const ActivityItem: React.FC<ActivityItemProps> = ({ activity, onStatusChange }) => {
   // Function to get the color of the badge based on status
   const getStatusColor = (status: string): string => {
-    switch (status?.toLowerCase()) {
-      case "pendente":
-        return "bg-orange-500 hover:bg-orange-600";
-      case "concluída":
-      case "concluido":
-      case "concluída":
-      case "concluído":
-        return "bg-green-500 hover:bg-green-600";
-      case "planejada":
-      case "planejado":
-        return "bg-blue-400 hover:bg-blue-500";
-      default:
-        return "bg-gray-400 hover:bg-gray-500";
+    const statusLower = status?.toLowerCase() || '';
+    
+    if (statusLower.includes("penden")) {
+      return "bg-orange-500 hover:bg-orange-600";
     }
+    if (statusLower.includes("conclu")) {
+      return "bg-green-500 hover:bg-green-600";
+    }
+    if (statusLower.includes("planej")) {
+      return "bg-blue-400 hover:bg-blue-500";
+    }
+    return "bg-gray-400 hover:bg-gray-500";
   };
 
   // Function to handle marking an activity as complete
@@ -36,6 +34,7 @@ export const ActivityItem: React.FC<ActivityItemProps> = ({ activity, onStatusCh
     e.stopPropagation();
     
     try {
+      console.log(`Marcando atividade ${activity.id} como concluída...`);
       await updateAtividadeStatus(activity.id, "concluído");
       toast.success("Atividade marcada como concluída!");
       if (onStatusChange) {
@@ -47,10 +46,24 @@ export const ActivityItem: React.FC<ActivityItemProps> = ({ activity, onStatusCh
     }
   };
 
+  // Normalize status for display
+  const normalizeStatus = (status: string): string => {
+    const statusLower = status?.toLowerCase() || '';
+    
+    if (statusLower.includes("conclu")) {
+      return "Concluída";
+    }
+    if (statusLower.includes("penden")) {
+      return "Pendente";
+    }
+    if (statusLower.includes("planej")) {
+      return "Planejada";
+    }
+    return status ? status.charAt(0).toUpperCase() + status.slice(1) : "Pendente";
+  };
+
   // Check if the activity is not already completed
-  const showCompleteButton = activity.status.toLowerCase() !== "concluído" && 
-                             activity.status.toLowerCase() !== "concluida" &&
-                             activity.status.toLowerCase() !== "concluída";
+  const showCompleteButton = !activity.status.toLowerCase().includes("conclu");
 
   return (
     <div 
@@ -72,7 +85,7 @@ export const ActivityItem: React.FC<ActivityItemProps> = ({ activity, onStatusCh
       </div>
       <div className="flex items-center gap-2">
         <Badge className={getStatusColor(activity.status)}>
-          {activity.status ? (activity.status.charAt(0).toUpperCase() + activity.status.slice(1)) : "Pendente"}
+          {normalizeStatus(activity.status)}
         </Badge>
         
         {showCompleteButton && (

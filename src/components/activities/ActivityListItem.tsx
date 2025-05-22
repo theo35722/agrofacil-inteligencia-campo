@@ -2,7 +2,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Calendar, CheckCircle } from "lucide-react";
 import { Atividade } from "@/types/agro";
-import { updateAtividadeStatus } from "@/services/atividadeService";
+import { updateAtividadeStatus } from "@/services/atividade";
 import { toast } from "sonner";
 
 interface ActivityListItemProps {
@@ -23,9 +23,18 @@ export function ActivityListItem({ activity, isMobile = false, onStatusChange }:
 
   // Get status color for badge
   const getStatusColor = (status: string) => {
-    if (status === "concluído") return "bg-green-500 hover:bg-green-600";
-    if (status === "pendente") return "bg-orange-500 hover:bg-orange-600";
-    return "bg-blue-400 hover:bg-blue-500";
+    const statusLower = status?.toLowerCase() || '';
+    
+    if (statusLower.includes("penden")) {
+      return "bg-orange-500 hover:bg-orange-600";
+    }
+    if (statusLower.includes("conclu")) {
+      return "bg-green-500 hover:bg-green-600";
+    }
+    if (statusLower.includes("planej")) {
+      return "bg-blue-400 hover:bg-blue-500";
+    }
+    return "bg-gray-400 hover:bg-gray-500";
   };
 
   // Function to handle marking an activity as complete
@@ -34,6 +43,7 @@ export function ActivityListItem({ activity, isMobile = false, onStatusChange }:
     e.stopPropagation();
     
     try {
+      console.log(`Marcando atividade ${activity.id} como concluída...`);
       await updateAtividadeStatus(activity.id, "concluído");
       toast.success("Atividade marcada como concluída!");
       if (onStatusChange) {
@@ -45,10 +55,24 @@ export function ActivityListItem({ activity, isMobile = false, onStatusChange }:
     }
   };
 
+  // Normalize status for display
+  const normalizeStatus = (status: string): string => {
+    const statusLower = status?.toLowerCase() || '';
+    
+    if (statusLower.includes("conclu")) {
+      return "Concluída";
+    }
+    if (statusLower.includes("penden")) {
+      return "Pendente";
+    }
+    if (statusLower.includes("planej")) {
+      return "Planejada";
+    }
+    return status ? status.charAt(0).toUpperCase() + status.slice(1) : "Pendente";
+  };
+
   // Check if the activity is not already completed
-  const showCompleteButton = activity.status.toLowerCase() !== "concluído" && 
-                           activity.status.toLowerCase() !== "concluida" &&
-                           activity.status.toLowerCase() !== "concluída";
+  const showCompleteButton = !activity.status.toLowerCase().includes("conclu");
 
   return (
     <div 
@@ -59,12 +83,13 @@ export function ActivityListItem({ activity, isMobile = false, onStatusChange }:
           <div className="flex items-center gap-2 flex-wrap">
             <h4 className="font-medium">{activity.tipo}</h4>
             <Badge className={`${getStatusColor(activity.status)} ${isMobile ? 'text-xs px-1.5 py-0' : ''}`}>
-              {activity.status}
+              {normalizeStatus(activity.status)}
             </Badge>
           </div>
           
           <p className="text-sm text-gray-600 mt-1">
-            {activity.field ? `${activity.field} - ${activity.plot}` : activity.plot}
+            {activity.field ? `${activity.field} - ${activity.plot}` : activity.plot || 
+              (activity.talhao ? activity.talhao.nome : "Talhão não encontrado")}
           </p>
           
           {activity.descricao && (

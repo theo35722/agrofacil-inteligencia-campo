@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Atividade } from "@/types/agro";
+import { updateAtividadeStatus } from "./atividadeUpdateService";
 
 /**
  * Fetch activities with various filter options
@@ -55,7 +56,9 @@ export const getAtividades = async (
     // Caso contrário, se includeConcluidas não estiver explicitamente definido como true,
     // exclua as atividades concluídas por padrão
     else if (options.includeConcluidas !== true && !options.status) {
-      query = query.not('status', 'eq', 'concluído');
+      query = query.not('status', 'eq', 'concluído')
+                   .not('status', 'eq', 'concluida')
+                   .not('status', 'eq', 'concluída');
     }
 
     if (options.limit) {
@@ -74,13 +77,14 @@ export const getAtividades = async (
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    const updatedActivities = await Promise.all(data.map(async (activity) => {
-      if (activity.status === "planejado") {
+    const updatedActivities = await Promise.all((data || []).map(async (activity) => {
+      if (activity.status.toLowerCase() === "planejado") {
         const activityDate = new Date(activity.data_programada);
         activityDate.setHours(0, 0, 0, 0);
         
         if (activityDate <= today) {
           // Atualizar para "pendente" no banco de dados
+          console.log(`Atualizando atividade ${activity.id} de 'planejado' para 'pendente'`);
           const updated = await updateAtividadeStatus(activity.id, "pendente");
           return updated || activity;
         }
@@ -130,31 +134,5 @@ export const getAtividadeById = async (id: string): Promise<Atividade | null> =>
   } catch (error) {
     console.error(`Falha na operação de buscar atividade ${id}:`, error);
     throw error;
-  }
-};
-
-// Função específica para atualizar apenas o status de uma atividade
-// Movida aqui para uso interno no módulo
-const updateAtividadeStatus = async (id: string, status: string): Promise<Atividade | null> => {
-  try {
-    console.log(`Atualizando status da atividade ${id} para ${status}`);
-    
-    const { data, error } = await supabase
-      .from('atividades')
-      .update({ status: status })
-      .eq('id', id)
-      .select()
-      .single();
-
-    if (error) {
-      console.error(`Erro ao atualizar status da atividade ${id}:`, error);
-      return null;
-    }
-
-    console.log(`Status da atividade ${id} atualizado com sucesso para ${status}`);
-    return data;
-  } catch (error) {
-    console.error(`Falha na operação de atualizar status da atividade ${id}:`, error);
-    return null;
   }
 };

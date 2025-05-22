@@ -16,17 +16,24 @@ export const useActivityPreviewData = () => {
       setLoading(true);
       setError(null);
       
+      console.log("Buscando atividades para o dashboard...");
+      
       // Buscar atividades pendentes e planejadas para a dashboard
-      // Importante: incluir explicitamente atividades pendentes
       const data = await getAtividades({ 
         limit: 5, 
         upcoming: true,
         includeConcluidas: false, // Excluir atividades concluídas
-        includeStatus: ['pendente', 'planejado'] // Garantir que busque pendentes e planejadas
+        includeStatus: ['pendente', 'planejado', 'Planejado', 'Pendente'] // Garantir que busque pendentes e planejadas com case insensitive
       });
       
       console.log("Atividades carregadas para o dashboard:", data);
-      setActivities(data || []);
+      
+      if (data && data.length > 0) {
+        setActivities(data);
+      } else {
+        console.log("Nenhuma atividade encontrada para o dashboard");
+        setActivities([]);
+      }
     } catch (error) {
       console.error("Erro ao carregar atividades:", error);
       setError("Não foi possível carregar as atividades");
