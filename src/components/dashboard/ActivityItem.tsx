@@ -3,7 +3,7 @@ import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Atividade, formatDate } from "@/types/agro";
 import { Calendar, CheckCircle } from "lucide-react";
-import { updateAtividadeStatus } from "@/services/atividadeService";
+import { updateAtividadeStatus } from "@/services/atividade";
 import { toast } from "sonner";
 
 interface ActivityItemProps {

@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useCallback } from "react";
-import { getAtividades } from "@/services/atividadeService";
+import { getAtividades } from "@/services/atividade";
 import { Atividade } from "@/types/agro";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
