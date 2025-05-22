@@ -1,7 +1,9 @@
 
 import { Badge } from "@/components/ui/badge";
-import { Calendar } from "lucide-react";
+import { Calendar, CheckCircle } from "lucide-react";
 import { Atividade } from "@/types/agro";
+import { updateAtividadeStatus } from "@/services/atividadeService";
+import { toast } from "sonner";
 
 interface ActivityListItemProps {
   activity: Atividade & {
@@ -9,9 +11,10 @@ interface ActivityListItemProps {
     plot?: string;
   };
   isMobile?: boolean;
+  onStatusChange?: () => void;
 }
 
-export function ActivityListItem({ activity, isMobile = false }: ActivityListItemProps) {
+export function ActivityListItem({ activity, isMobile = false, onStatusChange }: ActivityListItemProps) {
   // Format date to Brazilian format
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -24,6 +27,28 @@ export function ActivityListItem({ activity, isMobile = false }: ActivityListIte
     if (status === "pendente") return "bg-orange-500 hover:bg-orange-600";
     return "bg-blue-400 hover:bg-blue-500";
   };
+
+  // Function to handle marking an activity as complete
+  const handleMarkComplete = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    try {
+      await updateAtividadeStatus(activity.id, "concluído");
+      toast.success("Atividade marcada como concluída!");
+      if (onStatusChange) {
+        onStatusChange();
+      }
+    } catch (error) {
+      console.error("Erro ao marcar atividade como concluída:", error);
+      toast.error("Erro ao atualizar atividade");
+    }
+  };
+
+  // Check if the activity is not already completed
+  const showCompleteButton = activity.status.toLowerCase() !== "concluído" && 
+                           activity.status.toLowerCase() !== "concluida" &&
+                           activity.status.toLowerCase() !== "concluída";
 
   return (
     <div 
@@ -49,9 +74,21 @@ export function ActivityListItem({ activity, isMobile = false }: ActivityListIte
           )}
         </div>
         
-        <div className="text-sm text-green-600 font-medium flex items-center">
-          <Calendar className="h-3 w-3 mr-1" />
-          {activity.data_programada ? formatDate(activity.data_programada) : ""}
+        <div className="flex items-center gap-2">
+          <div className="text-sm text-green-600 font-medium flex items-center">
+            <Calendar className="h-3 w-3 mr-1" />
+            {activity.data_programada ? formatDate(activity.data_programada) : ""}
+          </div>
+          
+          {showCompleteButton && (
+            <button 
+              onClick={handleMarkComplete} 
+              className="text-green-600 hover:text-green-700 ml-1 p-1"
+              title="Marcar como concluída"
+            >
+              <CheckCircle className="h-5 w-5" />
+            </button>
+          )}
         </div>
       </div>
     </div>

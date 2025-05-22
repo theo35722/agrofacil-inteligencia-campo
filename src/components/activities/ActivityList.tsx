@@ -13,6 +13,7 @@ interface ActivityListProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
   isMobile: boolean;
+  onStatusChange?: () => void;
 }
 
 export function ActivityList({
@@ -20,7 +21,8 @@ export function ActivityList({
   loading,
   activeTab,
   setActiveTab,
-  isMobile
+  isMobile,
+  onStatusChange
 }: ActivityListProps) {
   const filteredActivities = activities.filter(activity => {
     if (activeTab === "all") return true;
@@ -52,7 +54,12 @@ export function ActivityList({
         ) : (
           <div className="space-y-3">
             {filteredActivities.map((activity) => (
-              <ActivityListItem key={activity.id} activity={activity} isMobile={isMobile} />
+              <ActivityListItem 
+                key={activity.id} 
+                activity={activity} 
+                isMobile={isMobile} 
+                onStatusChange={onStatusChange}
+              />
             ))}
           </div>
         )}

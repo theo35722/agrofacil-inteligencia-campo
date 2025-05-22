@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { CalendarCheck, Filter } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -44,12 +44,8 @@ const Activities = () => {
   const [activeTab, setActiveTab] = useState("all");
   const isMobile = useIsMobile();
   
-  // Fetch actual data instead of using mock data
-  useEffect(() => {
-    fetchData();
-  }, []);
-  
-  const fetchData = async () => {
+  // Função para buscar dados
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -109,7 +105,12 @@ const Activities = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+  
+  // Fetch actual data instead of using mock data
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   return (
     <div className="space-y-4 animate-fade-in pb-16">
@@ -156,6 +157,7 @@ const Activities = () => {
               activeTab={activeTab}
               setActiveTab={setActiveTab}
               isMobile={isMobile}
+              onStatusChange={fetchData}
             />
           </Tabs>
         </CardContent>

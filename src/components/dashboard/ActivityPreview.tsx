@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useCallback } from "react";
 import { CalendarCheck } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
@@ -10,7 +10,12 @@ import { ActivityErrorState } from "./ActivityErrorState";
 import { ActivityEmptyState } from "./ActivityEmptyState";
 
 export const ActivityPreview = () => {
-  const { activities, loading, error, handleRetry } = useActivityPreviewData();
+  const { activities, loading, error, handleRetry, fetchActivities } = useActivityPreviewData();
+  
+  // Callback function to refresh activities when status changes
+  const handleActivityStatusChange = useCallback(() => {
+    fetchActivities();
+  }, [fetchActivities]);
 
   return (
     <Card className="border border-gray-100 shadow-sm bg-white">
@@ -30,7 +35,11 @@ export const ActivityPreview = () => {
         ) : activities.length > 0 ? (
           <>
             {activities.map((activity) => (
-              <ActivityItem key={activity.id} activity={activity} />
+              <ActivityItem 
+                key={activity.id} 
+                activity={activity} 
+                onStatusChange={handleActivityStatusChange}
+              />
             ))}
             <div className="pt-2">
               <Link 

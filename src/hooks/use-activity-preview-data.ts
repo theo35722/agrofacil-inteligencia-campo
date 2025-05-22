@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { getAtividades } from "@/services/atividadeService";
 import { Atividade } from "@/types/agro";
 import { toast } from "sonner";
@@ -11,37 +11,38 @@ export const useActivityPreviewData = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchActivities = async () => {
+  const fetchActivities = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       
-      // Small delay to avoid resource conflicts with other dashboard requests
+      // Carregar atividades pendentes e planejadas, excluindo concluídas
       const data = await getAtividades({ 
         limit: 5, 
-        upcoming: true 
+        upcoming: true,
+        includeConcluidas: false // Explicitamente excluir atividades concluídas
       });
-      console.log("Atividades carregadas para o dashboard:", data);
       
+      console.log("Atividades carregadas para o dashboard:", data);
       setActivities(data || []);
     } catch (error) {
       console.error("Erro ao carregar atividades:", error);
       setError("Não foi possível carregar as atividades");
       toast.error("Não foi possível carregar as atividades");
     } finally {
-      // Always set loading to false when done, even if there was an error
       setLoading(false);
     }
-  };
+  }, [profile]);
 
   useEffect(() => {
     fetchActivities();
-  }, [profile]);
+  }, [fetchActivities]);
 
   return {
     activities,
     loading,
     error,
-    handleRetry: fetchActivities
+    handleRetry: fetchActivities,
+    fetchActivities
   };
 };
