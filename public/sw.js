@@ -1,12 +1,12 @@
 
-const CACHE_NAME = 'agrofacil-v4';
+const CACHE_NAME = 'agrofacil-v5';
 const urlsToCache = [
   '/',
   '/index.html',
   '/manifest.json',
   '/favicon.ico',
-  '/agrofácil-icon-192.png',
-  '/agrofácil-icon-512.png',
+  '/icon-192.png',
+  '/icon-512.png',
   '/offline.html'
 ];
 
