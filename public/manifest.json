@@ -1,12 +1,17 @@
 
 {
+  "id": "/",
   "name": "AgroFácil",
   "short_name": "AgroFácil",
   "description": "Aplicativo para diagnóstico de plantas, previsão do tempo e gestão agrícola",
   "start_url": "/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#ffffff",
   "theme_color": "#2e7d32",
+  "launch_handler": {
+    "client_mode": "auto"
+  },
   "icons": [
     {
       "src": "/icon-192.png",
@@ -17,6 +22,26 @@
       "src": "/icon-512.png",
       "type": "image/png",
       "sizes": "512x512"
+    },
+    {
+      "src": "/maskable-icon.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/screen1.png",
+      "type": "image/png",
+      "sizes": "1280x720",
+      "form_factor": "wide"
+    },
+    {
+      "src": "/screenshots/screen2.png",
+      "type": "image/png", 
+      "sizes": "1280x720",
+      "form_factor": "wide"
     }
   ]
 }
