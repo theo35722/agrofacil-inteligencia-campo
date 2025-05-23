@@ -2,7 +2,7 @@
 {
   "name": "AgroFácil",
   "short_name": "AgroFácil",
-  "description": "Aplicativo para diagnóstico de plantas, previsão do tempo e gestão agrícola.",
+  "description": "Aplicativo para diagnóstico de plantas, previsão do tempo e gestão agrícola",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
