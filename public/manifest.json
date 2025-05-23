@@ -14,18 +14,18 @@
   },
   "icons": [
     {
-      "src": "/lovable-uploads/08bbc2e7-3f16-453c-a5da-1da381a28630.jpg",
-      "type": "image/jpeg",
+      "src": "/lovable-uploads/f17b5b81-0cf8-4c9f-aa66-13879da10181.png",
+      "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "/lovable-uploads/08bbc2e7-3f16-453c-a5da-1da381a28630.jpg",
-      "type": "image/jpeg",
+      "src": "/lovable-uploads/f17b5b81-0cf8-4c9f-aa66-13879da10181.png",
+      "type": "image/png",
       "sizes": "512x512"
     },
     {
-      "src": "/lovable-uploads/08bbc2e7-3f16-453c-a5da-1da381a28630.jpg",
-      "type": "image/jpeg",
+      "src": "/lovable-uploads/f17b5b81-0cf8-4c9f-aa66-13879da10181.png",
+      "type": "image/png",
       "sizes": "512x512",
       "purpose": "maskable"
     }
