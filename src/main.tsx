@@ -16,7 +16,7 @@ if ('serviceWorker' in navigator) {
       }
       
       // Register the service worker again
-      const registration = await navigator.serviceWorker.register('/sw.js');
+      const registration = await navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' });
       console.log('Service Worker registered with scope:', registration.scope);
       
       // Check for updates on page load

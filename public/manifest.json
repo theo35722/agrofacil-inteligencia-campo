@@ -14,17 +14,17 @@
   },
   "icons": [
     {
-      "src": "/icon-192.png",
+      "src": "/lovable-uploads/8ac540a4-ed74-4c29-98a2-22f75a415068.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "/icon-512.png",
+      "src": "/lovable-uploads/8ac540a4-ed74-4c29-98a2-22f75a415068.png",
       "type": "image/png",
       "sizes": "512x512"
     },
     {
-      "src": "/maskable-icon.png",
+      "src": "/lovable-uploads/8ac540a4-ed74-4c29-98a2-22f75a415068.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "maskable"
