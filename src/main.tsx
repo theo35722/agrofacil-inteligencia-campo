@@ -9,6 +9,13 @@ import { toast } from 'sonner';
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', async () => {
     try {
+      // Force update by unregistering any existing service workers first
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      for (const registration of registrations) {
+        await registration.unregister();
+      }
+      
+      // Register the service worker again
       const registration = await navigator.serviceWorker.register('/sw.js');
       console.log('Service Worker registered with scope:', registration.scope);
       
