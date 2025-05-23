@@ -1,5 +1,5 @@
 
-import React from "react";
+import * as React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -43,58 +43,56 @@ const queryClient = new QueryClient({
 
 const App = () => {
   return (
-    <React.StrictMode>
-      <QueryClientProvider client={queryClient}>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <AuthProvider>
-              <Routes>
-                {/* Página inicial pública - apenas para usuários não autenticados */}
-                <Route path="/" element={<Home />} />
-                
-                {/* Rotas de autenticação */}
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/confirmado" element={<EmailConfirmado />} />
-                
-                {/* Rotas protegidas */}
-                <Route
-                  path="/"
-                  element={
-                    <ProtectedRoute>
-                      <Layout />
-                    </ProtectedRoute>
-                  }
-                >
-                  <Route path="dashboard" element={<Dashboard />} />
-                  <Route path="diagnostico" element={<AnalisePlantas />} />
-                  <Route path="plant-diagnosis" element={<PlantDiagnosis />} />
-                  <Route path="analise-plantas" element={<AnalisePlantas />} />
-                  <Route path="analise" element={<AnalisePlantas />} />
-                  <Route path="clima" element={<Weather />} />
-                  <Route path="lavouras" element={<Fields />} />
-                  <Route path="atividades" element={<Activities />} />
-                  <Route path="boas-praticas" element={<BestPractices />} />
-                  <Route path="notificacoes" element={<Notifications />} />
-                  <Route path="marketplace" element={<Marketplace />} />
-                  <Route path="my-listings" element={<MyListings />} />
-                  <Route path="perfil" element={<Profile />} />
-                  <Route path="create-marketplace-product" element={<CreateMarketplaceProduct />} />
-                  <Route path="edit-marketplace-product/:productId" element={<EditMarketplaceProduct />} />
-                  <Route path="weather-test" element={<WeatherTest />} />
-                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-                  <Route path="*" element={<NotFound />} />
-                </Route>
-                
-                {/* Redireção padrão */}
-                <Route path="*" element={<Navigate to="/" replace />} />
-              </Routes>
-            </AuthProvider>
-          </BrowserRouter>
-        </TooltipProvider>
-      </QueryClientProvider>
-    </React.StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AuthProvider>
+            <Routes>
+              {/* Página inicial pública - apenas para usuários não autenticados */}
+              <Route path="/" element={<Home />} />
+              
+              {/* Rotas de autenticação */}
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/confirmado" element={<EmailConfirmado />} />
+              
+              {/* Rotas protegidas */}
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute>
+                    <Layout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="diagnostico" element={<AnalisePlantas />} />
+                <Route path="plant-diagnosis" element={<PlantDiagnosis />} />
+                <Route path="analise-plantas" element={<AnalisePlantas />} />
+                <Route path="analise" element={<AnalisePlantas />} />
+                <Route path="clima" element={<Weather />} />
+                <Route path="lavouras" element={<Fields />} />
+                <Route path="atividades" element={<Activities />} />
+                <Route path="boas-praticas" element={<BestPractices />} />
+                <Route path="notificacoes" element={<Notifications />} />
+                <Route path="marketplace" element={<Marketplace />} />
+                <Route path="my-listings" element={<MyListings />} />
+                <Route path="perfil" element={<Profile />} />
+                <Route path="create-marketplace-product" element={<CreateMarketplaceProduct />} />
+                <Route path="edit-marketplace-product/:productId" element={<EditMarketplaceProduct />} />
+                <Route path="weather-test" element={<WeatherTest />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Route>
+              
+              {/* Redireção padrão */}
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
   );
 };
 
